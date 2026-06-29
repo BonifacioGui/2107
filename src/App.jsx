@@ -1,57 +1,38 @@
 import { useState } from "react";
 import "./App.css";
+
+import StartScreen from "./components/StartScreen";
+import GameLayout from "./components/GameLayout";
+import TributeScreen from "./components/TributeScreen";
+
 import BatmanGame from "./games/BatmanGame";
+import { tributes } from "./data/tributes";
 
 function App() {
-  const [tela, setTela] = useState("inicio");
+  const [screen, setScreen] = useState("start");
 
   return (
     <main className="page">
-      {tela === "inicio" && (
-        <section className="card intro-card">
-          <h1>2107</h1>
-
-          <p>
-            Uma pequena aventura sobre coragem, amor e tudo que eu admiro em
-            você.
-          </p>
-
-          <button onClick={() => setTela("batman")} className="primary-button">
-            Começar
-          </button>
-        </section>
+      {screen === "start" && (
+        <StartScreen onStart={() => setScreen("batman")} />
       )}
 
-      {tela === "batman" && (
-        <section className="card">
-          <h1>A Coragem que Eu Vejo em Você</h1>
-
-          <p>
-            Colete os símbolos de coragem e enfrente os medos pelo caminho.
-          </p>
-
-          <BatmanGame onComplete={() => setTela("homenagemBatman")} />
-        </section>
+      {screen === "batman" && (
+        <GameLayout
+          title="A Coragem que Eu Vejo em Você"
+          description="Colete os símbolos de coragem e enfrente os medos pelo caminho."
+        >
+          <BatmanGame onComplete={() => setScreen("batmanTribute")} />
+        </GameLayout>
       )}
 
-      {tela === "homenagemBatman" && (
-        <section className="card homenagem-card">
-          <h1>Você enfrentou o medo ❤️</h1>
-
-          <p>
-            Coragem não é não sentir medo. Coragem é continuar mesmo quando algo
-            assusta.
-          </p>
-
-          <p>
-            E é isso que eu admiro tanto em você. Eu aprendo muito vendo você
-            enfrentar seus medos, mesmo quando não é fácil.
-          </p>
-
-          <button onClick={() => setTela("inicio")} className="primary-button">
-            Voltar ao início
-          </button>
-        </section>
+      {screen === "batmanTribute" && (
+        <TributeScreen
+          title={tributes.batman.title}
+          paragraphs={tributes.batman.paragraphs}
+          buttonText="Voltar ao início"
+          onNext={() => setScreen("start")}
+        />
       )}
     </main>
   );
