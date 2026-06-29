@@ -15,11 +15,11 @@ export default class BatmanScene extends Phaser.Scene {
     this.mobileInput = {
       left: false,
       right: false,
-      up: false,
-      down: false,
+      jump: false,
     };
 
     this.faseConcluida = false;
+    this.ultimoToqueMedo = 0;
 
     this.criarCenarioGotham();
 
@@ -32,16 +32,21 @@ export default class BatmanScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(400, 73, "Colete os símbolos de coragem e atravesse a escuridão", {
+      .text(400, 73, "Pule pelas plataformas e reúna os símbolos de coragem", {
         fontSize: "16px",
         color: "#b8c7ff",
         fontFamily: "Arial",
       })
       .setOrigin(0.5);
 
+    this.criarPlataformas();
     this.criarHeroi();
+    this.criarSimbolos();
+    this.criarMedos();
+    this.criarFinalDaFase();
 
     this.cursors = this.input.keyboard.createCursorKeys();
+    this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
     this.coragem = 0;
     this.totalCoragem = 5;
@@ -61,70 +66,6 @@ export default class BatmanScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    this.items = this.physics.add.group();
-
-    const simbolos = [
-      { x: 220, y: 445, nome: "Força", icone: "⚡" },
-      { x: 350, y: 330, nome: "Calma", icone: "🌙" },
-      { x: 500, y: 465, nome: "Confiança", icone: "🛡️" },
-      { x: 650, y: 315, nome: "Amor", icone: "❤️" },
-      { x: 720, y: 515, nome: "Coragem", icone: "✨" },
-    ];
-
-    simbolos.forEach(({ x, y, nome, icone }) => {
-      const item = this.add.circle(x, y, 18, 0xf5c542, 0.9);
-      this.physics.add.existing(item);
-      item.body.setCircle(18);
-      item.body.setAllowGravity(false);
-
-      item.nome = nome;
-
-      item.icon = this.add
-        .text(x, y - 2, icone, {
-          fontSize: "24px",
-        })
-        .setOrigin(0.5);
-
-      item.label = this.add
-        .text(x, y + 32, nome, {
-          fontSize: "13px",
-          color: "#ffffff",
-          fontFamily: "Arial",
-        })
-        .setOrigin(0.5);
-
-      this.tweens.add({
-        targets: [item, item.icon, item.label],
-        y: "-=8",
-        duration: 900,
-        yoyo: true,
-        repeat: -1,
-      });
-
-      this.items.add(item);
-    });
-
-    this.physics.add.overlap(
-      this.player,
-      this.items,
-      this.coletarItem,
-      null,
-      this
-    );
-
-    this.sombras = this.physics.add.group();
-
-    this.criarMedo(405, 520, "medo");
-    this.criarMedo(600, 410, "agulha");
-
-    this.physics.add.overlap(
-      this.player,
-      this.sombras,
-      this.tocarMedo,
-      null,
-      this
-    );
-
     this.mensagem = this.add
       .text(400, 300, "", {
         fontSize: "22px",
@@ -135,6 +76,35 @@ export default class BatmanScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    this.physics.add.collider(this.player, this.plataformas);
+    this.physics.add.collider(this.items, this.plataformas);
+    this.physics.add.collider(this.sombras, this.plataformas);
+    this.physics.add.collider(this.portalFinal, this.plataformas);
+
+    this.physics.add.overlap(
+      this.player,
+      this.items,
+      this.coletarItem,
+      null,
+      this
+    );
+
+    this.physics.add.overlap(
+      this.player,
+      this.sombras,
+      this.tocarMedo,
+      null,
+      this
+    );
+
+    this.physics.add.overlap(
+      this.player,
+      this.portalFinal,
+      this.tentarFinalizarFase,
+      null,
+      this
+    );
+
     if (this.deveExibirControlesMobile()) {
       this.criarControlesMobile();
     }
@@ -142,18 +112,21 @@ export default class BatmanScene extends Phaser.Scene {
 
   update() {
     if (this.faseConcluida) {
-      this.player.body.setVelocity(0);
+      this.player.body.setVelocityX(0);
       return;
     }
 
-    const velocidade = 220;
-
-    this.player.body.setVelocity(0);
+    const velocidade = 230;
+    const forcaPulo = -520;
 
     const esquerda = this.cursors.left.isDown || this.mobileInput.left;
     const direita = this.cursors.right.isDown || this.mobileInput.right;
-    const cima = this.cursors.up.isDown || this.mobileInput.up;
-    const baixo = this.cursors.down.isDown || this.mobileInput.down;
+    const pulando =
+      Phaser.Input.Keyboard.JustDown(this.cursors.up) ||
+      Phaser.Input.Keyboard.JustDown(this.spaceKey) ||
+      this.mobileInput.jump;
+
+    this.player.body.setVelocityX(0);
 
     if (esquerda) {
       this.player.body.setVelocityX(-velocidade);
@@ -163,10 +136,9 @@ export default class BatmanScene extends Phaser.Scene {
       this.player.setFlipX(false);
     }
 
-    if (cima) {
-      this.player.body.setVelocityY(-velocidade);
-    } else if (baixo) {
-      this.player.body.setVelocityY(velocidade);
+    if (pulando && this.player.body.blocked.down) {
+      this.player.body.setVelocityY(forcaPulo);
+      this.mobileInput.jump = false;
     }
   }
 
@@ -203,8 +175,6 @@ export default class BatmanScene extends Phaser.Scene {
       this.add.rectangle(x, y, largura, altura, 0x0b1026);
       this.criarJanelasPredio(x, y, largura, altura);
     });
-
-    this.add.rectangle(400, 585, 800, 35, 0x05050b);
 
     for (let i = 0; i < 35; i++) {
       const x = Phaser.Math.Between(0, 800);
@@ -246,28 +216,108 @@ export default class BatmanScene extends Phaser.Scene {
     }
   }
 
+  criarPlataformas() {
+    this.plataformas = this.physics.add.staticGroup();
+
+    this.criarPlataforma(400, 575, 820, 50);
+    this.criarPlataforma(190, 455, 150, 22);
+    this.criarPlataforma(390, 370, 145, 22);
+    this.criarPlataforma(595, 455, 150, 22);
+    this.criarPlataforma(690, 305, 135, 22);
+  }
+
+  criarPlataforma(x, y, largura, altura) {
+    const plataforma = this.add.rectangle(x, y, largura, altura, 0x161b3a);
+    plataforma.setStrokeStyle(2, 0x3d4b91, 0.9);
+
+    this.physics.add.existing(plataforma, true);
+    this.plataformas.add(plataforma);
+
+    this.add.rectangle(x, y - altura / 2, largura, 4, 0xf5c542, 0.25);
+  }
+
   criarHeroi() {
-    this.player = this.add.image(100, 500, "batmanHero");
+    this.player = this.physics.add.image(80, 500, "batmanHero");
 
-    this.physics.add.existing(this.player);
+    this.player.setDisplaySize(78, 78);
+    this.player.setCollideWorldBounds(true);
+    this.player.setBounce(0.05);
 
-    this.player.setDisplaySize(82, 82);
-    this.player.body.setCollideWorldBounds(true);
-
-    this.player.body.setSize(42, 58);
+    this.player.body.setSize(38, 58);
     this.player.body.setOffset(20, 18);
   }
 
+  criarSimbolos() {
+    this.items = this.physics.add.group({
+      allowGravity: false,
+      immovable: true,
+    });
+
+    const simbolos = [
+      { x: 190, y: 410, nome: "Força", icone: "⚡" },
+      { x: 390, y: 325, nome: "Calma", icone: "🌙" },
+      { x: 595, y: 410, nome: "Confiança", icone: "🛡️" },
+      { x: 690, y: 260, nome: "Amor", icone: "❤️" },
+      { x: 745, y: 520, nome: "Coragem", icone: "✨" },
+    ];
+
+    simbolos.forEach(({ x, y, nome, icone }) => {
+      const item = this.add.circle(x, y, 18, 0xf5c542, 0.9);
+      this.physics.add.existing(item);
+      item.body.setAllowGravity(false);
+      item.body.setImmovable(true);
+      item.body.setCircle(18);
+
+      item.nome = nome;
+
+      item.icon = this.add
+        .text(x, y - 2, icone, {
+          fontSize: "24px",
+        })
+        .setOrigin(0.5);
+
+      item.label = this.add
+        .text(x, y + 32, nome, {
+          fontSize: "13px",
+          color: "#ffffff",
+          fontFamily: "Arial",
+        })
+        .setOrigin(0.5);
+
+      this.tweens.add({
+        targets: [item, item.icon, item.label],
+        y: "-=8",
+        duration: 900,
+        yoyo: true,
+        repeat: -1,
+      });
+
+      this.items.add(item);
+    });
+  }
+
+  criarMedos() {
+    this.sombras = this.physics.add.group({
+      allowGravity: false,
+      immovable: true,
+    });
+
+    this.criarMedo(310, 540, "medo");
+    this.criarMedo(500, 335, "agulha");
+    this.criarMedo(675, 420, "receio");
+  }
+
   criarMedo(x, y, texto) {
-    const sombra = this.add.rectangle(x, y, 75, 75, 0x35155d, 0.85);
+    const sombra = this.add.rectangle(x, y, 70, 70, 0x35155d, 0.85);
     sombra.setStrokeStyle(2, 0x8f5cff, 0.6);
 
     this.physics.add.existing(sombra);
     sombra.body.setAllowGravity(false);
+    sombra.body.setImmovable(true);
 
     this.sombras.add(sombra);
 
-    this.add
+    sombra.label = this.add
       .text(x, y, texto, {
         fontSize: "13px",
         color: "#ffffff",
@@ -276,11 +326,36 @@ export default class BatmanScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.tweens.add({
-      targets: sombra,
+      targets: [sombra, sombra.label],
       scaleX: 1.08,
       scaleY: 1.08,
       alpha: 0.65,
       duration: 700,
+      yoyo: true,
+      repeat: -1,
+    });
+  }
+
+  criarFinalDaFase() {
+    this.portalFinal = this.add.rectangle(760, 505, 42, 90, 0xf5c542, 0.2);
+    this.portalFinal.setStrokeStyle(2, 0xf5c542, 0.9);
+
+    this.physics.add.existing(this.portalFinal);
+    this.portalFinal.body.setAllowGravity(false);
+    this.portalFinal.body.setImmovable(true);
+
+    this.add
+      .text(760, 445, "saída", {
+        fontSize: "13px",
+        color: "#f5c542",
+        fontFamily: "Arial",
+      })
+      .setOrigin(0.5);
+
+    this.tweens.add({
+      targets: this.portalFinal,
+      alpha: 0.45,
+      duration: 900,
       yoyo: true,
       repeat: -1,
     });
@@ -296,11 +371,18 @@ export default class BatmanScene extends Phaser.Scene {
   criarControlesMobile() {
     this.criarBotaoControle(90, 520, "←", "left");
     this.criarBotaoControle(170, 520, "→", "right");
-    this.criarBotaoControle(130, 470, "↑", "up");
-    this.criarBotaoControle(130, 570, "↓", "down");
+    this.criarBotaoControle(720, 520, "↑", "jump");
 
     this.add
-      .text(130, 420, "controle", {
+      .text(130, 470, "mover", {
+        fontSize: "13px",
+        color: "#9fa8da",
+        fontFamily: "Arial",
+      })
+      .setOrigin(0.5);
+
+    this.add
+      .text(720, 470, "pular", {
         fontSize: "13px",
         color: "#9fa8da",
         fontFamily: "Arial",
@@ -328,11 +410,18 @@ export default class BatmanScene extends Phaser.Scene {
       .setInteractive();
 
     const ativar = () => {
+      if (direcao === "jump") {
+        this.mobileInput.jump = true;
+        return;
+      }
+
       this.mobileInput[direcao] = true;
     };
 
     const desativar = () => {
-      this.mobileInput[direcao] = false;
+      if (direcao !== "jump") {
+        this.mobileInput[direcao] = false;
+      }
     };
 
     botao.on("pointerdown", ativar);
@@ -348,8 +437,6 @@ export default class BatmanScene extends Phaser.Scene {
   pararMovimentoMobile() {
     this.mobileInput.left = false;
     this.mobileInput.right = false;
-    this.mobileInput.up = false;
-    this.mobileInput.down = false;
   }
 
   coletarItem(player, item) {
@@ -377,25 +464,61 @@ export default class BatmanScene extends Phaser.Scene {
         this.feedbackText.setText("");
       }
     });
-
-    if (this.coragem === this.totalCoragem && !this.faseConcluida) {
-      this.faseConcluida = true;
-
-      this.feedbackText.setText("");
-
-      this.mensagem.setText(
-        "Você reuniu força, calma, confiança, amor e coragem.\n\nMesmo quando sente medo, você continua.\nE isso me ensina muito."
-      );
-
-      this.time.delayedCall(3500, () => {
-        this.game.events.emit("batman-complete");
-      });
-    }
   }
 
   tocarMedo() {
-    if (!this.faseConcluida) {
-      this.cameras.main.shake(120, 0.006);
+    if (this.faseConcluida) {
+      return;
     }
+
+    const agora = this.time.now;
+
+    if (agora - this.ultimoToqueMedo < 700) {
+      return;
+    }
+
+    this.ultimoToqueMedo = agora;
+
+    this.cameras.main.shake(120, 0.006);
+    this.player.body.setVelocityY(-260);
+
+    this.feedbackText.setText("Você sentiu medo... mas continuou.");
+
+    this.time.delayedCall(900, () => {
+      if (!this.faseConcluida) {
+        this.feedbackText.setText("");
+      }
+    });
+  }
+
+  tentarFinalizarFase() {
+    if (this.faseConcluida) {
+      return;
+    }
+
+    if (this.coragem < this.totalCoragem) {
+      this.feedbackText.setText("Reúna todos os símbolos antes de sair.");
+
+      this.time.delayedCall(1000, () => {
+        if (!this.faseConcluida) {
+          this.feedbackText.setText("");
+        }
+      });
+
+      return;
+    }
+
+    this.faseConcluida = true;
+    this.player.body.setVelocity(0);
+
+    this.feedbackText.setText("");
+
+    this.mensagem.setText(
+      "Você atravessou a escuridão.\nReuniu força, calma, confiança, amor e coragem.\n\nMesmo quando sente medo, você continua.\nE isso me ensina muito."
+    );
+
+    this.time.delayedCall(3800, () => {
+      this.game.events.emit("batman-complete");
+    });
   }
 }

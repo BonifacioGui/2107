@@ -24,6 +24,7 @@ export default function BatmanGame({ onComplete }) {
       physics: {
         default: "arcade",
         arcade: {
+          gravity: { y: 900 },
           debug: false,
         },
       },
