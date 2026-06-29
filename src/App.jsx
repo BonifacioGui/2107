@@ -6,6 +6,8 @@ import GameLayout from "./components/GameLayout";
 import TributeScreen from "./components/TributeScreen";
 
 import BatmanGame from "./games/BatmanGame";
+import CatGame from "./games/CatGame";
+
 import { tributes } from "./data/tributes";
 
 function App() {
@@ -30,6 +32,24 @@ function App() {
         <TributeScreen
           title={tributes.batman.title}
           paragraphs={tributes.batman.paragraphs}
+          buttonText="Continuar"
+          onNext={() => setScreen("cat")}
+        />
+      )}
+
+      {screen === "cat" && (
+        <GameLayout
+          title="O Lugar Seguro"
+          description="Colete lembranças de carinho e encontre o presente final."
+        >
+          <CatGame onComplete={() => setScreen("finalTribute")} />
+        </GameLayout>
+      )}
+
+      {screen === "finalTribute" && (
+        <TributeScreen
+          title={tributes.final.title}
+          paragraphs={tributes.final.paragraphs}
           buttonText="Voltar ao início"
           onNext={() => setScreen("start")}
         />
