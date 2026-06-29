@@ -5,16 +5,24 @@ export default function TributeScreen({
   onNext,
 }) {
   return (
-    <section className="card homenagem-card">
-      <h1>{title}</h1>
+    <section className="tribute-screen">
+      <div className="tribute-glow"></div>
 
-      {paragraphs.map((paragraph, index) => (
-        <p key={index}>{paragraph}</p>
-      ))}
+      <div className="tribute-card">
+        <span className="tribute-label">2107</span>
 
-      <button onClick={onNext} className="primary-button">
-        {buttonText}
-      </button>
+        <h1>{title}</h1>
+
+        <div className="tribute-text">
+          {paragraphs.map((paragraph, index) => (
+            <p key={index}>{paragraph}</p>
+          ))}
+        </div>
+
+        <button onClick={onNext} className="primary-button">
+          {buttonText}
+        </button>
+      </div>
     </section>
   );
 }
