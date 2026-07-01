@@ -1,7 +1,10 @@
 import Phaser from "phaser";
-
-const DEFAULT_WIDTH = 1600;
-const DEFAULT_HEIGHT = 720;
+import { DEFAULT_WIDTH, DEFAULT_HEIGHT } from "./batman/constants";
+import {
+  criarCenarioGotham,
+  atualizarCenarioGotham,
+} from "./batman/background";
+import { criarPlataformas } from "./batman/platforms";
 
 export default class BatmanScene extends Phaser.Scene {
   constructor() {
@@ -88,7 +91,7 @@ export default class BatmanScene extends Phaser.Scene {
     this.ultimoAtaque = -9999;
     this.recargaAtaque = 520;
 
-    this.criarCenarioGotham();
+    criarCenarioGotham(this);
 
     this.add
       .text(this.largura / 2, 36, "Fase 1: Enfrentando o Medo", {
@@ -113,7 +116,7 @@ export default class BatmanScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(100);
 
-    this.criarPlataformas();
+    criarPlataformas(this);
     this.criarAnimacoesHeroi();
     this.criarHeroi();
     this.criarSimbolos();
@@ -215,7 +218,7 @@ export default class BatmanScene extends Phaser.Scene {
   }
 
   update(time) {
-    this.atualizarCenarioGotham();
+    atualizarCenarioGotham(this);
     this.atualizarBatarangues();
     this.atualizarSpriteAtaque();
     this.atualizarMedos(time);
@@ -275,74 +278,6 @@ export default class BatmanScene extends Phaser.Scene {
       } else {
         this.tocarAnimacao("batman-idle");
       }
-    }
-  }
-
-  criarCenarioGotham() {
-    this.gothamSky = this.add
-      .image(this.largura / 2, this.altura / 2, "gothamSky")
-      .setDisplaySize(this.largura, this.altura)
-      .setDepth(-50);
-
-    this.add
-      .rectangle(
-        this.largura / 2,
-        this.altura / 2,
-        this.largura,
-        this.altura,
-        0x02040c,
-        0.05
-      )
-      .setDepth(-49);
-
-    this.gothamBuildingsBack = this.add
-      .image(this.largura / 2, this.altura + 28, "gothamBuildingsBack")
-      .setOrigin(0.5, 1)
-      .setDisplaySize(this.largura * 1.08, this.altura * 0.66)
-      .setAlpha(0.76)
-      .setDepth(-40);
-
-    this.gothamBuildingsFront = this.add
-      .image(this.largura / 2, this.altura + 42, "gothamBuildingsFront")
-      .setOrigin(0.5, 1)
-      .setDisplaySize(this.largura * 1.12, this.altura * 0.58)
-      .setAlpha(0.42)
-      .setDepth(-32);
-
-    this.gothamFog = this.add
-      .tileSprite(
-        this.largura / 2,
-        this.altura + 8,
-        this.largura * 1.2,
-        180,
-        "gothamFog"
-      )
-      .setOrigin(0.5, 1)
-      .setAlpha(0.08)
-      .setDepth(-12);
-
-    for (let i = 0; i < 30; i++) {
-      const x = Phaser.Math.Between(0, this.largura);
-      const y = Phaser.Math.Between(120, this.altura);
-
-      const gota = this.add
-        .rectangle(x, y, 2, 16, 0x9eb7ff, 0.13)
-        .setDepth(-1);
-
-      this.tweens.add({
-        targets: gota,
-        y: this.altura + 60,
-        x: x + 70,
-        duration: Phaser.Math.Between(1100, 1900),
-        repeat: -1,
-        delay: Phaser.Math.Between(0, 900),
-      });
-    }
-  }
-
-  atualizarCenarioGotham() {
-    if (this.gothamFog) {
-      this.gothamFog.tilePositionX += 0.1;
     }
   }
 
@@ -545,134 +480,6 @@ export default class BatmanScene extends Phaser.Scene {
         this.esconderFeedback();
       }
     });
-  }
-
-  criarPlataformas() {
-    this.plataformas = this.physics.add.staticGroup();
-
-    this.criarPlataforma({
-      x: this.largura / 2,
-      y: this.chaoY,
-      largura: this.largura + 160,
-      altura: 44,
-      tipo: "ground",
-    });
-
-    this.criarPlataforma({
-      x: this.largura * 0.2,
-      y: this.chaoY - 110,
-      largura: 300,
-      altura: 28,
-      tipo: "platform",
-    });
-
-    this.criarPlataforma({
-      x: this.largura * 0.45,
-      y: this.chaoY - 205,
-      largura: 330,
-      altura: 28,
-      tipo: "platform",
-    });
-
-    this.criarPlataforma({
-      x: this.largura * 0.68,
-      y: this.chaoY - 105,
-      largura: 340,
-      altura: 28,
-      tipo: "platform",
-    });
-
-    this.criarPlataforma({
-      x: this.largura * 0.86,
-      y: this.chaoY - 235,
-      largura: 320,
-      altura: 28,
-      tipo: "platform",
-    });
-  }
-
-  criarPlataforma({ x, y, largura, altura, tipo }) {
-    const textura = tipo === "ground" ? "rooftopGround" : "rooftopPlatform";
-    const texturaCarregada = this.texturaExisteDeVerdade(textura);
-
-    this.criarBaseVisualPlataforma({ x, y, largura, altura, tipo });
-
-    if (texturaCarregada) {
-      const alturaVisual = tipo === "ground" ? 110 : 58;
-      const yVisual = tipo === "ground" ? y + 26 : y + 12;
-
-      this.add
-        .tileSprite(x, yVisual, largura, alturaVisual, textura)
-        .setAlpha(1)
-        .setDepth(12);
-    } else {
-      this.criarPlataformaFallback({ x, y, largura, altura, tipo });
-    }
-
-    this.criarBordaPlataforma({ x, y, largura, altura, tipo });
-
-    const colisor = this.add.zone(x, y, largura, altura);
-    this.physics.add.existing(colisor, true);
-    this.plataformas.add(colisor);
-  }
-
-  texturaExisteDeVerdade(chave) {
-    if (!this.textures.exists(chave)) {
-      return false;
-    }
-
-    const textura = this.textures.get(chave);
-    const source = textura?.source?.[0];
-
-    if (!source) {
-      return false;
-    }
-
-    return source.width > 64 && source.height > 32;
-  }
-
-  criarBaseVisualPlataforma({ x, y, largura, altura, tipo }) {
-    if (tipo === "ground") {
-      this.add
-        .rectangle(x, y + 34, largura, 104, 0x02040a, 1)
-        .setDepth(8);
-
-      return;
-    }
-
-    this.add
-      .rectangle(x, y + 13, largura, altura + 34, 0x030613, 0.96)
-      .setDepth(8);
-  }
-
-  criarBordaPlataforma({ x, y, largura, altura, tipo }) {
-    const yTopo = y - altura / 2;
-
-    this.add
-      .rectangle(x, yTopo - 1, largura, tipo === "ground" ? 6 : 5, 0xf5c542, 0.78)
-      .setDepth(14);
-
-    this.add
-      .rectangle(x, yTopo + 8, largura, 3, 0x6f7cff, 0.45)
-      .setDepth(14);
-
-    this.add
-      .rectangle(x, yTopo + altura + 14, largura, 3, 0x000000, 0.55)
-      .setDepth(14);
-  }
-
-  criarPlataformaFallback({ x, y, largura, altura, tipo }) {
-    if (tipo === "ground") {
-      this.add
-        .rectangle(x, y + 24, largura, 96, 0x050712, 1)
-        .setDepth(10);
-
-      return;
-    }
-
-    this.add
-      .rectangle(x, y + 11, largura, 42, 0x070b1d, 1)
-      .setDepth(10);
   }
 
   criarHeroi() {
