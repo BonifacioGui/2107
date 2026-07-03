@@ -4,11 +4,12 @@ export default function StartScreen({ onStart }) {
       <h1>2107</h1>
 
       <p>
-        Uma pequena aventura sobre coragem, amor e tudo que eu admiro em você.
+        Uma aventura feita de coragem, carinho e pequenos detalhes que lembram
+        tudo que eu admiro em voce.
       </p>
 
       <button onClick={onStart} className="primary-button">
-        Começar
+        Comecar aventura
       </button>
     </section>
   );

@@ -18,8 +18,8 @@ export default function CatGame({ onComplete }) {
 
     const config = {
       type: Phaser.AUTO,
-      width: 800,
-      height: 600,
+      width: 1600,
+      height: 720,
       parent: gameRef.current,
       physics: {
         default: "arcade",
