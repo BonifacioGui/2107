@@ -18,12 +18,14 @@ export default function BatmanGame({ onComplete }) {
 
     const config = {
       type: Phaser.AUTO,
-      width: 800,
-      height: 600,
+      width: 1600,
+      height: 720,
       parent: gameRef.current,
+      backgroundColor: "#050713",
       physics: {
         default: "arcade",
         arcade: {
+          gravity: { y: 900 },
           debug: false,
         },
       },
@@ -31,6 +33,11 @@ export default function BatmanGame({ onComplete }) {
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
+      },
+      render: {
+        antialias: false,
+        pixelArt: true,
+        roundPixels: true,
       },
     };
 
