@@ -6,6 +6,8 @@ import {
 } from "./batman/background";
 import { criarPlataformas } from "./batman/platforms";
 
+const BATMAN_WORLD_WIDTH = 4200;
+
 const RECOMPENSAS_BATMAN = [
   {
     id: "trajetoria",
@@ -104,10 +106,10 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.load.spritesheet(
       "jokerBoss",
-      "/assets/characters/joker-spritesheet-fixed-v2.png",
+      "/assets/characters/joker-user-spritesheet.png",
       {
-        frameWidth: 144,
-        frameHeight: 144,
+        frameWidth: 96,
+        frameHeight: 96,
       }
     );
 
@@ -115,13 +117,17 @@ export default class BatmanScene extends Phaser.Scene {
     this.load.image("rooftopGround", "/assets/platforms/rooftop-ground.png");
 
     this.load.image("gothamExit", "/assets/objects/gotham-exit.png");
+    this.load.image("jokerPadlockClosed", "/assets/objects/joker-padlock-closed.png");
+    this.load.image("jokerPadlockBroken", "/assets/objects/joker-padlock-broken.png");
+    this.load.image("checkpointBatOff", "/assets/objects/checkpoint-batsignal-off.png");
+    this.load.image("checkpointBatActive", "/assets/objects/checkpoint-batsignal-active.png");
 
     this.load.spritesheet(
       "batmanHero",
-      "/assets/characters/batman-spritesheet.png",
+      "/assets/characters/batman-lego-spritesheet.png",
       {
-        frameWidth: 128,
-        frameHeight: 128,
+        frameWidth: 96,
+        frameHeight: 96,
       }
     );
 
@@ -146,11 +152,15 @@ export default class BatmanScene extends Phaser.Scene {
 
   create() {
     this.largura = this.scale.width || DEFAULT_WIDTH;
+    this.viewportWidth = this.largura;
     this.altura = this.scale.height || DEFAULT_HEIGHT;
+    this.worldWidth = Math.max(BATMAN_WORLD_WIDTH, this.viewportWidth * 2.6);
     this.chaoY = this.altura - 48;
 
     this.cameras.main.setBackgroundColor("#050713");
-    this.physics.world.setBounds(0, 0, this.largura, this.altura);
+    this.cameras.main.setBounds(0, 0, this.worldWidth, this.altura);
+    this.cameras.main.setRoundPixels(true);
+    this.physics.world.setBounds(0, 0, this.worldWidth, this.altura);
 
     this.mobileInput = {
       left: false,
@@ -163,6 +173,7 @@ export default class BatmanScene extends Phaser.Scene {
     this.ultimoToqueMedo = 0;
     this.estaMachucado = false;
     this.estaAtacando = false;
+    this.direcaoBatman = 1;
     this.ultimoAtaque = -9999;
     this.recargaAtaque = 520;
     this.maxVidas = 3;
@@ -174,6 +185,37 @@ export default class BatmanScene extends Phaser.Scene {
     this.alcanceAcertoBatarangue = 76;
     this.alcanceAssistenciaBatarangue = 620;
     this.memoriaAtual = 0;
+    this.medosDerrotados = 0;
+    this.danosRecebidos = 0;
+    this.tempoInicio = this.time.now;
+    this.checkpoint = { x: 90, y: this.chaoY - 70, nome: "Inicio" };
+    this.trechosNarrativos = [
+      {
+        x: 260,
+        visto: false,
+        texto: "Gotham esta escura. Mas algumas luzes ainda guiam o caminho.",
+      },
+      {
+        x: 980,
+        visto: false,
+        texto: "O medo aparece. Ele assusta, mas nao decide por ela.",
+      },
+      {
+        x: 1550,
+        visto: false,
+        texto: "Algumas barreiras so abrem quando voce aperta X na hora certa.",
+      },
+      {
+        x: 2500,
+        visto: false,
+        texto: "Agora os telhados sobem. Um passo de cada vez tambem e vitoria.",
+      },
+      {
+        x: 3450,
+        visto: false,
+        texto: "Voce reuniu tudo que precisava. O portal so espera o ultimo medo cair.",
+      },
+    ];
     Phaser.Math.RND.sow([`${Date.now()}-${Math.random()}`]);
 
     criarCenarioGotham(this);
@@ -191,13 +233,14 @@ export default class BatmanScene extends Phaser.Scene {
         shadow: { offsetX: 0, offsetY: 4, color: "#000000", blur: 8, fill: true },
       })
       .setOrigin(0.5)
-      .setDepth(100);
+      .setDepth(100)
+      .setScrollFactor(0);
 
     this.objetivoFaseText = this.add
       .text(
         this.largura / 2,
         84,
-        "Colete os simbolos de coragem. Depois, prepare o batarangue para o que vem.",
+        "Colete os simbolos de coragem. Aperte X para lancar o simbolo do Batman.",
         {
           fontSize: "21px",
           color: "#e6ecff",
@@ -208,13 +251,16 @@ export default class BatmanScene extends Phaser.Scene {
         }
       )
       .setOrigin(0.5)
-      .setDepth(100);
+      .setDepth(100)
+      .setScrollFactor(0);
 
     criarPlataformas(this);
     this.criarAnimacoesHeroi();
     this.criarHeroi();
     this.criarSimbolos();
     this.criarMedos();
+    this.criarBarreiras();
+    this.criarCheckpoints();
     this.criarFinalDaFase();
     this.prepararTrilhaGotham();
 
@@ -244,7 +290,8 @@ export default class BatmanScene extends Phaser.Scene {
         stroke: "#050713",
         strokeThickness: 4,
       })
-      .setDepth(100);
+      .setDepth(100)
+      .setScrollFactor(0);
 
     this.vidasText = this.add
       .text(34, 66, this.formatarVidas(), {
@@ -254,7 +301,8 @@ export default class BatmanScene extends Phaser.Scene {
         stroke: "#050713",
         strokeThickness: 4,
       })
-      .setDepth(100);
+      .setDepth(100)
+      .setScrollFactor(0);
 
     this.bossVidaText = this.add
       .text(this.largura - 34, 34, "Coringa: 5/5", {
@@ -265,17 +313,20 @@ export default class BatmanScene extends Phaser.Scene {
         strokeThickness: 4,
       })
       .setOrigin(1, 0)
-      .setDepth(100);
+      .setDepth(100)
+      .setScrollFactor(0);
 
     this.bossBarBg = this.add
       .rectangle(this.largura - 34, 70, 180, 10, 0xffffff, 0.16)
       .setOrigin(1, 0)
-      .setDepth(100);
+      .setDepth(100)
+      .setScrollFactor(0);
 
     this.bossBarFill = this.add
       .rectangle(this.largura - 34, 70, 180, 10, 0xff5d8f, 0.92)
       .setOrigin(1, 0)
-      .setDepth(101);
+      .setDepth(101)
+      .setScrollFactor(0);
 
     this.bossVidaText.setVisible(false);
     this.bossBarBg.setVisible(false);
@@ -285,7 +336,8 @@ export default class BatmanScene extends Phaser.Scene {
       .rectangle(this.largura / 2, 126, 760, 44, 0x050713, 0.72)
       .setStrokeStyle(1, 0xf5c542, 0.35)
       .setVisible(false)
-      .setDepth(99);
+      .setDepth(99)
+      .setScrollFactor(0);
 
     this.feedbackText = this.add
       .text(this.largura / 2, 126, "", {
@@ -295,7 +347,8 @@ export default class BatmanScene extends Phaser.Scene {
         align: "center",
       })
       .setOrigin(0.5)
-      .setDepth(100);
+      .setDepth(100)
+      .setScrollFactor(0);
 
     this.mensagem = this.add
       .text(this.largura / 2, this.altura / 2, "", {
@@ -308,25 +361,29 @@ export default class BatmanScene extends Phaser.Scene {
         wordWrap: { width: Math.min(950, this.largura - 160) },
       })
       .setOrigin(0.5)
-      .setDepth(100);
+      .setDepth(100)
+      .setScrollFactor(0);
 
     this.itemCardBox = this.add
       .rectangle(this.largura / 2, this.altura - 102, 760, 126, 0x050713, 0.84)
       .setStrokeStyle(1, 0xf5c542, 0.46)
       .setVisible(false)
-      .setDepth(104);
+      .setDepth(104)
+      .setScrollFactor(0);
 
     this.itemCardPhotoFrame = this.add
       .rectangle(this.largura / 2 - 350, this.altura - 102, 152, 100, 0xf7f1df, 0.96)
       .setStrokeStyle(2, 0xf5c542, 0.6)
       .setVisible(false)
-      .setDepth(105);
+      .setDepth(105)
+      .setScrollFactor(0);
 
     this.itemCardPhoto = this.add
       .image(this.largura / 2 - 350, this.altura - 102, RECOMPENSAS_BATMAN[0].key)
       .setDisplaySize(138, 86)
       .setVisible(false)
-      .setDepth(106);
+      .setDepth(106)
+      .setScrollFactor(0);
 
     this.itemCardKicker = this.add
       .text(this.largura / 2, this.altura - 136, "", {
@@ -337,7 +394,8 @@ export default class BatmanScene extends Phaser.Scene {
         align: "center",
       })
       .setOrigin(0.5)
-      .setDepth(106);
+      .setDepth(106)
+      .setScrollFactor(0);
 
     this.itemCardTitle = this.add
       .text(this.largura / 2, this.altura - 108, "", {
@@ -348,7 +406,8 @@ export default class BatmanScene extends Phaser.Scene {
         align: "center",
       })
       .setOrigin(0.5)
-      .setDepth(105);
+      .setDepth(105)
+      .setScrollFactor(0);
 
     this.itemCardText = this.add
       .text(this.largura / 2, this.altura - 76, "", {
@@ -359,10 +418,20 @@ export default class BatmanScene extends Phaser.Scene {
         wordWrap: { width: 650 },
       })
       .setOrigin(0.5)
-      .setDepth(105);
+      .setDepth(105)
+      .setScrollFactor(0);
 
     this.physics.add.collider(this.player, this.plataformas);
+    if (this.plataformasMoveis) {
+      this.physics.add.collider(this.player, this.plataformasMoveis);
+    }
+    if (this.barreiras) {
+      this.physics.add.collider(this.player, this.barreiras);
+    }
     this.physics.add.collider(this.sombras, this.plataformas);
+    if (this.plataformasMoveis) {
+      this.physics.add.collider(this.sombras, this.plataformasMoveis);
+    }
 
     this.physics.add.overlap(
       this.player,
@@ -389,6 +458,14 @@ export default class BatmanScene extends Phaser.Scene {
     );
 
     this.physics.add.overlap(
+      this.player,
+      this.checkpoints,
+      this.ativarCheckpoint,
+      null,
+      this
+    );
+
+    this.physics.add.overlap(
       this.batarangues,
       this.sombras,
       this.acertarMedo,
@@ -396,14 +473,27 @@ export default class BatmanScene extends Phaser.Scene {
       this
     );
 
+    this.physics.add.overlap(
+      this.batarangues,
+      this.barreiras,
+      this.acertarBarreira,
+      null,
+      this
+    );
+
     if (this.deveExibirControlesMobile()) {
       this.criarControlesMobile();
     }
+
+    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+    this.cameras.main.setDeadzone(300, 170);
   }
 
   update(time) {
     atualizarCenarioGotham(this);
     this.atualizarAtmosferaHeroica(time);
+    this.atualizarTrechosNarrativos();
+    this.atualizarPortalFinal(time);
     this.atualizarBatarangues();
     this.atualizarAcertosBatarangues();
     this.atualizarColetaAssistida();
@@ -444,10 +534,12 @@ export default class BatmanScene extends Phaser.Scene {
 
     if (esquerda) {
       this.player.body.setVelocityX(-velocidade);
-      this.player.setFlipX(true);
+      this.direcaoBatman = -1;
+      this.player.setFlipX(false);
     } else if (direita) {
       this.player.body.setVelocityX(velocidade);
-      this.player.setFlipX(false);
+      this.direcaoBatman = 1;
+      this.player.setFlipX(true);
     }
 
     if (pulando && this.player.body.blocked.down) {
@@ -480,10 +572,7 @@ export default class BatmanScene extends Phaser.Scene {
   criarAnimacoesHeroi() {
     this.criarAnimacaoSeNaoExistir({
       key: "batman-idle",
-      frames: this.anims.generateFrameNumbers("batmanHero", {
-        start: 0,
-        end: 1,
-      }),
+      frames: [{ key: "batmanHero", frame: 1 }],
       frameRate: 2,
       repeat: -1,
     });
@@ -492,7 +581,7 @@ export default class BatmanScene extends Phaser.Scene {
       key: "batman-walk",
       frames: this.anims.generateFrameNumbers("batmanHero", {
         start: 2,
-        end: 7,
+        end: 5,
       }),
       frameRate: 8,
       repeat: -1,
@@ -501,8 +590,8 @@ export default class BatmanScene extends Phaser.Scene {
     this.criarAnimacaoSeNaoExistir({
       key: "batman-jump",
       frames: this.anims.generateFrameNumbers("batmanHero", {
-        start: 8,
-        end: 9,
+        start: 6,
+        end: 7,
       }),
       frameRate: 3,
       repeat: -1,
@@ -511,8 +600,8 @@ export default class BatmanScene extends Phaser.Scene {
     this.criarAnimacaoSeNaoExistir({
       key: "batman-hurt",
       frames: this.anims.generateFrameNumbers("batmanHero", {
-        start: 10,
-        end: 10,
+        start: 8,
+        end: 8,
       }),
       frameRate: 1,
       repeat: 0,
@@ -520,8 +609,11 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.criarAnimacaoSeNaoExistir({
       key: "batman-throw",
-      frames: [{ key: "batmanThrow", frame: 0 }],
-      frameRate: 1,
+      frames: this.anims.generateFrameNumbers("batmanHero", {
+        start: 9,
+        end: 10,
+      }),
+      frameRate: 7,
       repeat: 0,
     });
 
@@ -616,24 +708,12 @@ export default class BatmanScene extends Phaser.Scene {
       .setDepth(-21)
       .setBlendMode(Phaser.BlendModes.ADD);
 
-    const letra = this.add
-      .text(this.largura * 0.22, 110, "L", {
-        fontSize: "34px",
-        color: "#ffe08a",
-        fontFamily: "Trebuchet MS",
-        fontStyle: "bold",
-        stroke: "#050713",
-        strokeThickness: 4,
-      })
-      .setOrigin(0.5)
-      .setDepth(-20);
+    this.sinalHeroico = [feixe, sinal];
 
-    this.sinalHeroico = [feixe, sinal, letra];
-
-    for (let i = 0; i < 26; i++) {
+    for (let i = 0; i < 76; i++) {
       const janela = this.add
         .rectangle(
-          Phaser.Math.Between(40, this.largura - 40),
+          Phaser.Math.Between(40, this.worldWidth - 40),
           Phaser.Math.Between(220, this.altura - 160),
           Phaser.Math.Between(8, 18),
           Phaser.Math.Between(10, 28),
@@ -669,6 +749,173 @@ export default class BatmanScene extends Phaser.Scene {
         memoria.container.y =
           memoria.baseY + Math.sin(time * 0.0012 + index * 0.7) * 3;
       });
+    }
+  }
+
+  atualizarTrechosNarrativos() {
+    if (!this.player || this.faseConcluida) {
+      return;
+    }
+
+    this.trechosNarrativos.forEach((trecho) => {
+      if (trecho.visto || this.player.x < trecho.x) {
+        return;
+      }
+
+      trecho.visto = true;
+      this.mostrarFeedback(trecho.texto, "#c7d2ff");
+    });
+  }
+
+  criarBarreiras() {
+    this.barreiras = this.physics.add.staticGroup();
+
+    [
+      { x: 1510, y: this.chaoY - 66, nome: "Cadeado do Coringa" },
+      { x: 2480, y: this.chaoY - 154, nome: "Cadeado do Coringa" },
+    ].forEach((barreira) => {
+      const visual = this.add
+        .image(barreira.x, barreira.y, "jokerPadlockClosed")
+        .setDisplaySize(76, 96)
+        .setDepth(24);
+      const brilho = this.add
+        .circle(barreira.x, barreira.y, 62, 0x7d35ff, 0.12)
+        .setDepth(20)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const dica = this.add.container(barreira.x + 48, barreira.y - 58).setDepth(25);
+      const tecla = this.add
+        .rectangle(0, 0, 34, 28, 0x050713, 0.82)
+        .setStrokeStyle(2, 0xf5c542, 0.65);
+      const teclaTexto = this.add
+        .text(0, 0, "X", {
+          fontSize: "17px",
+          color: "#ffe08a",
+          fontFamily: "Trebuchet MS",
+          fontStyle: "bold",
+          stroke: "#050713",
+          strokeThickness: 3,
+        })
+        .setOrigin(0.5);
+      dica.add([tecla, teclaTexto]);
+
+      const zona = this.add.zone(barreira.x, barreira.y, 58, 126);
+
+      this.physics.add.existing(zona, true);
+      zona.nome = barreira.nome;
+      zona.visual = visual;
+      zona.partes = [visual, brilho, dica];
+      this.barreiras.add(zona);
+
+      this.tweens.add({
+        targets: brilho,
+        alpha: 0.22,
+        scaleX: 1.12,
+        scaleY: 1.12,
+        duration: 820,
+        yoyo: true,
+        repeat: -1,
+      });
+    });
+  }
+
+  acertarBarreira(batarangue, barreira) {
+    if (!barreira?.active || batarangue?.jaAcertou) {
+      return;
+    }
+
+    if (batarangue?.active) {
+      batarangue.jaAcertou = true;
+      batarangue.destroy();
+    }
+
+    if (barreira.visual?.active) {
+      barreira.visual.setTexture("jokerPadlockBroken").setDisplaySize(78, 102);
+    }
+
+    barreira.partes?.forEach((parte) => {
+      this.tweens.add({
+        targets: parte,
+        alpha: 0,
+        scaleX: 1.4,
+        scaleY: 1.4,
+        duration: 260,
+        onComplete: () => parte.destroy(),
+      });
+    });
+
+    this.criarEfeitoColeta(barreira.x, barreira.y);
+    this.mostrarFeedback(`${barreira.nome} abriu. O caminho respondeu.`, "#ffd166");
+    barreira.destroy();
+  }
+
+  criarCheckpoints() {
+    this.checkpoints = this.physics.add.group({
+      allowGravity: false,
+      immovable: true,
+    });
+
+    [
+      { x: 900, y: this.chaoY - 72, nome: "Checkpoint 1" },
+      { x: 1780, y: this.chaoY - 72, nome: "Checkpoint 2" },
+      { x: 3000, y: this.chaoY - 72, nome: "Checkpoint 3" },
+    ].forEach((checkpoint) => {
+      const zona = this.add.zone(checkpoint.x, checkpoint.y, 104, 132);
+      this.physics.add.existing(zona);
+      zona.body.setAllowGravity(false);
+      zona.body.setImmovable(true);
+      zona.nome = checkpoint.nome;
+      zona.alvoX = checkpoint.x;
+      zona.alvoY = this.chaoY - 70;
+      zona.ativado = false;
+
+      const luz = this.add
+        .circle(checkpoint.x, this.chaoY - 52, 54, 0x6ee7b7, 0.1)
+        .setDepth(18)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      const base = this.add
+        .ellipse(checkpoint.x, this.chaoY - 24, 104, 18, 0x6ee7b7, 0.22)
+        .setStrokeStyle(2, 0xbff5e8, 0.5)
+        .setDepth(19);
+      const visual = this.add
+        .image(checkpoint.x, this.chaoY - 66, "checkpointBatOff")
+        .setDisplaySize(112, 74)
+        .setDepth(20);
+
+      zona.visual = visual;
+      zona.base = base;
+      zona.luz = luz;
+      zona.partes = [base, luz, visual];
+      this.checkpoints.add(zona);
+
+      this.tweens.add({
+        targets: luz,
+        scaleX: 1.16,
+        scaleY: 1.16,
+        alpha: 0.16,
+        duration: 980,
+        yoyo: true,
+        repeat: -1,
+      });
+    });
+  }
+
+  ativarCheckpoint(player, checkpoint) {
+    if (!checkpoint?.active) {
+      return;
+    }
+
+    this.checkpoint = {
+      x: checkpoint.alvoX,
+      y: checkpoint.alvoY,
+      nome: checkpoint.nome,
+    };
+
+    if (!checkpoint.ativado) {
+      checkpoint.ativado = true;
+      checkpoint.visual?.setTexture("checkpointBatActive").setDisplaySize(118, 84);
+      checkpoint.base?.setFillStyle(0xf5c542, 0.24);
+      checkpoint.luz?.setFillStyle(0xf5c542, 0.16);
+      this.mostrarFeedback("Ponto seguro aceso. Daqui ela continua.", "#bff5e8");
     }
   }
 
@@ -915,14 +1162,24 @@ export default class BatmanScene extends Phaser.Scene {
     this.ultimoAtaque = agora;
     this.estaAtacando = true;
 
-    const direcao = this.player.flipX ? -1 : 1;
+    const esquerdaPressionada = this.cursors.left.isDown || this.mobileInput.left;
+    const direitaPressionada = this.cursors.right.isDown || this.mobileInput.right;
+
+    if (direitaPressionada && !esquerdaPressionada) {
+      this.direcaoBatman = 1;
+    } else if (esquerdaPressionada && !direitaPressionada) {
+      this.direcaoBatman = -1;
+    }
+
+    const direcao = this.direcaoBatman || 1;
+    const flipVisualAtaque = direcao < 0;
 
     this.player.setVisible(false);
 
     this.batmanAtaque = this.add
-      .sprite(this.player.x, this.player.y, "batmanThrow", 0)
-      .setDisplaySize(88, 88)
-      .setFlipX(direcao === -1)
+      .sprite(this.player.x, this.player.y, "batmanHero", 9)
+      .setDisplaySize(98, 98)
+      .setFlipX(flipVisualAtaque)
       .setDepth(32);
 
     this.batmanAtaque.anims.play("batman-throw", true);
@@ -946,7 +1203,7 @@ export default class BatmanScene extends Phaser.Scene {
     }
 
     this.batmanAtaque.setPosition(this.player.x, this.player.y);
-    this.batmanAtaque.setFlipX(this.player.flipX);
+    this.batmanAtaque.setFlipX((this.direcaoBatman || 1) < 0);
   }
 
   finalizarAtaqueVisual() {
@@ -1008,7 +1265,7 @@ export default class BatmanScene extends Phaser.Scene {
       batarangue.body.setAllowGravity(false);
       batarangue.body.setVelocity(batarangue.direcao * 760, velocidadeY);
 
-      if (batarangue.x < -120 || batarangue.x > this.largura + 120) {
+      if (batarangue.x < -120 || batarangue.x > this.worldWidth + 120) {
         batarangue.destroy();
       }
     });
@@ -1024,6 +1281,12 @@ export default class BatmanScene extends Phaser.Scene {
     if (this.sombras) {
       candidatos.push(
         ...this.sombras.getChildren().filter((sombra) => sombra?.active)
+      );
+    }
+
+    if (this.barreiras) {
+      candidatos.push(
+        ...this.barreiras.getChildren().filter((barreira) => barreira?.active)
       );
     }
 
@@ -1106,7 +1369,7 @@ export default class BatmanScene extends Phaser.Scene {
     this.mostrarTextoFlutuante(sombra.x, sombra.y - 36, "DANO", "#ffe08a");
 
     if (sombra.vida > 0) {
-      this.mostrarFeedback("O batarangue deu dano no medo.", "#f5c542");
+      this.mostrarFeedback("O ataque deu dano no medo.", "#f5c542");
       return;
     }
 
@@ -1114,6 +1377,7 @@ export default class BatmanScene extends Phaser.Scene {
       sombra.partes.forEach((parte) => parte.destroy());
     }
 
+    this.medosDerrotados += 1;
     sombra.destroy();
 
     if (sombra.tipo === "agulha") {
@@ -1123,7 +1387,7 @@ export default class BatmanScene extends Phaser.Scene {
       );
       this.mostrarTextoFlutuante(sombra.x, sombra.y - 64, "CORAGEM", "#ffd166");
     } else {
-      this.mostrarFeedback("O batarangue venceu um medo.", "#f5c542");
+      this.mostrarFeedback("O ataque venceu um medo.", "#f5c542");
     }
 
     this.time.delayedCall(900, () => {
@@ -1177,7 +1441,7 @@ export default class BatmanScene extends Phaser.Scene {
       return;
     }
 
-    this.mostrarFeedback("Batarangue acertou o Coringa!", "#ffd166");
+    this.mostrarFeedback("Ataque acertou o Coringa!", "#ffd166");
   }
 
   mostrarTextoFlutuante(x, y, texto, cor) {
@@ -1234,6 +1498,7 @@ export default class BatmanScene extends Phaser.Scene {
     });
 
     this.mostrarFeedback("Coringa derrotado. A saida abriu!", "#ffd166");
+    this.abrirPortalFinal();
     this.tocarAcordeRecompensa();
     this.time.delayedCall(360, () => {
       this.mostrarCardItem({
@@ -1244,16 +1509,52 @@ export default class BatmanScene extends Phaser.Scene {
     });
   }
 
+  abrirPortalFinal() {
+    if (!this.portalFinal) {
+      return;
+    }
+
+    this.portalFinal.aberto = true;
+    this.portalFinal.clearTint();
+
+    for (let i = 0; i < 18; i++) {
+      const brilho = this.add
+        .circle(
+          this.portalFinal.x + Phaser.Math.Between(-42, 42),
+          this.portalFinal.y + Phaser.Math.Between(-58, 58),
+          Phaser.Math.Between(3, 7),
+          0xf5c542,
+          0.72
+        )
+        .setDepth(44)
+        .setBlendMode(Phaser.BlendModes.ADD);
+
+      this.tweens.add({
+        targets: brilho,
+        x: brilho.x + Phaser.Math.Between(-70, 70),
+        y: brilho.y + Phaser.Math.Between(-80, 40),
+        alpha: 0,
+        scale: 0.2,
+        duration: Phaser.Math.Between(620, 940),
+        onComplete: () => brilho.destroy(),
+      });
+    }
+
+    this.mostrarFeedback("Os simbolos responderam. A saida se abriu.", "#ffe08a");
+  }
+
   criarHeroi() {
     this.player = this.physics.add.sprite(90, this.chaoY - 70, "batmanHero", 0);
 
-    this.player.setDisplaySize(80, 80);
+    this.player.setDisplaySize(88, 88);
+    this.direcaoBatman = 1;
+    this.player.setFlipX(true);
     this.player.setCollideWorldBounds(true);
     this.player.setBounce(0.03);
     this.player.setDepth(30);
 
-    this.player.body.setSize(42, 62);
-    this.player.body.setOffset(43, 60);
+    this.player.body.setSize(34, 58);
+    this.player.body.setOffset(31, 34);
 
     this.tocarAnimacao("batman-idle");
   }
@@ -1312,33 +1613,43 @@ export default class BatmanScene extends Phaser.Scene {
       },
     ];
 
-    const posicoesBase = [
-      { x: this.largura * 0.16, y: this.chaoY - 72 },
-      { x: this.largura * 0.22, y: this.chaoY - 168 },
-      { x: this.largura * 0.34, y: this.chaoY - 168 },
-      { x: this.largura * 0.45, y: this.chaoY - 262 },
-      { x: this.largura * 0.56, y: this.chaoY - 262 },
-      { x: this.largura * 0.66, y: this.chaoY - 162 },
-      { x: this.largura * 0.75, y: this.chaoY - 162 },
-      { x: this.largura * 0.84, y: this.chaoY - 292 },
-      { x: this.largura * 0.92, y: this.chaoY - 78 },
-      { x: this.largura * 0.96, y: this.chaoY - 292 },
+    const posicoesPorTrecho = [
+      [
+        { x: 420, y: this.chaoY - 88 },
+        { x: 540, y: this.chaoY - 178 },
+        { x: 780, y: this.chaoY - 244 },
+      ],
+      [
+        { x: 1080, y: this.chaoY - 178 },
+        { x: 1260, y: this.chaoY - 88 },
+        { x: 1380, y: this.chaoY - 178 },
+      ],
+      [
+        { x: 1740, y: this.chaoY - 286 },
+        { x: 2060, y: this.chaoY - 378 },
+        { x: 2280, y: this.chaoY - 310 },
+      ],
+      [
+        { x: 2680, y: this.chaoY - 258 },
+        { x: 2910, y: this.chaoY - 192 },
+        { x: 3090, y: this.chaoY - 282 },
+      ],
+      [
+        { x: 3460, y: this.chaoY - 322 },
+        { x: 3680, y: this.chaoY - 228 },
+        { x: 3920, y: this.chaoY - 336 },
+      ],
     ];
 
-    const posicoes = Phaser.Utils.Array.Shuffle(posicoesBase)
-      .slice(0, simbolos.length)
-      .map((pos) => ({
-        x: Phaser.Math.Clamp(
-          pos.x + Phaser.Math.Between(-36, 36),
-          86,
-          this.largura - 70
-        ),
-        y: Phaser.Math.Clamp(
-          pos.y + Phaser.Math.Between(-18, 18),
-          124,
-          this.chaoY - 70
-        ),
-      }));
+    const posicoes = simbolos.map((_, index) => {
+      const opcoes = Phaser.Utils.Array.Shuffle([...posicoesPorTrecho[index]]);
+      const pos = opcoes[0];
+
+      return {
+        x: Phaser.Math.Clamp(pos.x + Phaser.Math.Between(-34, 34), 90, this.worldWidth - 120),
+        y: Phaser.Math.Clamp(pos.y + Phaser.Math.Between(-16, 16), 118, this.chaoY - 70),
+      };
+    });
 
     simbolos.forEach(({ nome, chave, mensagem, titulo, descricao, recompensa }, index) => {
       const { x, y } = posicoes[index];
@@ -1396,35 +1707,44 @@ export default class BatmanScene extends Phaser.Scene {
     });
 
     this.criarMedo({
-      x: this.largura * 0.36,
+      x: 1120,
       y: this.chaoY - 52,
       chave: "enemyMedo",
       tipo: "medo",
-      alcance: 70,
+      alcance: 120,
       tamanho: 72,
     });
 
     this.criarMedo({
-      x: this.largura * 0.56,
-      y: this.chaoY - 258,
+      x: 2140,
+      y: this.chaoY - 300,
       chave: "enemyAgulha",
       tipo: "agulha",
-      alcance: 90,
+      alcance: 150,
       tamanho: 76,
     });
 
     this.criarMedo({
-      x: this.largura * 0.78,
-      y: this.chaoY - 154,
+      x: 3080,
+      y: this.chaoY - 150,
       chave: "enemyReceio",
       tipo: "receio",
-      alcance: 80,
+      alcance: 170,
       tamanho: 72,
+    });
+
+    this.criarMedo({
+      x: 3500,
+      y: this.chaoY - 216,
+      chave: "enemyMedo",
+      tipo: "medo",
+      alcance: 130,
+      tamanho: 70,
     });
   }
 
   criarCoringa() {
-    const x = this.largura * 0.9;
+    const x = this.worldWidth - 260;
     const y = this.chaoY - 78;
 
     if (this.chefeCoringa?.active) {
@@ -1433,13 +1753,13 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.chefeCoringa = this.physics.add.sprite(x, y, "jokerBoss");
 
-    this.chefeCoringa.setDisplaySize(118, 118);
-    this.chefeCoringa.setDepth(28);
+    this.chefeCoringa.setDisplaySize(112, 112);
+    this.chefeCoringa.setDepth(62);
     this.chefeCoringa.anims.play("joker-idle-v2", true);
 
     this.chefeCoringa.body.setAllowGravity(false);
     this.chefeCoringa.body.setImmovable(true);
-    this.chefeCoringa.body.setSize(58, 78, true);
+    this.chefeCoringa.body.setSize(44, 68, true);
 
     this.chefeCoringa.baseX = x;
     this.chefeCoringa.alcance = 88;
@@ -1450,7 +1770,7 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.coringaAura = this.add
       .circle(x, y, 58, 0xff2f7d, 0.1)
-      .setDepth(18);
+      .setDepth(58);
 
     this.coringaLabel = this.add
       .text(x, y - 72, "Coringa", {
@@ -1459,7 +1779,7 @@ export default class BatmanScene extends Phaser.Scene {
         fontFamily: "Trebuchet MS",
       })
       .setOrigin(0.5)
-      .setDepth(45);
+      .setDepth(63);
 
     this.tweens.add({
       targets: this.coringaAura,
@@ -1505,17 +1825,22 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.faseDoBoss = true;
     this.ultimoDanoCoringa = -9999;
+    this.checkpoint = {
+      x: this.worldWidth - 760,
+      y: this.chaoY - 70,
+      nome: "Arena do Coringa",
+    };
 
     this.limparMedosDaFase();
 
-    this.player.setPosition(90, this.chaoY - 70);
+    this.player.setPosition(this.checkpoint.x, this.checkpoint.y);
     this.player.body.setVelocity(0);
     this.player.setVisible(true);
     this.tocarAnimacao("batman-idle");
 
     this.tituloFaseText.setText("Fase 1.2: O Boss da Coragem");
     this.objetivoFaseText.setText(
-      "Sem itens agora: desvie do Coringa, mantenha distancia e acerte batarangues."
+      "Sem itens agora: desvie do Coringa, mantenha distancia e aperte X para atacar."
     );
 
     this.bossVidaText.setVisible(true);
@@ -1560,9 +1885,12 @@ export default class BatmanScene extends Phaser.Scene {
     sombra.body.setSize(42, 42, true);
 
     sombra.baseX = x;
+    sombra.baseY = y;
     sombra.alcance = alcance;
     sombra.direcao = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
-    sombra.velocidade = Phaser.Math.Between(18, 34);
+    sombra.velocidade = tipo === "receio" ? 46 : Phaser.Math.Between(24, 42);
+    sombra.amplitudeY = tipo === "agulha" ? Phaser.Math.Between(54, 86) : 0;
+    sombra.offsetMovimento = Phaser.Math.FloatBetween(0, Math.PI * 2);
     sombra.proximaMudanca = this.time.now + Phaser.Math.Between(900, 1800);
     sombra.vida = 1;
     sombra.tipo = tipo;
@@ -1601,24 +1929,59 @@ export default class BatmanScene extends Phaser.Scene {
         return;
       }
 
-      if (time > sombra.proximaMudanca) {
+      if (sombra.tipo === "agulha") {
+        sombra.y =
+          sombra.baseY + Math.sin(time * 0.0022 + sombra.offsetMovimento) * sombra.amplitudeY;
+        sombra.body.setVelocityX(sombra.direcao * (sombra.velocidade * 0.7));
+
+        if (sombra.x <= sombra.baseX - sombra.alcance) {
+          sombra.direcao = 1;
+        }
+
+        if (sombra.x >= sombra.baseX + sombra.alcance) {
+          sombra.direcao = -1;
+        }
+      } else if (sombra.tipo === "receio") {
+        const distanciaJogador = Phaser.Math.Distance.Between(
+          this.player.x,
+          this.player.y,
+          sombra.x,
+          sombra.y
+        );
+        const acordado = distanciaJogador < 360;
+        const alpha = acordado ? 0.92 : 0.32 + Math.sin(time * 0.004) * 0.18;
+
+        sombra.setAlpha(alpha);
+        sombra.body.setVelocityX(acordado ? sombra.direcao * sombra.velocidade : 0);
+
+        if (time > sombra.proximaMudanca || sombra.x <= sombra.baseX - sombra.alcance || sombra.x >= sombra.baseX + sombra.alcance) {
+          sombra.direcao *= -1;
+          sombra.proximaMudanca = time + Phaser.Math.Between(850, 1500);
+        }
+      } else if (time > sombra.proximaMudanca) {
         const opcoes = [-1, -1, 0, 1, 1];
         sombra.direcao = Phaser.Utils.Array.GetRandom(opcoes);
         sombra.proximaMudanca = time + Phaser.Math.Between(900, 1800);
-      }
+        sombra.body.setVelocityX(sombra.direcao * sombra.velocidade);
+      } else {
+        if (sombra.x <= sombra.baseX - sombra.alcance) {
+          sombra.direcao = 1;
+        }
 
-      if (sombra.x <= sombra.baseX - sombra.alcance) {
-        sombra.direcao = 1;
-      }
+        if (sombra.x >= sombra.baseX + sombra.alcance) {
+          sombra.direcao = -1;
+        }
 
-      if (sombra.x >= sombra.baseX + sombra.alcance) {
-        sombra.direcao = -1;
+        sombra.body.setVelocityX(sombra.direcao * sombra.velocidade);
       }
-
-      sombra.body.setVelocityX(sombra.direcao * sombra.velocidade);
 
       if (sombra.aura) {
         sombra.aura.setPosition(sombra.x, sombra.y);
+        sombra.aura.setAlpha(sombra.tipo === "receio" ? sombra.alpha * 0.11 : sombra.aura.alpha);
+      }
+
+      if (sombra.tipo === "agulha") {
+        sombra.body.updateFromGameObject();
       }
     });
   }
@@ -1661,7 +2024,7 @@ export default class BatmanScene extends Phaser.Scene {
   }
 
   criarFinalDaFase() {
-    const x = this.largura * 0.955;
+    const x = this.worldWidth - 110;
     const y = this.chaoY - 74;
 
     this.portalFinal = this.physics.add.sprite(x, y, "gothamExit");
@@ -1672,14 +2035,55 @@ export default class BatmanScene extends Phaser.Scene {
     this.portalFinal.body.setAllowGravity(false);
     this.portalFinal.body.setImmovable(true);
     this.portalFinal.body.setSize(58, 100, true);
+    this.portalFinal.aberto = false;
+
+    this.portalGlow = this.add
+      .circle(x, y, 82, 0xf5c542, 0.04)
+      .setDepth(13)
+      .setBlendMode(Phaser.BlendModes.ADD);
+
+    this.portalLabel = this.add
+      .text(x, y - 92, "portal selado", {
+        fontSize: "15px",
+        color: "#fff3c4",
+        fontFamily: "Trebuchet MS",
+        stroke: "#050713",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setDepth(30);
 
     this.tweens.add({
-      targets: this.portalFinal,
+      targets: [this.portalFinal, this.portalGlow],
       alpha: 0.72,
       duration: 900,
       yoyo: true,
       repeat: -1,
     });
+  }
+
+  atualizarPortalFinal(time) {
+    if (!this.portalFinal || !this.portalFinal.active) {
+      return;
+    }
+
+    const progresso = this.totalCoragem ? this.coragem / this.totalCoragem : 0;
+    const aberto = this.bossDerrotado;
+    const alphaBase = aberto ? 0.96 : 0.26 + progresso * 0.42;
+    const pulso = Math.sin(time * 0.003) * (aberto ? 0.12 : 0.05);
+
+    this.portalFinal.setAlpha(alphaBase + pulso);
+    this.portalFinal.setTint(aberto ? 0xffffff : 0x8aa0d8);
+
+    if (this.portalGlow) {
+      this.portalGlow.setAlpha((aberto ? 0.24 : 0.06 + progresso * 0.1) + pulso * 0.4);
+      this.portalGlow.setScale(aberto ? 1.1 + Math.sin(time * 0.004) * 0.08 : 0.82 + progresso * 0.18);
+    }
+
+    if (this.portalLabel) {
+      this.portalLabel.setText(aberto ? "portal aberto" : `${this.coragem}/${this.totalCoragem} simbolos`);
+      this.portalLabel.setColor(aberto ? "#ffe08a" : "#c7d2ff");
+    }
   }
 
   mostrarFeedback(texto, cor = "#f5c542") {
@@ -1724,7 +2128,8 @@ export default class BatmanScene extends Phaser.Scene {
       .circle(x, y, 32, 0xffffff, 0.12)
       .setStrokeStyle(2, 0xffffff, 0.35)
       .setInteractive()
-      .setDepth(100);
+      .setDepth(100)
+      .setScrollFactor(0);
 
     const label = this.add
       .text(x, y, texto, {
@@ -1734,7 +2139,8 @@ export default class BatmanScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setInteractive()
-      .setDepth(101);
+      .setDepth(101)
+      .setScrollFactor(0);
 
     const ativar = () => {
       if (direcao === "jump") {
@@ -1924,6 +2330,7 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.ultimoToqueMedo = agora;
     this.vidas = Math.max(0, this.vidas - 1);
+    this.danosRecebidos += 1;
     this.atualizarVidasText();
 
     if (this.estaAtacando) {
@@ -1980,7 +2387,7 @@ export default class BatmanScene extends Phaser.Scene {
       this.estaMachucado = false;
       this.ultimoToqueMedo = this.time.now;
       this.player.setVisible(true);
-      this.player.setPosition(90, this.chaoY - 70);
+      this.player.setPosition(this.checkpoint.x, this.checkpoint.y);
       this.tocarAnimacao("batman-idle");
     });
   }
@@ -1997,7 +2404,7 @@ export default class BatmanScene extends Phaser.Scene {
 
     if (!this.bossDerrotado) {
       this.mostrarFeedback(
-        "Use o batarangue para derrotar o Coringa antes de sair.",
+        "Use X para derrotar o Coringa antes de sair.",
         "#ffd166"
       );
       return;
@@ -2010,8 +2417,12 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.esconderFeedback();
 
+    const tempoSegundos = Math.max(1, Math.floor((this.time.now - this.tempoInicio) / 1000));
+    const minutos = String(Math.floor(tempoSegundos / 60)).padStart(2, "0");
+    const segundos = String(tempoSegundos % 60).padStart(2, "0");
+
     this.mensagem.setText(
-      "Voce atravessou a escuridao.\nReuniu forca, calma, confianca, amor e coragem.\n\nMesmo quando sente medo, voce continua.\nE isso me ensina muito."
+      `Resultado: voce continuou.\n\nSimbolos coletados: ${this.coragem}/${this.totalCoragem}\nMedos enfrentados: ${this.medosDerrotados}\nCoragem mantida: ${this.vidas}/${this.maxVidas}\nTempo: ${minutos}:${segundos}\n\nMesmo quando sente medo, voce segue. E isso me ensina muito.`
     );
 
     this.time.delayedCall(3800, () => {

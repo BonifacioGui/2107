@@ -1,44 +1,50 @@
 export function criarPlataformas(scene) {
   scene.plataformas = scene.physics.add.staticGroup();
+  scene.plataformasMoveis = scene.physics.add.staticGroup();
+
+  const larguraMundo = scene.worldWidth ?? scene.largura;
 
   criarPlataforma(scene, {
-    x: scene.largura / 2,
+    x: larguraMundo / 2,
     y: scene.chaoY,
-    largura: scene.largura + 180,
+    largura: larguraMundo + 220,
     altura: 44,
     tipo: "ground",
   });
 
-  criarPlataforma(scene, {
-    x: scene.largura * 0.2,
-    y: scene.chaoY - 110,
-    largura: 300,
+  [
+    { x: 470, y: scene.chaoY - 112, largura: 280 },
+    { x: 860, y: scene.chaoY - 178, largura: 260 },
+    { x: 1230, y: scene.chaoY - 112, largura: 330 },
+    { x: 1650, y: scene.chaoY - 220, largura: 320 },
+    { x: 2060, y: scene.chaoY - 310, largura: 280 },
+    { x: 2460, y: scene.chaoY - 196, largura: 380 },
+    { x: 2890, y: scene.chaoY - 126, largura: 310 },
+    { x: 3270, y: scene.chaoY - 256, largura: 320 },
+    { x: 3650, y: scene.chaoY - 162, largura: 360 },
+    { x: 3950, y: scene.chaoY - 272, largura: 240 },
+  ].forEach((plataforma) =>
+    criarPlataforma(scene, {
+      ...plataforma,
+      altura: 28,
+      tipo: "platform",
+    })
+  );
+
+  criarPlataformaMovel(scene, {
+    x: 2250,
+    y: scene.chaoY - 246,
+    largura: 190,
     altura: 28,
-    tipo: "platform",
+    movimento: { x: 180, y: 0, duracao: 2300 },
   });
 
-  criarPlataforma(scene, {
-    x: scene.largura * 0.45,
-    y: scene.chaoY - 205,
-    largura: 330,
+  criarPlataformaMovel(scene, {
+    x: 3070,
+    y: scene.chaoY - 206,
+    largura: 180,
     altura: 28,
-    tipo: "platform",
-  });
-
-  criarPlataforma(scene, {
-    x: scene.largura * 0.68,
-    y: scene.chaoY - 105,
-    largura: 340,
-    altura: 28,
-    tipo: "platform",
-  });
-
-  criarPlataforma(scene, {
-    x: scene.largura * 0.86,
-    y: scene.chaoY - 235,
-    largura: 320,
-    altura: 28,
-    tipo: "platform",
+    movimento: { x: 0, y: -92, duracao: 2100 },
   });
 }
 
@@ -135,4 +141,40 @@ function criarPlataformaFallback(scene, { x, y, largura, altura, tipo }) {
   scene.add
     .rectangle(x, superficieY, largura, 4, 0xf5c542, 0.6)
     .setDepth(11);
+}
+
+function criarPlataformaMovel(scene, { x, y, largura, altura, movimento }) {
+  const textura = "rooftopPlatform";
+  const colisor = scene.add.zone(x, y, largura, altura + 10);
+  scene.physics.add.existing(colisor, true);
+  scene.plataformasMoveis.add(colisor);
+
+  const sombra = scene.add
+    .rectangle(x, y + 54, largura, 92, 0x02040a, 0.62)
+    .setDepth(12);
+
+  const plataforma = scene.add
+    .image(x, y + 22, textura)
+    .setDisplaySize(largura, 130)
+    .setDepth(13);
+
+  const brilho = scene.add
+    .rectangle(x, y - altura / 2, largura, 4, 0xf5c542, 0.62)
+    .setDepth(14);
+
+  scene.tweens.add({
+    targets: colisor,
+    x: x + movimento.x,
+    y: y + movimento.y,
+    duration: movimento.duracao,
+    ease: "Sine.easeInOut",
+    yoyo: true,
+    repeat: -1,
+    onUpdate: () => {
+      plataforma.setPosition(colisor.x, colisor.y + 22);
+      sombra.setPosition(colisor.x, colisor.y + 54);
+      brilho.setPosition(colisor.x, colisor.y - altura / 2);
+      colisor.body.updateFromGameObject();
+    },
+  });
 }

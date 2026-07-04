@@ -4,14 +4,16 @@ export function criarCenarioGotham(scene) {
   scene.gothamBackdrop = scene.add
     .image(scene.largura / 2, scene.altura / 2, "gothamBackdrop")
     .setDisplaySize(scene.largura * 1.16, scene.altura * 1.04)
-    .setDepth(-56);
+    .setDepth(-56)
+    .setScrollFactor(0);
 
   scene.gothamSky = scene.add
     .image(scene.largura / 2, scene.altura / 2, "gothamSky")
     .setDisplaySize(scene.largura * 1.08, scene.altura * 1.04)
     .setAlpha(0.16)
     .setTint(0x8da7d8)
-    .setDepth(-50);
+    .setDepth(-50)
+    .setScrollFactor(0);
 
   scene.gothamSkyShade = scene.add
     .rectangle(
@@ -22,25 +24,29 @@ export function criarCenarioGotham(scene) {
       0x02040c,
       0.12
     )
-    .setDepth(-49);
+    .setDepth(-49)
+    .setScrollFactor(0);
 
   scene.gothamMoonGlow = scene.add
     .circle(scene.largura * 0.2, scene.altura * 0.36, 170, 0xb9cfff, 0.08)
-    .setDepth(-48);
+    .setDepth(-48)
+    .setScrollFactor(0);
 
   scene.gothamBuildingsBack = scene.add
     .image(scene.largura / 2, scene.altura + 28, "gothamBuildingsBack")
     .setOrigin(0.5, 1)
     .setDisplaySize(scene.largura * 1.18, scene.altura * 0.66)
     .setAlpha(0.22)
-    .setDepth(-40);
+    .setDepth(-40)
+    .setScrollFactor(0);
 
   scene.gothamBuildingsFront = scene.add
     .image(scene.largura / 2, scene.altura + 42, "gothamBuildingsFront")
     .setOrigin(0.5, 1)
     .setDisplaySize(scene.largura * 1.24, scene.altura * 0.58)
     .setAlpha(0.18)
-    .setDepth(-32);
+    .setDepth(-32)
+    .setScrollFactor(0);
 
   scene.gothamFogBack = scene.add
     .tileSprite(
@@ -52,7 +58,8 @@ export function criarCenarioGotham(scene) {
     )
     .setOrigin(0.5, 1)
     .setAlpha(0.06)
-    .setDepth(-28);
+    .setDepth(-28)
+    .setScrollFactor(0);
 
   scene.gothamFog = scene.add
     .tileSprite(
@@ -64,7 +71,8 @@ export function criarCenarioGotham(scene) {
     )
     .setOrigin(0.5, 1)
     .setAlpha(0.13)
-    .setDepth(-12);
+    .setDepth(-12)
+    .setScrollFactor(0);
 
   scene.gothamParallax = [
     {
@@ -112,7 +120,8 @@ export function criarCenarioGotham(scene) {
 
     const gota = scene.add
       .rectangle(x, y, 2, 16, 0x9eb7ff, 0.13)
-      .setDepth(-1);
+      .setDepth(-1)
+      .setScrollFactor(0);
 
     scene.tweens.add({
       targets: gota,
@@ -127,7 +136,7 @@ export function criarCenarioGotham(scene) {
 
 export function atualizarCenarioGotham(scene) {
   const playerOffset = scene.player
-    ? Phaser.Math.Clamp(scene.player.x / scene.largura - 0.5, -0.5, 0.5)
+    ? Phaser.Math.Clamp(scene.player.x / (scene.worldWidth ?? scene.largura) - 0.5, -0.5, 0.5)
     : 0;
   const wind = Math.sin(scene.time.now * 0.00035);
 
