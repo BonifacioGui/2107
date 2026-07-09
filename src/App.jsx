@@ -77,7 +77,7 @@ function App() {
       {screen === "chucky" && (
         <GameLayout
           title="O Susto que Vira Risada"
-          description="Colete lembrancas, use a lanterna e atravesse a loja de brinquedos abandonada."
+          description="Colete lembrancas, use a lanterna e atravesse a brinquedoteca escura."
         >
           <ChuckyGame onComplete={() => setScreen("finalTribute")} />
         </GameLayout>

@@ -1,63 +1,175 @@
 import Phaser from "phaser";
 
-const WORLD_WIDTH = 4200;
+const WORLD_WIDTH = 4800;
 const WORLD_HEIGHT = 720;
-const FLOOR_Y = 622;
+const FLOOR_Y = 612;
+const BACKGROUND_SOURCE_HEIGHT = 841;
 
 const MEMORIES = [
   {
-    id: "risada",
-    texture: "memoryLaugh",
-    x: 520,
-    y: 500,
-    title: "Risada encontrada",
-    text: "Esse susto ainda vai virar historia para rir depois.",
-  },
-  {
-    id: "carinho",
-    texture: "memoryHeart",
-    x: 1090,
-    y: 390,
-    title: "Carinho no escuro",
-    text: "Tem coisas que iluminam mais que qualquer lanterna.",
+    id: "foto",
+    texture: "chuckyMemoryPhoto",
+    x: 560,
+    y: 505,
+    size: 82,
+    title: "Retrato antigo",
+    text: "Nem todo susto precisa ficar grande. Alguns viram historia para rir depois.",
   },
   {
     id: "carta",
-    texture: "memoryLetter",
-    x: 1790,
-    y: 500,
-    title: "Bilhete guardado",
-    text: "Mesmo assustada, ela continua. E isso e bonito demais.",
+    texture: "chuckyMemoryLetter",
+    x: 1290,
+    y: 388,
+    size: 88,
+    title: "Carta guardada",
+    text: "Mesmo quando treme um pouco, ela continua. Isso tambem e coragem.",
   },
   {
-    id: "abraco",
-    texture: "memoryBear",
-    x: 2640,
-    y: 345,
-    title: "Abraco pequeno",
-    text: "No meio do susto, sempre existe um lugar seguro.",
+    id: "coracao",
+    texture: "chuckyMemoryHeart",
+    x: 2100,
+    y: 515,
+    size: 78,
+    title: "Coracao aceso",
+    text: "A luz dela nao apaga so porque o quarto ficou escuro.",
   },
   {
-    id: "promessa",
-    texture: "memoryStar",
-    x: 3370,
-    y: 494,
-    title: "Promessa acesa",
-    text: "Falta pouco. A saida ja esta chamando.",
+    id: "urso",
+    texture: "chuckyMemoryBear",
+    x: 3040,
+    y: 382,
+    size: 92,
+    title: "Lugar seguro",
+    text: "No meio do medo, sempre existe um cantinho para respirar.",
+  },
+  {
+    id: "chave",
+    texture: "chuckyMemoryKey",
+    x: 3940,
+    y: 512,
+    size: 84,
+    title: "Chave brilhando",
+    text: "A saida aparece para quem insiste mais um pouquinho.",
   },
 ];
 
 const SAFE_ZONES = [
-  { x: 760, y: FLOOR_Y - 42, radius: 112, name: "Luz baixa" },
-  { x: 2240, y: FLOOR_Y - 42, radius: 118, name: "Cantinho seguro" },
-  { x: 3220, y: FLOOR_Y - 42, radius: 108, name: "Respira aqui" },
+  {
+    x: 780,
+    y: FLOOR_Y - 88,
+    radius: 150,
+    texture: "chuckySafeTent",
+    glow: "chuckySafeGlow",
+    width: 260,
+    height: 180,
+    name: "Cabana de luz",
+  },
+  {
+    x: 2380,
+    y: FLOOR_Y - 62,
+    radius: 140,
+    texture: "chuckySafePillows",
+    glow: "chuckySafeGlow",
+    width: 230,
+    height: 104,
+    name: "Almofadas seguras",
+  },
+  {
+    x: 3550,
+    y: FLOOR_Y - 72,
+    radius: 128,
+    texture: "chuckySafeSign",
+    glow: "chuckySafeGlow",
+    width: 210,
+    height: 96,
+    name: "Ponto seguro",
+  },
+];
+
+const PLATFORM_SPECS = [
+  {
+    x: 520,
+    y: 482,
+    width: 360,
+    height: 78,
+    texture: "chuckyPlatformCrates",
+    bodyWidth: 318,
+    bodyHeight: 24,
+  },
+  {
+    x: 1180,
+    y: 408,
+    width: 310,
+    height: 108,
+    texture: "chuckyPlatformTable",
+    bodyWidth: 270,
+    bodyHeight: 22,
+  },
+  {
+    x: 1780,
+    y: 525,
+    width: 430,
+    height: 78,
+    texture: "chuckyPlatformShelf",
+    bodyWidth: 378,
+    bodyHeight: 24,
+  },
+  {
+    x: 2350,
+    y: 454,
+    width: 360,
+    height: 78,
+    texture: "chuckyPlatformSmall",
+    bodyWidth: 314,
+    bodyHeight: 22,
+  },
+  {
+    x: 2940,
+    y: 392,
+    width: 330,
+    height: 98,
+    texture: "chuckyPlatformRailing",
+    bodyWidth: 288,
+    bodyHeight: 22,
+  },
+  {
+    x: 3510,
+    y: 528,
+    width: 460,
+    height: 78,
+    texture: "chuckyPlatformShelf",
+    bodyWidth: 400,
+    bodyHeight: 24,
+  },
+  {
+    x: 4100,
+    y: 450,
+    width: 360,
+    height: 82,
+    texture: "chuckyPlatformCrates",
+    bodyWidth: 318,
+    bodyHeight: 24,
+  },
+];
+
+const DECOR = [
+  { texture: "chuckyDecorShelfTall", x: 250, y: FLOOR_Y - 105, w: 92, h: 160, depth: -4 },
+  { texture: "chuckyDecorWindowMoon", x: 470, y: 160, w: 150, h: 205, depth: -12 },
+  { texture: "chuckyDecorBoxes", x: 980, y: FLOOR_Y - 54, w: 130, h: 110, depth: -2 },
+  { texture: "chuckyDecorTrain", x: 1480, y: FLOOR_Y - 32, w: 150, h: 54, depth: -2 },
+  { texture: "chuckyDecorShelfWall", x: 1720, y: 245, w: 150, h: 92, depth: -8 },
+  { texture: "chuckyDecorPictures", x: 2530, y: 195, w: 210, h: 118, depth: -8 },
+  { texture: "chuckyDecorHorse", x: 2840, y: FLOOR_Y - 42, w: 110, h: 86, depth: -2 },
+  { texture: "chuckyDecorJackbox", x: 3230, y: FLOOR_Y - 46, w: 88, h: 88, depth: -2 },
+  { texture: "chuckyDecorWindowTree", x: 3860, y: 160, w: 92, h: 210, depth: -12 },
+  { texture: "chuckyDecorDoor", x: 4460, y: FLOOR_Y - 118, w: 108, h: 205, depth: -2 },
 ];
 
 const CAUGHT_MESSAGES = [
-  "Voce se assustou, mas ainda pode continuar.",
   "Foi so um susto. Respira e tenta de novo.",
   "O medo apareceu, mas nao venceu.",
-  "Respira. A saida ainda esta ali.",
+  "Ela sempre continua, mesmo quando assusta.",
+  "Respira. Um passo de cada vez.",
 ];
 
 export default class ChuckyScene extends Phaser.Scene {
@@ -77,12 +189,50 @@ export default class ChuckyScene extends Phaser.Scene {
 
     this.load.spritesheet(
       "chuckySprite",
-      "/assets/characters/chucky-spritesheet.png",
+      "/assets/chucky/chucky-spritesheet.png",
       {
-        frameWidth: 64,
-        frameHeight: 64,
+        frameWidth: 160,
+        frameHeight: 140,
       }
     );
+
+    this.load.image("chuckyBackground", "/assets/chucky/background.png");
+    this.load.image("chuckyPlatformLong", "/assets/chucky/platform-long.png");
+    this.load.image("chuckyPlatformRailing", "/assets/chucky/platform-railing.png");
+    this.load.image("chuckyPlatformShelf", "/assets/chucky/platform-shelf.png");
+    this.load.image("chuckyPlatformCrates", "/assets/chucky/platform-crates.png");
+    this.load.image("chuckyPlatformTable", "/assets/chucky/platform-table.png");
+    this.load.image("chuckyPlatformSmall", "/assets/chucky/platform-small.png");
+    this.load.image("chuckyRugRunner", "/assets/chucky/rug-runner.png");
+    this.load.image("chuckyDoorClosed", "/assets/chucky/door-closed.png");
+    this.load.image("chuckyDoorOpen", "/assets/chucky/door-open.png");
+    this.load.image("chuckyMemoryPhoto", "/assets/chucky/memory-photo.png");
+    this.load.image("chuckyMemoryLetter", "/assets/chucky/memory-letter.png");
+    this.load.image("chuckyMemoryHeart", "/assets/chucky/memory-heart.png");
+    this.load.image("chuckyMemoryBear", "/assets/chucky/memory-bear.png");
+    this.load.image("chuckyMemoryKey", "/assets/chucky/memory-key.png");
+    this.load.image("chuckyLanternOn", "/assets/chucky/lantern-on.png");
+    this.load.image("chuckyLanternSmall", "/assets/chucky/lantern-small.png");
+    this.load.image("chuckyLightGlow", "/assets/chucky/light-glow.png");
+    this.load.image("chuckySafeGlow", "/assets/chucky/safe-glow.png");
+    this.load.image("chuckySafeTent", "/assets/chucky/safe-tent.png");
+    this.load.image("chuckySafePillows", "/assets/chucky/safe-pillows.png");
+    this.load.image("chuckySafeSign", "/assets/chucky/safe-sign.png");
+
+    [
+      ["chuckyDecorShelfTall", "decor-shelf-tall.png"],
+      ["chuckyDecorShelfWall", "decor-shelf-wall.png"],
+      ["chuckyDecorBoxes", "decor-boxes.png"],
+      ["chuckyDecorDoor", "decor-door.png"],
+      ["chuckyDecorWindowMoon", "decor-window-moon.png"],
+      ["chuckyDecorWindowTree", "decor-window-tree.png"],
+      ["chuckyDecorPictures", "decor-pictures.png"],
+      ["chuckyDecorJackbox", "decor-jackbox.png"],
+      ["chuckyDecorTrain", "decor-train.png"],
+      ["chuckyDecorHorse", "decor-horse.png"],
+    ].forEach(([key, file]) => {
+      this.load.image(key, `/assets/chucky/${file}`);
+    });
   }
 
   create() {
@@ -96,22 +246,20 @@ export default class ChuckyScene extends Phaser.Scene {
     this.flashlightCharge = 100;
     this.flashlightActive = false;
     this.flashlightCooldown = 0;
-    this.checkpoint = { x: 100, y: FLOOR_Y - 82 };
+    this.checkpoint = { x: 110, y: FLOOR_Y - 78 };
     this.lastCaughtAt = -9999;
-    this.lastSafeZone = null;
     this.levelComplete = false;
     this.chuckyHunting = false;
     this.chuckyStunnedUntil = 0;
     this.chuckyHideAt = 0;
-    this.nextScareAt = 4200;
+    this.nextScareAt = 3600;
 
-    this.cameras.main.setBackgroundColor("#070512");
+    this.cameras.main.setBackgroundColor("#05030a");
     this.cameras.main.setBounds(0, 0, this.worldWidth, WORLD_HEIGHT);
     this.physics.world.setBounds(0, 0, this.worldWidth, WORLD_HEIGHT);
 
-    this.criarTexturasGeradas();
     this.criarAnimacoes();
-    this.criarLojaEscura();
+    this.criarCenario();
     this.criarPlataformas();
     this.criarZonasSeguras();
     this.criarLembrancas();
@@ -124,10 +272,10 @@ export default class ChuckyScene extends Phaser.Scene {
     this.prepararTrilhaChucky();
 
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
-    this.cameras.main.setDeadzone(260, 150);
+    this.cameras.main.setDeadzone(290, 150);
 
     this.mostrarFeedback(
-      "Alguns sustos parecem grandes demais... mas ela nao esta sozinha.",
+      "Luz baixa, brinquedos quietos e um susto tentando parecer maior do que e.",
       "#ffe8a3"
     );
 
@@ -147,209 +295,29 @@ export default class ChuckyScene extends Phaser.Scene {
     this.atualizarHud();
   }
 
-  criarTexturasGeradas() {
-    const g = this.make.graphics({ x: 0, y: 0, add: false });
-
-    g.fillStyle(0x312a3f, 1);
-    g.fillRect(0, 0, 192, 28);
-    g.fillStyle(0x5a536d, 1);
-    g.fillRect(0, 0, 192, 6);
-    g.fillStyle(0xf3c85f, 1);
-    for (let x = 10; x < 192; x += 28) {
-      g.fillRect(x, 4, 12, 3);
-    }
-    g.generateTexture("toyPlatform", 192, 28);
-    g.clear();
-
-    g.fillStyle(0x2a2234, 1);
-    g.fillRoundedRect(0, 0, 172, 124, 6);
-    g.fillStyle(0x191321, 1);
-    g.fillRect(12, 18, 148, 18);
-    g.fillRect(12, 54, 148, 18);
-    g.fillRect(12, 90, 148, 18);
-    g.fillStyle(0xd65a7a, 1);
-    g.fillRect(20, 20, 20, 14);
-    g.fillStyle(0x72d6ff, 1);
-    g.fillRect(58, 55, 26, 15);
-    g.fillStyle(0xf5c542, 1);
-    g.fillCircle(124, 28, 8);
-    g.fillStyle(0x8ce99a, 1);
-    g.fillCircle(126, 96, 10);
-    g.generateTexture("toyShelf", 172, 124);
-    g.clear();
-
-    g.fillStyle(0x111827, 1);
-    g.fillRoundedRect(0, 0, 86, 128, 5);
-    g.fillStyle(0x432436, 1);
-    g.fillRoundedRect(9, 8, 68, 112, 4);
-    g.fillStyle(0xf5c542, 1);
-    g.fillCircle(64, 66, 4);
-    g.generateTexture("exitDoorClosed", 86, 128);
-    g.clear();
-
-    g.fillStyle(0x151d2f, 1);
-    g.fillRoundedRect(0, 0, 86, 128, 5);
-    g.fillStyle(0xffe8a3, 1);
-    g.fillRoundedRect(12, 10, 62, 108, 4);
-    g.fillStyle(0x4cc9f0, 0.55);
-    g.fillRect(20, 18, 46, 92);
-    g.generateTexture("exitDoorOpen", 86, 128);
-    g.clear();
-
-    this.criarTexturaFoto(g);
-    this.criarTexturaCarta(g);
-    this.criarTexturaCoracao(g);
-    this.criarTexturaUrso(g);
-    this.criarTexturaEstrela(g);
-    this.criarTexturaRisada(g);
-    this.criarTexturaLanterna(g);
-
-    g.destroy();
-  }
-
-  criarTexturaFoto(g) {
-    g.fillStyle(0xf9fafb, 1);
-    g.fillRoundedRect(5, 3, 54, 46, 5);
-    g.fillStyle(0x2f3b55, 1);
-    g.fillRect(10, 9, 44, 28);
-    g.fillStyle(0xf5c542, 1);
-    g.fillCircle(43, 17, 5);
-    g.fillStyle(0x7dd3fc, 1);
-    g.fillTriangle(12, 37, 30, 20, 52, 37);
-    g.fillStyle(0xff6f91, 1);
-    g.fillRect(17, 42, 28, 3);
-    g.generateTexture("memoryPhoto", 64, 54);
-    g.clear();
-  }
-
-  criarTexturaCarta(g) {
-    g.fillStyle(0xfff7df, 1);
-    g.fillRoundedRect(6, 6, 52, 38, 4);
-    g.lineStyle(3, 0xd6a85f, 1);
-    g.strokeTriangle(8, 8, 32, 30, 56, 8);
-    g.lineStyle(2, 0x9a6b3b, 1);
-    g.lineBetween(16, 34, 48, 34);
-    g.generateTexture("memoryLetter", 64, 54);
-    g.clear();
-  }
-
-  criarTexturaCoracao(g) {
-    g.fillStyle(0xff5d8f, 1);
-    g.fillCircle(24, 22, 13);
-    g.fillCircle(40, 22, 13);
-    g.fillTriangle(13, 28, 51, 28, 32, 52);
-    g.lineStyle(3, 0xffc2d1, 1);
-    g.strokeCircle(24, 22, 13);
-    g.strokeCircle(40, 22, 13);
-    g.generateTexture("memoryHeart", 64, 58);
-    g.clear();
-  }
-
-  criarTexturaUrso(g) {
-    g.fillStyle(0xb87a4b, 1);
-    g.fillCircle(20, 16, 8);
-    g.fillCircle(44, 16, 8);
-    g.fillCircle(32, 28, 20);
-    g.fillStyle(0xf2c18a, 1);
-    g.fillCircle(32, 33, 9);
-    g.fillStyle(0x14101c, 1);
-    g.fillCircle(25, 25, 3);
-    g.fillCircle(39, 25, 3);
-    g.fillCircle(32, 31, 3);
-    g.generateTexture("memoryBear", 64, 58);
-    g.clear();
-  }
-
-  criarTexturaEstrela(g) {
-    g.fillStyle(0xf5c542, 1);
-    g.fillPoints(
-      [
-        { x: 32, y: 4 },
-        { x: 39, y: 24 },
-        { x: 60, y: 24 },
-        { x: 43, y: 36 },
-        { x: 49, y: 56 },
-        { x: 32, y: 44 },
-        { x: 15, y: 56 },
-        { x: 21, y: 36 },
-        { x: 4, y: 24 },
-        { x: 25, y: 24 },
-      ],
-      true
-    );
-    g.lineStyle(3, 0xfff3bf, 1);
-    g.strokePoints(
-      [
-        { x: 32, y: 4 },
-        { x: 39, y: 24 },
-        { x: 60, y: 24 },
-        { x: 43, y: 36 },
-        { x: 49, y: 56 },
-        { x: 32, y: 44 },
-        { x: 15, y: 56 },
-        { x: 21, y: 36 },
-        { x: 4, y: 24 },
-        { x: 25, y: 24 },
-      ],
-      true
-    );
-    g.generateTexture("memoryStar", 64, 60);
-    g.clear();
-  }
-
-  criarTexturaRisada(g) {
-    g.fillStyle(0xffe8a3, 1);
-    g.fillCircle(32, 28, 21);
-    g.fillStyle(0x14101c, 1);
-    g.fillCircle(24, 24, 3);
-    g.fillCircle(40, 24, 3);
-    g.lineStyle(4, 0x14101c, 1);
-    g.beginPath();
-    g.arc(32, 30, 10, 0.15, Math.PI - 0.15, false);
-    g.strokePath();
-    g.fillStyle(0xff6f91, 1);
-    g.fillCircle(18, 31, 4);
-    g.fillCircle(46, 31, 4);
-    g.generateTexture("memoryLaugh", 64, 58);
-    g.clear();
-  }
-
-  criarTexturaLanterna(g) {
-    g.fillStyle(0x30384f, 1);
-    g.fillRoundedRect(8, 20, 42, 16, 5);
-    g.fillStyle(0x9ca3af, 1);
-    g.fillRoundedRect(46, 17, 12, 22, 4);
-    g.fillStyle(0xf5c542, 1);
-    g.fillCircle(55, 28, 5);
-    g.fillStyle(0x111827, 1);
-    g.fillRect(17, 24, 18, 8);
-    g.generateTexture("flashlightIcon", 64, 56);
-    g.clear();
-  }
-
   criarAnimacoes() {
     this.criarAnimacao({
       key: "chucky-idle",
-      frames: this.anims.generateFrameNumbers("chuckySprite", { start: 2, end: 5 }),
-      frameRate: 4,
+      frames: this.anims.generateFrameNumbers("chuckySprite", { start: 0, end: 1 }),
+      frameRate: 2,
       repeat: -1,
     });
     this.criarAnimacao({
       key: "chucky-walk",
-      frames: this.anims.generateFrameNumbers("chuckySprite", { start: 6, end: 13 }),
-      frameRate: 8,
+      frames: this.anims.generateFrameNumbers("chuckySprite", { start: 2, end: 9 }),
+      frameRate: 9,
       repeat: -1,
     });
     this.criarAnimacao({
       key: "chucky-scare",
-      frames: this.anims.generateFrameNumbers("chuckySprite", { start: 14, end: 19 }),
-      frameRate: 7,
+      frames: this.anims.generateFrameNumbers("chuckySprite", { frames: [10, 11] }),
+      frameRate: 5,
       repeat: -1,
     });
     this.criarAnimacao({
       key: "chucky-stun",
-      frames: this.anims.generateFrameNumbers("chuckySprite", { start: 20, end: 23 }),
-      frameRate: 5,
+      frames: this.anims.generateFrameNumbers("chuckySprite", { start: 12, end: 13 }),
+      frameRate: 3,
       repeat: -1,
     });
     this.criarAnimacao({
@@ -372,106 +340,105 @@ export default class ChuckyScene extends Phaser.Scene {
     }
   }
 
-  criarLojaEscura() {
-    for (let x = 0; x < this.worldWidth; x += 400) {
-      this.add.rectangle(x + 200, 250, 400, 500, 0x14101c, 1).setDepth(-30);
-      this.add.rectangle(x + 200, 250, 392, 492, 0x1d1728, 0.96).setDepth(-29);
-      this.add.rectangle(x + 200, 494, 400, 6, 0x342842, 1).setDepth(-28);
+  criarCenario() {
+    const scale = WORLD_HEIGHT / BACKGROUND_SOURCE_HEIGHT;
+    this.background = this.add
+      .tileSprite(0, 0, this.worldWidth, WORLD_HEIGHT, "chuckyBackground")
+      .setOrigin(0)
+      .setTileScale(scale)
+      .setDepth(-60);
+
+    this.add
+      .tileSprite(0, FLOOR_Y + 10, this.worldWidth, 72, "chuckyPlatformLong")
+      .setOrigin(0, 0.5)
+      .setTileScale(0.72)
+      .setDepth(2);
+
+    for (let x = 170; x < this.worldWidth; x += 780) {
+      this.add
+        .image(x, FLOOR_Y + 8, "chuckyRugRunner")
+        .setDisplaySize(280, 48)
+        .setDepth(1)
+        .setAlpha(0.78);
     }
 
-    for (let x = 160; x < this.worldWidth; x += 520) {
-      this.add.image(x, 450, "toyShelf").setDisplaySize(190, 136).setDepth(-15);
-    }
+    DECOR.forEach((item) => {
+      this.add
+        .image(item.x, item.y, item.texture)
+        .setDisplaySize(item.w, item.h)
+        .setDepth(item.depth);
+    });
 
-    for (let x = 430; x < this.worldWidth; x += 660) {
-      const janela = this.add.rectangle(x, 205, 112, 86, 0x07111f, 1).setDepth(-20);
-      janela.setStrokeStyle(3, 0x312a3f, 1);
-      this.add.rectangle(x, 205, 4, 86, 0x312a3f, 1).setDepth(-19);
-      this.add.rectangle(x, 205, 112, 4, 0x312a3f, 1).setDepth(-19);
-      this.add.circle(x - 24, 195, 3, 0xf87171, 0.45).setDepth(-18);
-      this.add.circle(x + 24, 195, 3, 0xf87171, 0.45).setDepth(-18);
-    }
-
-    for (let x = 140; x < this.worldWidth; x += 190) {
-      const caixa = this.add.rectangle(
-        x,
-        FLOOR_Y - 30,
-        Phaser.Math.Between(42, 78),
-        Phaser.Math.Between(28, 48),
-        Phaser.Utils.Array.GetRandom([0x4b355f, 0x5a2d3b, 0x35415f]),
-        1
-      );
-      caixa.setStrokeStyle(2, 0x221827, 0.8).setDepth(-4);
-    }
-
-    this.chuckyPeek = this.add
-      .sprite(0, 0, "chuckySprite", 0)
-      .setDisplaySize(72, 72)
-      .setDepth(7)
-      .setVisible(false);
-
-    this.flashlightBeam = this.add.graphics().setDepth(18);
+    this.flashlightBeam = this.add.graphics().setDepth(32);
     this.darkPulse = this.add
-      .rectangle(0, 0, this.largura, this.altura, 0x000000, 0.16)
+      .rectangle(0, 0, this.largura, this.altura, 0x000000, 0.15)
       .setOrigin(0)
       .setScrollFactor(0)
-      .setDepth(55)
+      .setDepth(58)
+      .setVisible(false);
+
+    this.chuckyPeek = this.add
+      .sprite(0, 0, "chuckySprite", 10)
+      .setDisplaySize(142, 124)
+      .setDepth(25)
       .setVisible(false);
   }
 
   criarPlataformas() {
     this.platforms = this.physics.add.staticGroup();
-    this.criarPlataforma(this.worldWidth / 2, FLOOR_Y + 22, this.worldWidth, 80, 0x100d18);
+    this.criarPlataforma(this.worldWidth / 2, FLOOR_Y + 36, this.worldWidth, 84);
 
-    [
-      { x: 500, y: 535, w: 360 },
-      { x: 1060, y: 440, w: 320 },
-      { x: 1580, y: 540, w: 360 },
-      { x: 2260, y: 460, w: 340 },
-      { x: 2670, y: 395, w: 260 },
-      { x: 3180, y: 540, w: 380 },
-      { x: 3620, y: 455, w: 300 },
-    ].forEach((p) => {
-      const img = this.add.image(p.x, p.y, "toyPlatform").setDisplaySize(p.w, 34).setDepth(4);
-      const body = this.add.zone(p.x, p.y + 4, p.w, 28);
-      this.physics.add.existing(body, true);
-      this.platforms.add(body);
-      body.visual = img;
-    });
+    PLATFORM_SPECS.forEach((platform) => this.criarPlataformaVisual(platform));
   }
 
-  criarPlataforma(x, y, width, height, color) {
-    const rect = this.add.rectangle(x, y, width, height, color, 1).setDepth(3);
-    this.physics.add.existing(rect, true);
-    this.platforms.add(rect);
-    return rect;
+  criarPlataforma(x, y, width, height) {
+    const body = this.add.zone(x, y, width, height);
+    this.physics.add.existing(body, true);
+    this.platforms.add(body);
+    return body;
+  }
+
+  criarPlataformaVisual(platform) {
+    const image = this.add
+      .image(platform.x, platform.y, platform.texture)
+      .setDisplaySize(platform.width, platform.height)
+      .setDepth(5);
+    const bodyY = platform.y - platform.height / 2 + 15;
+    const body = this.add.zone(
+      platform.x,
+      bodyY,
+      platform.bodyWidth,
+      platform.bodyHeight
+    );
+    this.physics.add.existing(body, true);
+    this.platforms.add(body);
+    body.visual = image;
   }
 
   criarZonasSeguras() {
     this.safeZoneVisuals = SAFE_ZONES.map((zone) => {
       const glow = this.add
-        .circle(zone.x, zone.y, zone.radius, 0xffe8a3, 0.12)
-        .setDepth(8)
+        .image(zone.x, FLOOR_Y - 22, zone.glow)
+        .setDisplaySize(zone.radius * 1.9, zone.radius * 0.88)
+        .setAlpha(0.48)
+        .setDepth(6)
         .setBlendMode(Phaser.BlendModes.ADD);
-      const lamp = this.add
-        .image(zone.x, zone.y - 34, "flashlightIcon")
-        .setDisplaySize(48, 40)
-        .setDepth(9);
-      const floor = this.add
-        .ellipse(zone.x, zone.y + 36, zone.radius * 1.4, 24, 0xffe8a3, 0.18)
-        .setDepth(7);
+      const asset = this.add
+        .image(zone.x, zone.y, zone.texture)
+        .setDisplaySize(zone.width, zone.height)
+        .setDepth(11);
 
       this.tweens.add({
         targets: glow,
-        alpha: 0.2,
+        alpha: 0.72,
         scaleX: 1.08,
         scaleY: 1.08,
-        duration: 1000,
+        duration: 1180,
         yoyo: true,
         repeat: -1,
       });
 
-      return { ...zone, glow, lamp, floor, activated: false };
+      return { ...zone, glow, asset, activated: false };
     });
   }
 
@@ -480,16 +447,23 @@ export default class ChuckyScene extends Phaser.Scene {
 
     MEMORIES.forEach((memory) => {
       const item = this.memories.create(memory.x, memory.y, memory.texture);
-      item.setDisplaySize(52, 48);
-      item.setDepth(15);
+      item.setDisplaySize(memory.size, memory.size);
+      item.setDepth(18);
       item.memory = memory;
       item.baseY = memory.y;
       item.refreshBody();
 
+      this.add
+        .image(memory.x, memory.y, "chuckyLightGlow")
+        .setDisplaySize(memory.size * 1.65, memory.size * 1.05)
+        .setAlpha(0.2)
+        .setDepth(14)
+        .setBlendMode(Phaser.BlendModes.ADD);
+
       this.tweens.add({
         targets: item,
         y: memory.y - 10,
-        duration: 900,
+        duration: 920,
         yoyo: true,
         repeat: -1,
       });
@@ -498,25 +472,27 @@ export default class ChuckyScene extends Phaser.Scene {
 
   criarPortaFinal() {
     this.exitDoor = this.physics.add.sprite(
-      this.worldWidth - 140,
-      FLOOR_Y - 86,
-      "exitDoorClosed"
+      this.worldWidth - 156,
+      FLOOR_Y - 130,
+      "chuckyDoorClosed"
     );
-    this.exitDoor.setDisplaySize(92, 134).setDepth(12);
+    this.exitDoor.setDisplaySize(136, 240).setDepth(14);
     this.exitDoor.body.setAllowGravity(false);
     this.exitDoor.body.setImmovable(true);
-    this.exitDoor.body.setSize(56, 112, true);
+    this.exitDoor.body.setSize(72, 202, true);
     this.exitDoor.open = false;
 
     this.exitGlow = this.add
-      .circle(this.exitDoor.x, this.exitDoor.y, 78, 0xffe8a3, 0.04)
-      .setDepth(10)
+      .image(this.exitDoor.x, this.exitDoor.y + 34, "chuckyLightGlow")
+      .setDisplaySize(150, 190)
+      .setDepth(12)
+      .setAlpha(0.03)
       .setBlendMode(Phaser.BlendModes.ADD);
   }
 
   criarPersonagem() {
-    this.player = this.physics.add.sprite(100, FLOOR_Y - 82, "livinhaSprite", 0);
-    this.player.setDisplaySize(76, 76).setDepth(20);
+    this.player = this.physics.add.sprite(130, FLOOR_Y - 82, "livinhaSprite", 0);
+    this.player.setDisplaySize(92, 92).setDepth(24);
     this.player.setCollideWorldBounds(true);
     this.player.body.setSize(34, 58);
     this.player.body.setOffset(55, 56);
@@ -524,19 +500,25 @@ export default class ChuckyScene extends Phaser.Scene {
   }
 
   criarChucky() {
-    this.chucky = this.physics.add.sprite(620, FLOOR_Y - 40, "chuckySprite", 2);
-    this.chucky.setDisplaySize(72, 72).setDepth(19);
+    this.chucky = this.physics.add.sprite(640, FLOOR_Y - 58, "chuckySprite", 0);
+    this.chucky.setDisplaySize(136, 120).setDepth(23);
     this.chucky.body.setAllowGravity(false);
-    this.chucky.body.setSize(32, 44);
-    this.chucky.body.setOffset(16, 18);
+    this.chucky.body.setSize(56, 76);
+    this.chucky.body.setOffset(52, 46);
     this.chucky.setVisible(false);
     this.chucky.body.enable = false;
   }
 
   criarHud() {
+    this.hudShade = this.add
+      .rectangle(0, 0, this.largura, 92, 0x05030a, 0.62)
+      .setOrigin(0)
+      .setScrollFactor(0)
+      .setDepth(78);
+
     this.hudTitle = this.add
-      .text(this.largura / 2, 30, "Capitulo: O Susto que Vira Risada", {
-        fontSize: "30px",
+      .text(this.largura / 2, 28, "Capitulo: O Susto que Vira Risada", {
+        fontSize: "28px",
         color: "#fff8e7",
         fontFamily: "Trebuchet MS",
         fontStyle: "bold",
@@ -548,24 +530,19 @@ export default class ChuckyScene extends Phaser.Scene {
       .setDepth(80);
 
     this.objectiveText = this.add
-      .text(
-        this.largura / 2,
-        72,
-        "Colete 5 lembrancas, use a lanterna e encontre a saida.",
-        {
-          fontSize: "18px",
-          color: "#f5e7c8",
-          fontFamily: "Trebuchet MS",
-          stroke: "#05030a",
-          strokeThickness: 4,
-        }
-      )
+      .text(this.largura / 2, 64, "Pegue as lembrancas. Segure X ou F para acender a lanterna.", {
+        fontSize: "17px",
+        color: "#f5e7c8",
+        fontFamily: "Trebuchet MS",
+        stroke: "#05030a",
+        strokeThickness: 4,
+      })
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(80);
 
     this.counterText = this.add
-      .text(28, 30, "", {
+      .text(28, 28, "", {
         fontSize: "18px",
         color: "#ffe8a3",
         fontFamily: "Trebuchet MS",
@@ -577,7 +554,7 @@ export default class ChuckyScene extends Phaser.Scene {
       .setDepth(80);
 
     this.lifeText = this.add
-      .text(28, 58, "", {
+      .text(28, 56, "", {
         fontSize: "18px",
         color: "#ff8fab",
         fontFamily: "Trebuchet MS",
@@ -589,17 +566,17 @@ export default class ChuckyScene extends Phaser.Scene {
       .setDepth(80);
 
     this.chargeBack = this.add
-      .rectangle(this.largura - 220, 42, 170, 14, 0xffffff, 0.14)
+      .rectangle(this.largura - 224, 42, 176, 14, 0xffffff, 0.14)
       .setOrigin(0, 0.5)
       .setScrollFactor(0)
       .setDepth(80);
     this.chargeFill = this.add
-      .rectangle(this.largura - 220, 42, 170, 14, 0xffe8a3, 0.9)
+      .rectangle(this.largura - 224, 42, 176, 14, 0xffe8a3, 0.9)
       .setOrigin(0, 0.5)
       .setScrollFactor(0)
       .setDepth(81);
     this.chargeLabel = this.add
-      .text(this.largura - 220, 62, "Lanterna: X ou F", {
+      .text(this.largura - 224, 62, "Lanterna", {
         fontSize: "13px",
         color: "#f5e7c8",
         fontFamily: "Trebuchet MS",
@@ -610,18 +587,18 @@ export default class ChuckyScene extends Phaser.Scene {
       .setDepth(80);
 
     this.feedbackBox = this.add
-      .rectangle(this.largura / 2, this.altura - 86, 880, 82, 0x080613, 0.82)
-      .setStrokeStyle(1, 0xffe8a3, 0.34)
+      .rectangle(this.largura / 2, this.altura - 76, 820, 76, 0x080613, 0.84)
+      .setStrokeStyle(1, 0xffe8a3, 0.28)
       .setScrollFactor(0)
       .setDepth(78)
       .setVisible(false);
     this.feedbackText = this.add
-      .text(this.largura / 2, this.altura - 86, "", {
-        fontSize: "20px",
+      .text(this.largura / 2, this.altura - 76, "", {
+        fontSize: "19px",
         color: "#fff8e7",
         fontFamily: "Trebuchet MS",
         align: "center",
-        wordWrap: { width: 790 },
+        wordWrap: { width: 740 },
       })
       .setOrigin(0.5)
       .setScrollFactor(0)
@@ -650,8 +627,8 @@ export default class ChuckyScene extends Phaser.Scene {
   }
 
   atualizarJogadora() {
-    const speed = 292;
-    const jump = -570;
+    const speed = 300;
+    const jump = -580;
     const left = this.cursors.left.isDown || this.keys.left.isDown;
     const right = this.cursors.right.isDown || this.keys.right.isDown;
     const jumpPressed =
@@ -700,16 +677,16 @@ export default class ChuckyScene extends Phaser.Scene {
     }
 
     const dir = this.playerDirection;
-    const startX = this.player.x + dir * 30;
+    const startX = this.player.x + dir * 28;
     const startY = this.player.y - 8;
-    const endX = startX + dir * 390;
+    const endX = startX + dir * 430;
 
     this.flashlightBeam.fillStyle(0xffe8a3, 0.16);
-    this.flashlightBeam.fillTriangle(startX, startY - 24, startX, startY + 24, endX, startY);
-    this.flashlightBeam.fillStyle(0xfff3bf, 0.12);
-    this.flashlightBeam.fillCircle(endX, startY, 82);
-    this.flashlightBeam.lineStyle(2, 0xffe8a3, 0.22);
-    this.flashlightBeam.strokeTriangle(startX, startY - 24, startX, startY + 24, endX, startY);
+    this.flashlightBeam.fillTriangle(startX, startY - 26, startX, startY + 26, endX, startY);
+    this.flashlightBeam.fillStyle(0xfff3bf, 0.1);
+    this.flashlightBeam.fillCircle(endX, startY, 88);
+    this.flashlightBeam.lineStyle(2, 0xffe8a3, 0.2);
+    this.flashlightBeam.strokeTriangle(startX, startY - 26, startX, startY + 26, endX, startY);
 
     this.tentarAfastarChuckyComLanterna();
   }
@@ -723,12 +700,12 @@ export default class ChuckyScene extends Phaser.Scene {
     const ahead = dir > 0 ? this.chucky.x - this.player.x : this.player.x - this.chucky.x;
     const vertical = Math.abs(this.chucky.y - this.player.y);
 
-    if (ahead > 0 && ahead < 430 && vertical < 118) {
-      this.chuckyStunnedUntil = this.time.now + 2200;
+    if (ahead > 0 && ahead < 470 && vertical < 125) {
+      this.chuckyStunnedUntil = this.time.now + 2400;
       this.chucky.body.setVelocityX(0);
       this.chucky.anims.play("chucky-stun", true);
-      this.mostrarTextoFlutuante(this.chucky.x, this.chucky.y - 54, "luz!", "#fff3bf");
-      this.mostrarFeedback("A luz segurou o susto por alguns segundos.", "#fff3bf");
+      this.mostrarTextoFlutuante(this.chucky.x, this.chucky.y - 58, "luz!", "#fff3bf");
+      this.mostrarFeedback("A lanterna segurou o susto. Aproveita para respirar.", "#fff3bf");
     }
   }
 
@@ -737,7 +714,7 @@ export default class ChuckyScene extends Phaser.Scene {
       return;
     }
 
-    this.chucky.y = FLOOR_Y - 43;
+    this.chucky.y = FLOOR_Y - 58;
 
     if (time >= this.chuckyHideAt) {
       this.esconderChucky("Ele sumiu... por enquanto.");
@@ -753,22 +730,22 @@ export default class ChuckyScene extends Phaser.Scene {
     if (this.jogadoraEmZonaSegura()) {
       this.chucky.body.setVelocityX(0);
       this.chucky.anims.play("chucky-idle", true);
-      this.chucky.setAlpha(0.62);
+      this.chucky.setAlpha(0.56);
       return;
     }
 
     this.chucky.setAlpha(1);
     const dx = this.player.x - this.chucky.x;
     const dir = Math.sign(dx) || 1;
-    const speed = 84 + this.memoriesCollected * 16;
+    const speed = 92 + this.memoriesCollected * 18;
     this.chucky.body.setVelocityX(dir * speed);
     this.chucky.setFlipX(dir < 0);
-    this.chucky.anims.play(Math.abs(dx) < 210 ? "chucky-scare" : "chucky-walk", true);
+    this.chucky.anims.play(Math.abs(dx) < 220 ? "chucky-scare" : "chucky-walk", true);
   }
 
   atualizarZonasSeguras() {
     const activeZone = this.safeZoneVisuals.find(
-      (zone) => Phaser.Math.Distance.Between(this.player.x, this.player.y, zone.x, zone.y) < zone.radius
+      (zone) => Phaser.Math.Distance.Between(this.player.x, this.player.y, zone.x, FLOOR_Y - 42) < zone.radius
     );
 
     if (!activeZone) {
@@ -776,13 +753,13 @@ export default class ChuckyScene extends Phaser.Scene {
       return;
     }
 
-    this.checkpoint = { x: activeZone.x, y: FLOOR_Y - 82 };
+    this.checkpoint = { x: activeZone.x, y: FLOOR_Y - 78 };
     this.lastSafeZone = activeZone;
 
     if (!activeZone.activated) {
       activeZone.activated = true;
-      activeZone.floor.setFillStyle(0xffe8a3, 0.3);
-      this.mostrarFeedback(`${activeZone.name}. Aqui o susto fica menor.`, "#ffe8a3");
+      activeZone.glow.setAlpha(0.82);
+      this.mostrarFeedback(`${activeZone.name}. Aqui o medo fica menor.`, "#ffe8a3");
     }
   }
 
@@ -791,26 +768,26 @@ export default class ChuckyScene extends Phaser.Scene {
       return;
     }
 
-    this.nextScareAt = time + Phaser.Math.Between(6200, 9800);
+    this.nextScareAt = time + Phaser.Math.Between(5600, 8800);
     const cameraX = this.cameras.main.scrollX;
     const x = Phaser.Math.Clamp(
-      cameraX + Phaser.Math.Between(380, 1180),
-      180,
-      this.worldWidth - 260
+      cameraX + Phaser.Math.Between(420, 1260),
+      240,
+      this.worldWidth - 320
     );
-    const y = Phaser.Math.Between(170, 255);
+    const y = Phaser.Math.Between(190, 280);
 
     this.chuckyPeek.setPosition(x, y).setVisible(true).setAlpha(0);
-    this.chuckyPeek.setFrame(Phaser.Utils.Array.GetRandom([0, 1, 14, 16]));
-    this.darkPulse.setVisible(true).setAlpha(0.22);
+    this.chuckyPeek.setFrame(Phaser.Utils.Array.GetRandom([0, 1, 10, 11]));
+    this.darkPulse.setVisible(true).setAlpha(0.2);
 
     this.tweens.add({
       targets: this.chuckyPeek,
-      alpha: 1,
-      y: y - 8,
-      duration: 160,
+      alpha: 0.95,
+      y: y - 10,
+      duration: 150,
       yoyo: true,
-      hold: 380,
+      hold: 360,
       onComplete: () => this.chuckyPeek.setVisible(false),
     });
     this.tweens.add({
@@ -841,16 +818,20 @@ export default class ChuckyScene extends Phaser.Scene {
 
   invocarChuckyPorSusto() {
     const side = this.playerDirection >= 0 ? -1 : 1;
-    const x = Phaser.Math.Clamp(this.player.x + side * Phaser.Math.Between(360, 520), 180, this.worldWidth - 280);
+    const x = Phaser.Math.Clamp(
+      this.player.x + side * Phaser.Math.Between(380, 560),
+      180,
+      this.worldWidth - 300
+    );
 
-    this.chucky.enableBody(false, x, FLOOR_Y - 43, true, true);
+    this.chucky.enableBody(false, x, FLOOR_Y - 58, true, true);
     this.chucky.body.enable = true;
     this.chucky.setVisible(true).setAlpha(1);
     this.chuckyHunting = true;
-    this.chuckyHideAt = this.time.now + 6500 + this.memoriesCollected * 650;
+    this.chuckyHideAt = this.time.now + 6600 + this.memoriesCollected * 720;
     this.chuckyStunnedUntil = 0;
     this.chucky.anims.play("chucky-scare", true);
-    this.mostrarFeedback("Corre! Mas sem esquecer de respirar.", "#ffcfdf");
+    this.mostrarFeedback("Corre, acende a lanterna ou acha uma luz segura.", "#ffcfdf");
   }
 
   esconderChucky(message) {
@@ -894,16 +875,16 @@ export default class ChuckyScene extends Phaser.Scene {
 
   abrirPortaFinal() {
     this.exitDoor.open = true;
-    this.exitDoor.setTexture("exitDoorOpen");
-    this.exitGlow.setFillStyle(0xffe8a3, 0.18);
-    this.mostrarFeedback("Voce encontrou todas as lembrancas. A saida abriu.", "#fff3bf");
+    this.exitDoor.setTexture("chuckyDoorOpen");
+    this.exitGlow.setAlpha(0.34);
+    this.mostrarFeedback("Todas as lembrancas foram encontradas. A porta abriu.", "#fff3bf");
     this.esconderChucky();
 
     this.tweens.add({
       targets: this.exitGlow,
-      alpha: 0.32,
-      scaleX: 1.22,
-      scaleY: 1.22,
+      alpha: 0.58,
+      scaleX: 1.18,
+      scaleY: 1.18,
       duration: 920,
       yoyo: true,
       repeat: -1,
@@ -924,7 +905,7 @@ export default class ChuckyScene extends Phaser.Scene {
     this.player.body.setVelocity(0, 0);
     this.esconderChucky();
     this.mostrarFeedback(
-      "Voce passou pelo susto. Correu, respirou e continuou. No fim, ate o medo virou lembranca nossa.",
+      "Voce atravessou o susto. Respirou, insistiu e transformou o medo em lembranca.",
       "#fff3bf"
     );
     this.time.delayedCall(2600, () => {
@@ -934,14 +915,14 @@ export default class ChuckyScene extends Phaser.Scene {
 
   jogadoraEmZonaSegura() {
     return this.safeZoneVisuals.some(
-      (zone) => Phaser.Math.Distance.Between(this.player.x, this.player.y, zone.x, zone.y) < zone.radius
+      (zone) => Phaser.Math.Distance.Between(this.player.x, this.player.y, zone.x, FLOOR_Y - 42) < zone.radius
     );
   }
 
   atualizarHud() {
     this.counterText.setText(`Lembrancas: ${this.memoriesCollected}/${this.totalMemories}`);
-    this.lifeText.setText(`Vidas: ${this.lives}/3`);
-    this.chargeFill.setDisplaySize(Math.max(0, 170 * (this.flashlightCharge / 100)), 14);
+    this.lifeText.setText(`Coragem: ${"<3 ".repeat(this.lives).trim()}`);
+    this.chargeFill.setDisplaySize(Math.max(0, 176 * (this.flashlightCharge / 100)), 14);
     this.chargeFill.setFillStyle(this.flashlightActive ? 0xfff3bf : 0xffe8a3, 0.9);
   }
 
@@ -956,7 +937,7 @@ export default class ChuckyScene extends Phaser.Scene {
     this.feedbackTween = this.tweens.add({
       targets: [this.feedbackBox, this.feedbackText],
       alpha: 0,
-      delay: 2700,
+      delay: 2850,
       duration: 480,
       onComplete: () => this.feedbackBox.setVisible(false),
     });
@@ -985,7 +966,7 @@ export default class ChuckyScene extends Phaser.Scene {
   }
 
   criarEfeitoColeta(x, y, color) {
-    for (let i = 0; i < 14; i += 1) {
+    for (let i = 0; i < 16; i += 1) {
       const spark = this.add
         .circle(x, y, Phaser.Math.Between(3, 7), color, 0.78)
         .setDepth(60)
@@ -993,8 +974,8 @@ export default class ChuckyScene extends Phaser.Scene {
 
       this.tweens.add({
         targets: spark,
-        x: x + Phaser.Math.Between(-74, 74),
-        y: y + Phaser.Math.Between(-64, 36),
+        x: x + Phaser.Math.Between(-76, 76),
+        y: y + Phaser.Math.Between(-68, 38),
         alpha: 0,
         scale: 0.2,
         duration: Phaser.Math.Between(520, 880),
@@ -1022,7 +1003,7 @@ export default class ChuckyScene extends Phaser.Scene {
 
     this.tweens.addCounter({
       from: 0.0001,
-      to: 0.045,
+      to: 0.052,
       duration: 1300,
       onUpdate: (tween) => {
         if (this.trilhaChuckyMaster) {
@@ -1032,7 +1013,7 @@ export default class ChuckyScene extends Phaser.Scene {
     });
 
     this.trilhaChuckyTimer = this.time.addEvent({
-      delay: 720,
+      delay: 660,
       loop: true,
       callback: () => this.tocarPulsoChucky(),
     });
@@ -1045,13 +1026,13 @@ export default class ChuckyScene extends Phaser.Scene {
 
     const contexto = this.sound.context;
     const agora = contexto.currentTime + 0.02;
-    const notas = [130.81, 146.83, 155.56, 196.0, 220.0];
+    const notas = [123.47, 130.81, 146.83, 155.56, 196.0, 220.0];
     const nota = Phaser.Utils.Array.GetRandom(notas);
 
-    this.tocarOscilador(agora, nota, 0.32, "triangle", 0.11);
+    this.tocarOscilador(agora, nota, 0.34, "triangle", 0.105);
 
-    if (Phaser.Math.Between(0, 100) > 66) {
-      this.tocarOscilador(agora + 0.18, nota * 1.5, 0.18, "sine", 0.05);
+    if (Phaser.Math.Between(0, 100) > 64) {
+      this.tocarOscilador(agora + 0.18, nota * 1.5, 0.18, "sine", 0.048);
     }
   }
 
