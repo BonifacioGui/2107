@@ -172,6 +172,9 @@ const CAUGHT_MESSAGES = [
   "Respira. Um passo de cada vez.",
 ];
 
+const GUI_RESCUE_X = WORLD_WIDTH - 430;
+const GUI_RESCUE_Y = FLOOR_Y - 76;
+
 export default class ChuckyScene extends Phaser.Scene {
   constructor() {
     super("ChuckyScene");
@@ -193,6 +196,15 @@ export default class ChuckyScene extends Phaser.Scene {
       {
         frameWidth: 160,
         frameHeight: 140,
+      }
+    );
+
+    this.load.spritesheet(
+      "guiScaredSprite",
+      "/assets/chucky/gui-scared-spritesheet.png",
+      {
+        frameWidth: 112,
+        frameHeight: 112,
       }
     );
 
@@ -218,6 +230,8 @@ export default class ChuckyScene extends Phaser.Scene {
     this.load.image("chuckySafeTent", "/assets/chucky/safe-tent.png");
     this.load.image("chuckySafePillows", "/assets/chucky/safe-pillows.png");
     this.load.image("chuckySafeSign", "/assets/chucky/safe-sign.png");
+    this.load.image("coupleHug", "/assets/chucky/couple-hug.png");
+    this.load.image("coupleRescue", "/assets/chucky/couple-rescue.png");
 
     [
       ["chuckyDecorShelfTall", "decor-shelf-tall.png"],
@@ -249,6 +263,9 @@ export default class ChuckyScene extends Phaser.Scene {
     this.checkpoint = { x: 110, y: FLOOR_Y - 78 };
     this.lastCaughtAt = -9999;
     this.levelComplete = false;
+    this.guiSaved = false;
+    this.rescueReady = false;
+    this.lastGuiPromptAt = -9999;
     this.chuckyHunting = false;
     this.chuckyStunnedUntil = 0;
     this.chuckyHideAt = 0;
@@ -264,6 +281,7 @@ export default class ChuckyScene extends Phaser.Scene {
     this.criarZonasSeguras();
     this.criarLembrancas();
     this.criarPortaFinal();
+    this.criarGuiAssustado();
     this.criarPersonagem();
     this.criarChucky();
     this.criarHud();
@@ -328,14 +346,20 @@ export default class ChuckyScene extends Phaser.Scene {
     });
     this.criarAnimacao({
       key: "livinha-chucky-run",
-      frames: this.anims.generateFrameNumbers("livinhaSprite", { start: 0, end: 3 }),
-      frameRate: 8,
+      frames: this.anims.generateFrameNumbers("livinhaSprite", { start: 15, end: 19 }),
+      frameRate: 10,
       repeat: -1,
     });
     this.criarAnimacao({
       key: "livinha-chucky-flashlight",
       frames: this.anims.generateFrameNumbers("livinhaSprite", { start: 30, end: 34 }),
       frameRate: 7,
+      repeat: -1,
+    });
+    this.criarAnimacao({
+      key: "gui-scared",
+      frames: this.anims.generateFrameNumbers("guiScaredSprite", { start: 0, end: 2 }),
+      frameRate: 5,
       repeat: -1,
     });
   }
@@ -496,6 +520,62 @@ export default class ChuckyScene extends Phaser.Scene {
       .setBlendMode(Phaser.BlendModes.ADD);
   }
 
+  criarGuiAssustado() {
+    this.guiAura = this.add
+      .image(GUI_RESCUE_X, GUI_RESCUE_Y + 34, "chuckyLightGlow")
+      .setDisplaySize(190, 150)
+      .setAlpha(0.1)
+      .setDepth(13)
+      .setTint(0x8b5cf6)
+      .setBlendMode(Phaser.BlendModes.ADD);
+
+    this.guiShadow = this.add
+      .ellipse(GUI_RESCUE_X, FLOOR_Y + 3, 132, 30, 0x05030a, 0.62)
+      .setDepth(12);
+
+    this.guiRescue = this.physics.add.sprite(
+      GUI_RESCUE_X,
+      GUI_RESCUE_Y,
+      "guiScaredSprite",
+      0
+    );
+    this.guiRescue.setDisplaySize(118, 118).setDepth(22);
+    this.guiRescue.body.setAllowGravity(false);
+    this.guiRescue.body.setImmovable(true);
+    this.guiRescue.body.setSize(54, 74);
+    this.guiRescue.body.setOffset(29, 30);
+    this.guiRescue.anims.play("gui-scared", true);
+
+    this.guiPrompt = this.add
+      .text(GUI_RESCUE_X, GUI_RESCUE_Y - 82, "muito assustado", {
+        fontSize: "16px",
+        color: "#ffcfdf",
+        fontFamily: "Trebuchet MS",
+        fontStyle: "bold",
+        stroke: "#05030a",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setDepth(32);
+
+    this.tweens.add({
+      targets: [this.guiRescue, this.guiPrompt],
+      y: "-=7",
+      duration: 560,
+      yoyo: true,
+      repeat: -1,
+    });
+    this.tweens.add({
+      targets: this.guiAura,
+      alpha: 0.22,
+      scaleX: 1.08,
+      scaleY: 1.08,
+      duration: 900,
+      yoyo: true,
+      repeat: -1,
+    });
+  }
+
   criarPersonagem() {
     this.player = this.physics.add.sprite(130, FLOOR_Y - 82, "livinhaSprite", 0);
     this.player.setDisplaySize(104, 104).setDepth(24);
@@ -629,6 +709,7 @@ export default class ChuckyScene extends Phaser.Scene {
     this.physics.add.collider(this.player, this.platforms);
     this.physics.add.overlap(this.player, this.memories, this.coletarLembranca, null, this);
     this.physics.add.overlap(this.player, this.exitDoor, this.tentarSair, null, this);
+    this.physics.add.overlap(this.player, this.guiRescue, this.tentarSalvarGui, null, this);
     this.physics.add.overlap(this.player, this.chucky, this.serPegaPorChucky, null, this);
   }
 
@@ -890,10 +971,14 @@ export default class ChuckyScene extends Phaser.Scene {
   }
 
   abrirPortaFinal() {
+    this.rescueReady = true;
     this.exitDoor.open = true;
     this.exitDoor.setTexture("chuckyDoorOpen");
     this.exitGlow.setAlpha(0.34);
-    this.mostrarFeedback("Todas as lembrancas foram encontradas. A porta abriu.", "#fff3bf");
+    this.guiAura.setTint(0xffe8a3).setAlpha(0.46);
+    this.guiPrompt.setText("ela precisa te salvar");
+    this.objectiveText.setText("A porta abriu, mas ele ainda esta assustado. Encontre-o.");
+    this.mostrarFeedback("As lembrancas acenderam o caminho. Agora ela precisa te buscar no escuro.", "#fff3bf");
     this.esconderChucky();
 
     this.tweens.add({
@@ -917,14 +1002,90 @@ export default class ChuckyScene extends Phaser.Scene {
       return;
     }
 
+    if (!this.guiSaved) {
+      this.mostrarFeedback("A saida abriu, mas ela nao vai embora sem te tirar do susto primeiro.", "#ffcfdf");
+      return;
+    }
+  }
+
+  tentarSalvarGui() {
+    if (this.levelComplete || this.guiSaved) {
+      return;
+    }
+
+    if (!this.rescueReady) {
+      if (this.time.now - this.lastGuiPromptAt > 1400) {
+        this.lastGuiPromptAt = this.time.now;
+        this.mostrarFeedback(
+          "Voce esta assustado demais. Ela precisa juntar as lembrancas para iluminar o caminho.",
+          "#ffcfdf"
+        );
+      }
+      return;
+    }
+
+    this.finalizarResgateGui();
+  }
+
+  finalizarResgateGui() {
     this.levelComplete = true;
+    this.guiSaved = true;
     this.player.body.setVelocity(0, 0);
     this.esconderChucky();
-    this.mostrarFeedback(
-      "Voce atravessou o susto. Respirou, insistiu e transformou o medo em lembranca.",
-      "#fff3bf"
-    );
-    this.time.delayedCall(2600, () => {
+
+    this.player.setVisible(false);
+    this.guiRescue.setVisible(false);
+    this.guiShadow.setVisible(false);
+    this.guiPrompt.setVisible(false);
+    this.guiAura.setAlpha(0.74).setTint(0xffe8a3);
+
+    this.cameras.main.stopFollow();
+    this.cameras.main.pan(GUI_RESCUE_X, FLOOR_Y - 118, 850, "Sine.easeInOut");
+    this.cameras.main.zoomTo(1.08, 850);
+
+    this.finalOverlay = this.add
+      .rectangle(0, 0, this.largura, this.altura, 0x05030a, 0.54)
+      .setOrigin(0)
+      .setScrollFactor(0)
+      .setDepth(86);
+
+    this.finalHug = this.add
+      .image(this.largura / 2, this.altura / 2 - 72, "coupleHug")
+      .setDisplaySize(245, 268)
+      .setScrollFactor(0)
+      .setDepth(88)
+      .setAlpha(0);
+
+    this.finalMessage = this.add
+      .text(
+        this.largura / 2,
+        this.altura / 2 + 136,
+        "Ela me fez e me faz vencer medos, ate o medo de filmes de terror. Foi meu farol na fase mais sombria da minha vida, e segue sendo ate hoje.",
+        {
+          fontSize: "24px",
+          color: "#fff8e7",
+          fontFamily: "Trebuchet MS",
+          fontStyle: "bold",
+          align: "center",
+          wordWrap: { width: 880 },
+          stroke: "#05030a",
+          strokeThickness: 5,
+        }
+      )
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(89)
+      .setAlpha(0);
+
+    this.tweens.add({
+      targets: [this.finalHug, this.finalMessage],
+      alpha: 1,
+      y: "-=10",
+      duration: 900,
+      ease: "Sine.easeOut",
+    });
+
+    this.time.delayedCall(5600, () => {
       this.game.events.emit("chucky-complete");
     });
   }
