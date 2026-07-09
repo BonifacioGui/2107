@@ -9,6 +9,7 @@ import TributeScreen from "./components/TributeScreen";
 
 import BatmanGame from "./games/BatmanGame";
 import CatGame from "./games/CatGame";
+import ChuckyGame from "./games/ChuckyGame";
 
 import { tributes } from "./data/tributes";
 
@@ -19,6 +20,7 @@ const screens = new Set([
   "reward",
   "batmanTribute",
   "cat",
+  "chucky",
   "finalTribute",
 ]);
 
@@ -68,7 +70,16 @@ function App() {
           title="Percy e os Cantinhos da Casa"
           description="Passeie sem pressa, guarde pequenas memorias e encontre Livinha no fim."
         >
-          <CatGame onComplete={() => setScreen("finalTribute")} />
+          <CatGame onComplete={() => setScreen("chucky")} />
+        </GameLayout>
+      )}
+
+      {screen === "chucky" && (
+        <GameLayout
+          title="O Susto que Vira Risada"
+          description="Colete lembrancas, use a lanterna e atravesse a loja de brinquedos abandonada."
+        >
+          <ChuckyGame onComplete={() => setScreen("finalTribute")} />
         </GameLayout>
       )}
 
