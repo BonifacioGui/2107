@@ -180,10 +180,10 @@ export default class ChuckyScene extends Phaser.Scene {
   preload() {
     this.load.spritesheet(
       "livinhaSprite",
-      "/assets/characters/livinha-spritesheet.png",
+      "/assets/chucky/livia-rock-spritesheet.png",
       {
-        frameWidth: 144,
-        frameHeight: 144,
+        frameWidth: 96,
+        frameHeight: 96,
       }
     );
 
@@ -330,6 +330,12 @@ export default class ChuckyScene extends Phaser.Scene {
       key: "livinha-chucky-run",
       frames: this.anims.generateFrameNumbers("livinhaSprite", { start: 0, end: 3 }),
       frameRate: 8,
+      repeat: -1,
+    });
+    this.criarAnimacao({
+      key: "livinha-chucky-flashlight",
+      frames: this.anims.generateFrameNumbers("livinhaSprite", { start: 30, end: 34 }),
+      frameRate: 7,
       repeat: -1,
     });
   }
@@ -492,10 +498,10 @@ export default class ChuckyScene extends Phaser.Scene {
 
   criarPersonagem() {
     this.player = this.physics.add.sprite(130, FLOOR_Y - 82, "livinhaSprite", 0);
-    this.player.setDisplaySize(92, 92).setDepth(24);
+    this.player.setDisplaySize(104, 104).setDepth(24);
     this.player.setCollideWorldBounds(true);
     this.player.body.setSize(34, 58);
-    this.player.body.setOffset(55, 56);
+    this.player.body.setOffset(31, 30);
     this.player.anims.play("livinha-chucky-idle", true);
   }
 
@@ -641,11 +647,9 @@ export default class ChuckyScene extends Phaser.Scene {
     if (left) {
       this.player.body.setVelocityX(-speed);
       this.playerDirection = -1;
-      this.player.setFlipX(false);
     } else if (right) {
       this.player.body.setVelocityX(speed);
       this.playerDirection = 1;
-      this.player.setFlipX(true);
     }
 
     if (jumpPressed && this.player.body.blocked.down) {
@@ -653,6 +657,18 @@ export default class ChuckyScene extends Phaser.Scene {
     }
 
     const moving = Math.abs(this.player.body.velocity.x) > 5;
+    const usingFlashlightPose =
+      (this.keys.flashlight.isDown || this.keys.flashlightAlt.isDown) &&
+      this.flashlightCharge > 2 &&
+      this.time.now > this.flashlightCooldown;
+
+    if (usingFlashlightPose) {
+      this.player.setFlipX(this.playerDirection < 0);
+      this.player.anims.play("livinha-chucky-flashlight", true);
+      return;
+    }
+
+    this.player.setFlipX(this.playerDirection > 0);
     this.player.anims.play(moving ? "livinha-chucky-run" : "livinha-chucky-idle", true);
   }
 
