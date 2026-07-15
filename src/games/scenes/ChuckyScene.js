@@ -1,9 +1,11 @@
 import Phaser from "phaser";
 
-const WORLD_WIDTH = 4800;
+const WORLD_WIDTH = 6200;
 const WORLD_HEIGHT = 720;
 const FLOOR_Y = 612;
 const BACKGROUND_SOURCE_HEIGHT = 841;
+const RESCUE_COUNTDOWN_MS = 76000;
+const GHOSTFACE_MAX_HEALTH = 3;
 
 const MEMORIES = [
   {
@@ -12,8 +14,10 @@ const MEMORIES = [
     x: 560,
     y: 505,
     size: 82,
-    title: "Retrato antigo",
-    text: "Nem todo susto precisa ficar grande. Alguns viram historia para rir depois.",
+    photoTexture: "memoryFirstPhoto",
+    photoUrl: "/assets/chucky/memories/primeira-foto.png",
+    title: "Nossa primeira foto",
+    text: "Antes de tantas fases, ja existia esse carinho encontrando um jeito de ficar.",
   },
   {
     id: "carta",
@@ -21,8 +25,10 @@ const MEMORIES = [
     x: 1290,
     y: 388,
     size: 88,
-    title: "Carta guardada",
-    text: "Mesmo quando treme um pouco, ela continua. Isso tambem e coragem.",
+    photoTexture: "memoryBeginning",
+    photoUrl: "/assets/chucky/memories/nosso-comeco.jpg",
+    title: "Nosso comeco",
+    text: "Foi aqui que dois caminhos comecaram a virar uma historia so nossa.",
   },
   {
     id: "coracao",
@@ -30,8 +36,10 @@ const MEMORIES = [
     x: 2100,
     y: 515,
     size: 78,
-    title: "Coracao aceso",
-    text: "A luz dela nao apaga so porque o quarto ficou escuro.",
+    photoTexture: "memoryFirstTrip",
+    photoUrl: "/assets/chucky/memories/primeira-viagem.jpg",
+    title: "Nossa primeira viagem",
+    text: "Cada lugar ficou mais leve porque a melhor parte era estar junto.",
   },
   {
     id: "urso",
@@ -39,8 +47,10 @@ const MEMORIES = [
     x: 3040,
     y: 382,
     size: 92,
-    title: "Lugar seguro",
-    text: "No meio do medo, sempre existe um cantinho para respirar.",
+    photoTexture: "memoryNightTogether",
+    photoUrl: "/assets/chucky/memories/noite-juntos.jpg",
+    title: "Uma noite juntos",
+    text: "Mesmo no escuro, estar ao seu lado sempre fez o medo parecer menor.",
   },
   {
     id: "chave",
@@ -48,8 +58,32 @@ const MEMORIES = [
     x: 3940,
     y: 512,
     size: 84,
-    title: "Chave brilhando",
-    text: "A saida aparece para quem insiste mais um pouquinho.",
+    photoTexture: "memoryUsTogether",
+    photoUrl: "/assets/chucky/memories/nos-dois.jpg",
+    title: "Nos dois",
+    text: "Entre dias comuns e momentos especiais, voce continua sendo meu lugar favorito.",
+  },
+  {
+    id: "luz",
+    texture: "chuckyMemoryHeart",
+    x: 4760,
+    y: 402,
+    size: 76,
+    photoTexture: "memoryBeachTrip",
+    photoUrl: "/assets/chucky/memories/viagem-praia.jpg",
+    title: "A gente viajando",
+    text: "O mundo fica maior quando a gente descobre cada pedacinho dele lado a lado.",
+  },
+  {
+    id: "farol",
+    texture: "chuckyMemoryKey",
+    x: 5480,
+    y: 505,
+    size: 84,
+    photoTexture: "memoryFutureUs",
+    photoUrl: "/assets/chucky/memories/um-dia-sera-a-gente.jpg",
+    title: "Um dia sera a gente",
+    text: "Uma lembranca do futuro: tudo o que ainda vamos viver, construir e celebrar juntos.",
   },
 ];
 
@@ -84,17 +118,28 @@ const SAFE_ZONES = [
     height: 96,
     name: "Ponto seguro",
   },
+  {
+    x: 5080,
+    y: FLOOR_Y - 62,
+    radius: 118,
+    texture: "chuckySafePillows",
+    glow: "chuckySafeGlow",
+    width: 210,
+    height: 96,
+    name: "Ultima luz",
+  },
 ];
 
 const PLATFORM_SPECS = [
   {
     x: 520,
-    y: 482,
-    width: 360,
-    height: 78,
-    texture: "chuckyPlatformCrates",
+    y: 478,
+    width: 372,
+    height: 94,
+    texture: "chuckyPlatformRailing",
     bodyWidth: 318,
-    bodyHeight: 24,
+    bodyHeight: 22,
+    highlight: true,
   },
   {
     x: 1180,
@@ -150,6 +195,33 @@ const PLATFORM_SPECS = [
     bodyWidth: 318,
     bodyHeight: 24,
   },
+  {
+    x: 4740,
+    y: 402,
+    width: 330,
+    height: 98,
+    texture: "chuckyPlatformTable",
+    bodyWidth: 288,
+    bodyHeight: 22,
+  },
+  {
+    x: 5280,
+    y: 526,
+    width: 460,
+    height: 78,
+    texture: "chuckyPlatformShelf",
+    bodyWidth: 400,
+    bodyHeight: 24,
+  },
+  {
+    x: 5780,
+    y: 444,
+    width: 360,
+    height: 82,
+    texture: "chuckyPlatformCrates",
+    bodyWidth: 318,
+    bodyHeight: 24,
+  },
 ];
 
 const DECOR = [
@@ -163,6 +235,10 @@ const DECOR = [
   { texture: "chuckyDecorJackbox", x: 3230, y: FLOOR_Y - 46, w: 88, h: 88, depth: -2 },
   { texture: "chuckyDecorWindowTree", x: 3860, y: 160, w: 92, h: 210, depth: -12 },
   { texture: "chuckyDecorDoor", x: 4460, y: FLOOR_Y - 118, w: 108, h: 205, depth: -2 },
+  { texture: "chuckyDecorShelfWall", x: 4880, y: 238, w: 150, h: 92, depth: -8 },
+  { texture: "chuckyDecorBoxes", x: 5220, y: FLOOR_Y - 54, w: 138, h: 112, depth: -2 },
+  { texture: "chuckyDecorWindowMoon", x: 5520, y: 164, w: 145, h: 198, depth: -12 },
+  { texture: "chuckyDecorPictures", x: 5880, y: 190, w: 210, h: 118, depth: -8 },
 ];
 
 const CAUGHT_MESSAGES = [
@@ -182,11 +258,38 @@ export default class ChuckyScene extends Phaser.Scene {
 
   preload() {
     this.load.spritesheet(
-      "livinhaSprite",
+      "liviaRockSprite",
       "/assets/chucky/livia-rock-spritesheet.png",
       {
         frameWidth: 96,
         frameHeight: 96,
+      }
+    );
+
+    this.load.spritesheet(
+      "liviaKnifeSprite",
+      "/assets/chucky/livia-knife-spritesheet.png",
+      {
+        frameWidth: 96,
+        frameHeight: 120,
+      }
+    );
+
+    this.load.spritesheet(
+      "liviaLanternSprite",
+      "/assets/chucky/livia-lantern-spritesheet.png",
+      {
+        frameWidth: 160,
+        frameHeight: 120,
+      }
+    );
+
+    this.load.spritesheet(
+      "ghostfaceSprite",
+      "/assets/chucky/ghostface-spritesheet.png",
+      {
+        frameWidth: 128,
+        frameHeight: 128,
       }
     );
 
@@ -225,6 +328,7 @@ export default class ChuckyScene extends Phaser.Scene {
     this.load.image("chuckyMemoryKey", "/assets/chucky/memory-key.png");
     this.load.image("chuckyLanternOn", "/assets/chucky/lantern-on.png");
     this.load.image("chuckyLanternSmall", "/assets/chucky/lantern-small.png");
+    this.load.image("liviaKnifeProjectile", "/assets/chucky/livia-knife-projectile.png");
     this.load.image("chuckyLightGlow", "/assets/chucky/light-glow.png");
     this.load.image("chuckySafeGlow", "/assets/chucky/safe-glow.png");
     this.load.image("chuckySafeTent", "/assets/chucky/safe-tent.png");
@@ -232,6 +336,13 @@ export default class ChuckyScene extends Phaser.Scene {
     this.load.image("chuckySafeSign", "/assets/chucky/safe-sign.png");
     this.load.image("coupleHug", "/assets/chucky/couple-hug.png");
     this.load.image("coupleRescue", "/assets/chucky/couple-rescue.png");
+    this.load.image("memoryFirstPhoto", "/assets/chucky/memories/primeira-foto.png");
+    this.load.image("memoryBeginning", "/assets/chucky/memories/nosso-comeco.jpg");
+    this.load.image("memoryFirstTrip", "/assets/chucky/memories/primeira-viagem.jpg");
+    this.load.image("memoryNightTogether", "/assets/chucky/memories/noite-juntos.jpg");
+    this.load.image("memoryUsTogether", "/assets/chucky/memories/nos-dois.jpg");
+    this.load.image("memoryBeachTrip", "/assets/chucky/memories/viagem-praia.jpg");
+    this.load.image("memoryFutureUs", "/assets/chucky/memories/um-dia-sera-a-gente.jpg");
 
     [
       ["chuckyDecorShelfTall", "decor-shelf-tall.png"],
@@ -260,16 +371,28 @@ export default class ChuckyScene extends Phaser.Scene {
     this.flashlightCharge = 100;
     this.flashlightActive = false;
     this.flashlightCooldown = 0;
+    this.knifeCooldown = 0;
+    this.throwingUntil = 0;
     this.checkpoint = { x: 110, y: FLOOR_Y - 78 };
     this.lastCaughtAt = -9999;
     this.levelComplete = false;
+    this.rescueFailed = false;
+    this.finalAcknowledged = false;
     this.guiSaved = false;
     this.rescueReady = false;
+    this.rescueDeadline = null;
+    this.continuesUsed = 0;
     this.lastGuiPromptAt = -9999;
     this.chuckyHunting = false;
     this.chuckyStunnedUntil = 0;
     this.chuckyHideAt = 0;
+    this.ghostfaceHealth = GHOSTFACE_MAX_HEALTH;
+    this.ghostfaceMode = "alive";
+    this.ghostfaceStunnedUntil = 0;
+    this.lastGhostHitAt = -9999;
     this.nextScareAt = 3600;
+    this.jumpGraceUntil = 0;
+    this.memoryModalOpen = false;
 
     this.cameras.main.setBackgroundColor("#05030a");
     this.cameras.main.setBounds(0, 0, this.worldWidth, WORLD_HEIGHT);
@@ -284,6 +407,8 @@ export default class ChuckyScene extends Phaser.Scene {
     this.criarGuiAssustado();
     this.criarPersonagem();
     this.criarChucky();
+    this.criarGhostface();
+    this.criarFacas();
     this.criarHud();
     this.criarControles();
     this.criarColisoes();
@@ -301,15 +426,22 @@ export default class ChuckyScene extends Phaser.Scene {
   }
 
   update(time, delta) {
-    if (this.levelComplete) {
+    if (this.levelComplete || this.rescueFailed) {
+      return;
+    }
+
+    if (this.memoryModalOpen) {
       return;
     }
 
     this.atualizarJogadora();
     this.atualizarLanterna(delta);
+    this.atualizarFacas(time);
     this.atualizarChucky(time);
+    this.atualizarGhostface(time);
     this.atualizarZonasSeguras();
     this.atualizarSustosLeves(time);
+    this.atualizarTimerResgate(time);
     this.atualizarHud();
   }
 
@@ -323,7 +455,7 @@ export default class ChuckyScene extends Phaser.Scene {
     this.criarAnimacao({
       key: "chucky-walk",
       frames: this.anims.generateFrameNumbers("chuckySprite", { start: 2, end: 9 }),
-      frameRate: 9,
+      frameRate: 13,
       repeat: -1,
     });
     this.criarAnimacao({
@@ -340,21 +472,39 @@ export default class ChuckyScene extends Phaser.Scene {
     });
     this.criarAnimacao({
       key: "livinha-chucky-idle",
-      frames: this.anims.generateFrameNumbers("livinhaSprite", { start: 0, end: 3 }),
-      frameRate: 3,
+      frames: this.anims.generateFrameNumbers("liviaRockSprite", { start: 0, end: 4 }),
+      frameRate: 4,
       repeat: -1,
     });
     this.criarAnimacao({
       key: "livinha-chucky-run",
-      frames: this.anims.generateFrameNumbers("livinhaSprite", { start: 15, end: 19 }),
+      frames: this.anims.generateFrameNumbers("liviaRockSprite", { start: 15, end: 19 }),
+      frameRate: 14,
+      repeat: -1,
+    });
+    this.criarAnimacao({
+      key: "livinha-chucky-jump",
+      frames: this.anims.generateFrameNumbers("liviaRockSprite", { frames: [16, 17, 18] }),
       frameRate: 10,
       repeat: -1,
     });
     this.criarAnimacao({
-      key: "livinha-chucky-flashlight",
-      frames: this.anims.generateFrameNumbers("livinhaSprite", { start: 30, end: 34 }),
-      frameRate: 7,
+      key: "livinha-chucky-fall",
+      frames: this.anims.generateFrameNumbers("liviaRockSprite", { frames: [19, 18] }),
+      frameRate: 8,
       repeat: -1,
+    });
+    this.criarAnimacao({
+      key: "livinha-chucky-flashlight",
+      frames: this.anims.generateFrameNumbers("liviaLanternSprite", { frames: [9, 13] }),
+      frameRate: 4,
+      repeat: -1,
+    });
+    this.criarAnimacao({
+      key: "livinha-chucky-throw",
+      frames: this.anims.generateFrameNumbers("liviaKnifeSprite", { start: 18, end: 22 }),
+      frameRate: 16,
+      repeat: 0,
     });
     this.criarAnimacao({
       key: "gui-scared",
@@ -362,11 +512,48 @@ export default class ChuckyScene extends Phaser.Scene {
       frameRate: 5,
       repeat: -1,
     });
+    this.criarAnimacao({
+      key: "ghostface-idle",
+      frames: this.anims.generateFrameNumbers("ghostfaceSprite", { start: 0, end: 4 }),
+      frameRate: 4,
+      repeat: -1,
+    });
+    this.criarAnimacao({
+      key: "ghostface-run",
+      frames: this.anims.generateFrameNumbers("ghostfaceSprite", { start: 10, end: 14 }),
+      frameRate: 13,
+      repeat: -1,
+    });
+    this.criarAnimacao({
+      key: "ghostface-attack",
+      frames: this.anims.generateFrameNumbers("ghostfaceSprite", { frames: [15, 16, 18, 19] }),
+      frameRate: 9,
+      repeat: -1,
+    });
+    this.criarAnimacao({
+      key: "ghostface-hurt",
+      frames: this.anims.generateFrameNumbers("ghostfaceSprite", { start: 20, end: 24 }),
+      frameRate: 7,
+      repeat: -1,
+    });
+    this.criarAnimacao({
+      key: "ghostface-ghost",
+      frames: this.anims.generateFrameNumbers("ghostfaceSprite", { start: 0, end: 4 }),
+      frameRate: 5,
+      repeat: -1,
+    });
   }
 
   criarAnimacao(config) {
-    if (!this.anims.exists(config.key)) {
+    try {
+      if (this.anims.exists(config.key)) {
+        this.anims.remove(config.key);
+      }
+
       this.anims.create(config);
+    } catch (error) {
+      console.error(`Erro ao criar animacao ${config.key}`, error);
+      throw error;
     }
   }
 
@@ -399,7 +586,10 @@ export default class ChuckyScene extends Phaser.Scene {
         .setDepth(item.depth);
     });
 
-    this.flashlightBeam = this.add.graphics().setDepth(32);
+    this.flashlightBeam = this.add
+      .graphics()
+      .setDepth(23)
+      .setBlendMode(Phaser.BlendModes.ADD);
     this.darkPulse = this.add
       .rectangle(0, 0, this.largura, this.altura, 0x000000, 0.15)
       .setOrigin(0)
@@ -433,6 +623,19 @@ export default class ChuckyScene extends Phaser.Scene {
       .image(platform.x, platform.y, platform.texture)
       .setDisplaySize(platform.width, platform.height)
       .setDepth(5);
+
+    if (platform.highlight) {
+      this.add
+        .image(platform.x, platform.y + 8, "chuckyLightGlow")
+        .setDisplaySize(platform.width * 0.96, platform.height * 0.62)
+        .setAlpha(0.34)
+        .setDepth(4)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      this.add
+        .rectangle(platform.x, platform.y - platform.height / 2 + 26, platform.bodyWidth * 0.88, 4, 0xffe8a3, 0.62)
+        .setDepth(7);
+    }
+
     const bodyY = platform.y - platform.height / 2 + 15;
     const body = this.add.zone(
       platform.x,
@@ -577,27 +780,133 @@ export default class ChuckyScene extends Phaser.Scene {
   }
 
   criarPersonagem() {
-    this.player = this.physics.add.sprite(130, FLOOR_Y - 82, "livinhaSprite", 0);
-    this.player.setDisplaySize(104, 104).setDepth(24);
+    this.player = this.physics.add.sprite(130, FLOOR_Y - 82, "liviaRockSprite", 0);
+    this.player.setAlpha(0);
     this.player.setCollideWorldBounds(true);
     this.player.body.setSize(34, 58);
-    this.player.body.setOffset(31, 30);
-    this.player.anims.play("livinha-chucky-idle", true);
+    this.player.body.setOffset(31, 34);
+
+    this.playerVisual = this.add
+      .sprite(this.player.x, this.player.y, "liviaRockSprite", 0)
+      .setDepth(24);
+    this.playerVisualKey = null;
+    this.playerVisualWidth = 0;
+    this.playerVisualHeight = 0;
+    this.aplicarVisualJogadora("liviaRockSprite", 98, 98);
+    this.playerVisual.anims.play("livinha-chucky-idle", true);
+  }
+
+  aplicarVisualJogadora(textureKey, width, height) {
+    if (this.playerVisualKey !== textureKey) {
+      this.playerVisual.setTexture(textureKey);
+      this.playerVisualKey = textureKey;
+    }
+
+    if (this.playerVisualWidth !== width || this.playerVisualHeight !== height) {
+      this.playerVisual.setDisplaySize(width, height);
+      this.playerVisualWidth = width;
+      this.playerVisualHeight = height;
+    }
   }
 
   criarChucky() {
-    this.chucky = this.physics.add.sprite(640, FLOOR_Y - 58, "chuckySprite", 0);
+    this.chucky = this.physics.add.sprite(720, FLOOR_Y - 78, "chuckySprite", 0);
     this.chucky.setDisplaySize(136, 120).setDepth(23);
-    this.chucky.body.setAllowGravity(false);
+    this.chucky.setCollideWorldBounds(true);
+    this.chucky.body.setAllowGravity(true);
     this.chucky.body.setSize(56, 76);
     this.chucky.body.setOffset(52, 46);
-    this.chucky.setVisible(false);
-    this.chucky.body.enable = false;
+    this.chucky.anims.play("chucky-walk", true);
+    this.chuckyHunting = true;
+    this.chuckyHideAt = Number.POSITIVE_INFINITY;
+  }
+
+  criarGhostface() {
+    this.ghostface = this.physics.add.sprite(1580, FLOOR_Y - 82, "ghostfaceSprite", 0);
+    this.ghostface.setDisplaySize(122, 122).setDepth(22);
+    this.ghostface.setCollideWorldBounds(true);
+    this.ghostface.body.setAllowGravity(true);
+    this.ghostface.body.setSize(54, 74);
+    this.ghostface.body.setOffset(37, 44);
+    this.ghostface.anims.play("ghostface-run", true);
+
+    this.ghostfaceAura = this.add
+      .image(this.ghostface.x, this.ghostface.y + 24, "chuckyLightGlow")
+      .setDisplaySize(120, 86)
+      .setTint(0xa78bfa)
+      .setAlpha(0.12)
+      .setDepth(18)
+      .setBlendMode(Phaser.BlendModes.ADD);
+  }
+
+  reconstruirGhostfaceSeNecessario() {
+    if (this.ghostface?.anims && this.ghostface?.body) {
+      return;
+    }
+
+    const previousX = Number.isFinite(this.ghostface?.x)
+      ? this.ghostface.x
+      : Phaser.Math.Clamp(this.player.x + 520, 260, this.worldWidth - 420);
+    const previousY = Number.isFinite(this.ghostface?.y)
+      ? this.ghostface.y
+      : FLOOR_Y - 82;
+
+    this.ghostfaceAura?.destroy();
+    this.criarGhostface();
+    this.ghostface.setPosition(previousX, previousY);
+
+    this.physics.add.collider(
+      this.ghostface,
+      this.platforms,
+      null,
+      () => this.ghostfaceMode !== "ghost",
+      this
+    );
+    this.physics.add.overlap(this.player, this.ghostface, this.serPegaPorGhostface, null, this);
+    this.physics.add.overlap(this.knives, this.ghostface, this.acertarGhostface, null, this);
+
+    if (this.ghostfaceMode === "ghost") {
+      this.ghostface.body.setAllowGravity(false);
+      this.ghostface.setAlpha(0.68).setTint(0xd8f3ff).setDepth(26);
+      this.ghostfaceAura.setVisible(true).setTint(0xd8f3ff).setAlpha(0.38);
+      this.ghostface.anims.play("ghostface-ghost", true);
+    }
+  }
+
+  reativarInimigo(inimigo, x, y, tipo) {
+    if (!inimigo.body) {
+      this.physics.world.enable(inimigo);
+    }
+
+    inimigo.setActive(true).setVisible(true).setPosition(x, y);
+    inimigo.body.enable = true;
+    inimigo.body.reset(x, y);
+    inimigo.body.setVelocity(0, 0);
+
+    if (tipo === "chucky") {
+      inimigo.body.setAllowGravity(true);
+      inimigo.body.setSize(56, 76);
+      inimigo.body.setOffset(52, 46);
+      inimigo.setAlpha(1);
+      return;
+    }
+
+    inimigo.body.setSize(54, 74);
+    inimigo.body.setOffset(37, 44);
+    inimigo.body.setAllowGravity(this.ghostfaceMode !== "ghost");
+    inimigo.setAlpha(this.ghostfaceMode === "ghost" ? 0.68 : 1);
+  }
+
+  criarFacas() {
+    this.knives = this.physics.add.group({
+      allowGravity: false,
+      immovable: true,
+    });
   }
 
   criarHud() {
     this.hudShade = this.add
-      .rectangle(0, 0, this.largura, 92, 0x05030a, 0.62)
+      .rectangle(0, 0, this.largura, 118, 0x05030a, 0.62)
       .setOrigin(0)
       .setScrollFactor(0)
       .setDepth(78);
@@ -616,7 +925,7 @@ export default class ChuckyScene extends Phaser.Scene {
       .setDepth(80);
 
     this.objectiveText = this.add
-      .text(this.largura / 2, 64, "Pegue as lembrancas. Segure X ou F para acender a lanterna.", {
+      .text(this.largura / 2, 64, "Pegue as lembrancas. X/F acende a lanterna. C joga faca no Ghostface.", {
         fontSize: "17px",
         color: "#f5e7c8",
         fontFamily: "Trebuchet MS",
@@ -626,6 +935,20 @@ export default class ChuckyScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(80);
+
+    this.timerText = this.add
+      .text(this.largura / 2, 92, "", {
+        fontSize: "20px",
+        color: "#ffcfdf",
+        fontFamily: "Trebuchet MS",
+        fontStyle: "bold",
+        stroke: "#05030a",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(80)
+      .setVisible(false);
 
     this.counterText = this.add
       .text(28, 28, "", {
@@ -702,26 +1025,40 @@ export default class ChuckyScene extends Phaser.Scene {
       jump: Phaser.Input.Keyboard.KeyCodes.SPACE,
       flashlight: Phaser.Input.Keyboard.KeyCodes.X,
       flashlightAlt: Phaser.Input.Keyboard.KeyCodes.F,
+      knife: Phaser.Input.Keyboard.KeyCodes.C,
     });
   }
 
   criarColisoes() {
     this.physics.add.collider(this.player, this.platforms);
+    this.physics.add.collider(this.chucky, this.platforms);
+    this.physics.add.collider(
+      this.ghostface,
+      this.platforms,
+      null,
+      () => this.ghostfaceMode !== "ghost",
+      this
+    );
     this.physics.add.overlap(this.player, this.memories, this.coletarLembranca, null, this);
     this.physics.add.overlap(this.player, this.exitDoor, this.tentarSair, null, this);
     this.physics.add.overlap(this.player, this.guiRescue, this.tentarSalvarGui, null, this);
     this.physics.add.overlap(this.player, this.chucky, this.serPegaPorChucky, null, this);
+    this.physics.add.overlap(this.player, this.ghostface, this.serPegaPorGhostface, null, this);
+    this.physics.add.overlap(this.knives, this.ghostface, this.acertarGhostface, null, this);
   }
 
   atualizarJogadora() {
-    const speed = 300;
-    const jump = -580;
+    const speed = 330;
+    const jump = -650;
     const left = this.cursors.left.isDown || this.keys.left.isDown;
     const right = this.cursors.right.isDown || this.keys.right.isDown;
     const jumpPressed =
       Phaser.Input.Keyboard.JustDown(this.cursors.up) ||
       Phaser.Input.Keyboard.JustDown(this.keys.up) ||
       Phaser.Input.Keyboard.JustDown(this.keys.jump);
+    const knifePressed = Phaser.Input.Keyboard.JustDown(this.keys.knife);
+
+    this.playerVisual.setPosition(this.player.x, this.player.y);
 
     this.player.body.setVelocityX(0);
 
@@ -735,22 +1072,85 @@ export default class ChuckyScene extends Phaser.Scene {
 
     if (jumpPressed && this.player.body.blocked.down) {
       this.player.body.setVelocityY(jump);
+      this.jumpGraceUntil = this.time.now + 720;
+    }
+
+    if (knifePressed && this.time.now >= this.knifeCooldown) {
+      this.lancarFaca();
     }
 
     const moving = Math.abs(this.player.body.velocity.x) > 5;
+    const airborne = !this.player.body.blocked.down;
+    const throwing = this.time.now < this.throwingUntil;
     const usingFlashlightPose =
       (this.keys.flashlight.isDown || this.keys.flashlightAlt.isDown) &&
       this.flashlightCharge > 2 &&
       this.time.now > this.flashlightCooldown;
 
     if (usingFlashlightPose) {
-      this.player.setFlipX(this.playerDirection < 0);
-      this.player.anims.play("livinha-chucky-flashlight", true);
+      this.aplicarVisualJogadora("liviaLanternSprite", 131, 98);
+      this.playerVisual.setFlipX(this.playerDirection < 0);
+      this.playerVisual.anims.play("livinha-chucky-flashlight", true);
       return;
     }
 
-    this.player.setFlipX(this.playerDirection > 0);
-    this.player.anims.play(moving ? "livinha-chucky-run" : "livinha-chucky-idle", true);
+    if (throwing) {
+      this.aplicarVisualJogadora("liviaKnifeSprite", 78, 98);
+      this.playerVisual.setFlipX(this.playerDirection < 0);
+      this.playerVisual.anims.play("livinha-chucky-throw", true);
+      return;
+    }
+
+    this.aplicarVisualJogadora("liviaRockSprite", 98, 98);
+    this.playerVisual.setFlipX(this.playerDirection > 0);
+
+    if (airborne) {
+      this.playerVisual.anims.play(
+        this.player.body.velocity.y < 0 ? "livinha-chucky-jump" : "livinha-chucky-fall",
+        true
+      );
+      return;
+    }
+
+    this.playerVisual.anims.play(moving ? "livinha-chucky-run" : "livinha-chucky-idle", true);
+  }
+
+  lancarFaca() {
+    const dir = this.playerDirection;
+    const x = this.player.x + dir * 42;
+    const y = this.player.y - 10;
+    const knife = this.knives.create(x, y, "liviaKnifeProjectile");
+    knife.setDisplaySize(58, 26);
+    knife.setDepth(34);
+    knife.setFlipX(dir < 0);
+    knife.body.setAllowGravity(false);
+    knife.body.setSize(44, 14);
+    knife.body.setVelocityX(dir * 720);
+    knife.body.setVelocityY(-18);
+    knife.bornAt = this.time.now;
+    this.knifeCooldown = this.time.now + 520;
+    this.throwingUntil = this.time.now + 360;
+  }
+
+  atualizarFacas(time) {
+    if (!this.knives) {
+      return;
+    }
+
+    const camera = this.cameras.main;
+    this.knives.getChildren().forEach((knife) => {
+      if (!knife?.active) {
+        return;
+      }
+
+      if (
+        time - knife.bornAt > 1600 ||
+        knife.x < camera.scrollX - 120 ||
+        knife.x > camera.scrollX + this.largura + 120
+      ) {
+        knife.destroy();
+      }
+    });
   }
 
   atualizarLanterna(delta) {
@@ -759,9 +1159,9 @@ export default class ChuckyScene extends Phaser.Scene {
     this.flashlightActive = wantsLight && canLight;
 
     if (this.flashlightActive) {
-      this.flashlightCharge = Math.max(0, this.flashlightCharge - delta * 0.045);
+      this.flashlightCharge = Math.max(0, this.flashlightCharge - delta * 0.055);
     } else {
-      this.flashlightCharge = Math.min(100, this.flashlightCharge + delta * 0.018);
+      this.flashlightCharge = Math.min(100, this.flashlightCharge + delta * 0.016);
     }
 
     if (this.flashlightCharge <= 1) {
@@ -774,18 +1174,35 @@ export default class ChuckyScene extends Phaser.Scene {
     }
 
     const dir = this.playerDirection;
-    const startX = this.player.x + dir * 28;
-    const startY = this.player.y - 8;
+    const startX = this.player.x + dir * 40;
+    const startY = this.player.y - 10;
     const endX = startX + dir * 430;
+    const flicker = 0.94 + Math.sin(this.time.now / 72) * 0.05;
 
-    this.flashlightBeam.fillStyle(0xffe8a3, 0.16);
-    this.flashlightBeam.fillTriangle(startX, startY - 26, startX, startY + 26, endX, startY);
-    this.flashlightBeam.fillStyle(0xfff3bf, 0.1);
-    this.flashlightBeam.fillCircle(endX, startY, 88);
-    this.flashlightBeam.lineStyle(2, 0xffe8a3, 0.2);
-    this.flashlightBeam.strokeTriangle(startX, startY - 26, startX, startY + 26, endX, startY);
+    const beamHeight = 64 * flicker;
+    this.flashlightBeam.fillStyle(0xfff3bf, 0.15);
+    this.flashlightBeam.fillTriangle(
+      startX,
+      startY,
+      endX,
+      startY - beamHeight,
+      endX,
+      startY + beamHeight
+    );
+    this.flashlightBeam.fillStyle(0xffffff, 0.09);
+    this.flashlightBeam.fillTriangle(
+      startX,
+      startY,
+      startX + dir * 300,
+      startY - 26,
+      startX + dir * 300,
+      startY + 26
+    );
+    this.flashlightBeam.fillStyle(0xfff3bf, 0.08);
+    this.flashlightBeam.fillCircle(endX, startY, 76);
 
     this.tentarAfastarChuckyComLanterna();
+    this.tentarAfastarGhostfaceComLanterna();
   }
 
   tentarAfastarChuckyComLanterna() {
@@ -797,8 +1214,8 @@ export default class ChuckyScene extends Phaser.Scene {
     const ahead = dir > 0 ? this.chucky.x - this.player.x : this.player.x - this.chucky.x;
     const vertical = Math.abs(this.chucky.y - this.player.y);
 
-    if (ahead > 0 && ahead < 470 && vertical < 125) {
-      this.chuckyStunnedUntil = this.time.now + 2400;
+    if (ahead > 0 && ahead < 390 && vertical < 118) {
+      this.chuckyStunnedUntil = this.time.now + 1500;
       this.chucky.body.setVelocityX(0);
       this.chucky.anims.play("chucky-stun", true);
       this.mostrarTextoFlutuante(this.chucky.x, this.chucky.y - 58, "luz!", "#fff3bf");
@@ -806,15 +1223,36 @@ export default class ChuckyScene extends Phaser.Scene {
     }
   }
 
-  atualizarChucky(time) {
-    if (!this.chuckyHunting || !this.chucky.visible) {
+  tentarAfastarGhostfaceComLanterna() {
+    if (!this.ghostface?.visible || this.time.now < this.ghostfaceStunnedUntil) {
       return;
     }
 
-    this.chucky.y = FLOOR_Y - 58;
+    const dir = this.playerDirection;
+    const ahead = dir > 0 ? this.ghostface.x - this.player.x : this.player.x - this.ghostface.x;
+    const vertical = Math.abs(this.ghostface.y - this.player.y);
 
-    if (time >= this.chuckyHideAt) {
-      this.esconderChucky("Ele sumiu... por enquanto.");
+    if (ahead > 0 && ahead < 360 && vertical < 135) {
+      this.ghostfaceStunnedUntil = this.time.now + (this.ghostfaceMode === "ghost" ? 760 : 1180);
+      this.ghostface.body.setVelocityX(dir * 170);
+      this.ghostface.anims.play("ghostface-hurt", true);
+      this.mostrarTextoFlutuante(this.ghostface.x, this.ghostface.y - 58, "luz!", "#d8f3ff");
+    }
+  }
+
+  inimigoSobLanterna(inimigo, range = 400, verticalRange = 135) {
+    if (!this.flashlightActive || !inimigo?.visible) {
+      return false;
+    }
+
+    const dir = this.playerDirection;
+    const ahead = dir > 0 ? inimigo.x - this.player.x : this.player.x - inimigo.x;
+    const vertical = Math.abs(inimigo.y - this.player.y);
+    return ahead >= -28 && ahead < range && vertical < verticalRange;
+  }
+
+  atualizarChucky(time) {
+    if (!this.chuckyHunting || !this.chucky.visible) {
       return;
     }
 
@@ -831,13 +1269,88 @@ export default class ChuckyScene extends Phaser.Scene {
       return;
     }
 
-    this.chucky.setAlpha(1);
+    const chuckyInSafeZone = this.entidadeEmZonaSegura(this.chucky);
+    this.chucky.setAlpha(chuckyInSafeZone ? 0.72 : 1);
     const dx = this.player.x - this.chucky.x;
     const dir = Math.sign(dx) || 1;
-    const speed = 92 + this.memoriesCollected * 18;
+    const distance = Math.abs(dx);
+    const speed =
+      (168 + this.memoriesCollected * 28 + (distance > 460 ? 44 : 0)) *
+      (chuckyInSafeZone ? 0.42 : 1);
     this.chucky.body.setVelocityX(dir * speed);
+
+    const playerAbove = this.player.y < this.chucky.y - 64;
+    const stuckOnSide = this.chucky.body.blocked.left || this.chucky.body.blocked.right;
+    if (
+      this.chucky.body.blocked.down &&
+      ((playerAbove && distance > 175) || stuckOnSide) &&
+      distance < 680
+    ) {
+      this.chucky.body.setVelocityY(-510);
+    }
+
     this.chucky.setFlipX(dir < 0);
-    this.chucky.anims.play(Math.abs(dx) < 220 ? "chucky-scare" : "chucky-walk", true);
+    this.chucky.anims.play(distance < 115 ? "chucky-scare" : "chucky-walk", true);
+  }
+
+  atualizarGhostface(time) {
+    this.reconstruirGhostfaceSeNecessario();
+
+    if (!this.ghostface?.visible) {
+      return;
+    }
+
+    this.ghostfaceAura.setPosition(this.ghostface.x, this.ghostface.y + 30);
+
+    if (this.jogadoraEmZonaSegura()) {
+      this.ghostface.body.setVelocity(0, 0);
+      this.ghostface.setAlpha(this.ghostfaceMode === "ghost" ? 0.5 : 0.58);
+      this.ghostface.anims.play(this.ghostfaceMode === "ghost" ? "ghostface-ghost" : "ghostface-idle", true);
+      return;
+    }
+
+    if (time < this.ghostfaceStunnedUntil) {
+      this.ghostface.body.setVelocityX(0);
+      this.ghostface.anims.play("ghostface-hurt", true);
+      return;
+    }
+
+    const dx = this.player.x - this.ghostface.x;
+    const dir = Math.sign(dx) || 1;
+    const distance = Math.abs(dx);
+    const ghostInSafeZone = this.entidadeEmZonaSegura(this.ghostface);
+    this.ghostface.setFlipX(dir < 0);
+
+    if (this.ghostfaceMode === "ghost") {
+      this.ghostface.body.setAllowGravity(false);
+      this.ghostface.setAlpha((ghostInSafeZone ? 0.5 : 0.68) + Math.sin(time / 140) * 0.08);
+      this.ghostface.body.setVelocityX(
+        dir * (110 + this.memoriesCollected * 9) * (ghostInSafeZone ? 0.45 : 1)
+      );
+      this.ghostface.y += (this.player.y - 20 - this.ghostface.y) * 0.026;
+      this.ghostface.anims.play("ghostface-ghost", true);
+      return;
+    }
+
+    this.ghostface.body.setAllowGravity(true);
+    this.ghostface.setAlpha(ghostInSafeZone ? 0.72 : 1);
+    this.ghostface.body.setVelocityX(
+      dir *
+        (136 + this.memoriesCollected * 16 + (distance > 520 ? 38 : 0)) *
+        (ghostInSafeZone ? 0.48 : 1)
+    );
+
+    const playerAbove = this.player.y < this.ghostface.y - 70;
+    const stuckOnSide = this.ghostface.body.blocked.left || this.ghostface.body.blocked.right;
+    if (
+      this.ghostface.body.blocked.down &&
+      ((playerAbove && distance > 190) || stuckOnSide) &&
+      distance < 620
+    ) {
+      this.ghostface.body.setVelocityY(-470);
+    }
+
+    this.ghostface.anims.play(distance < 190 ? "ghostface-attack" : "ghostface-run", true);
   }
 
   atualizarZonasSeguras() {
@@ -865,7 +1378,7 @@ export default class ChuckyScene extends Phaser.Scene {
       return;
     }
 
-    this.nextScareAt = time + Phaser.Math.Between(5600, 8800);
+    this.nextScareAt = time + Phaser.Math.Between(4200, 7000);
     const cameraX = this.cameras.main.scrollX;
     const x = Phaser.Math.Clamp(
       cameraX + Phaser.Math.Between(420, 1260),
@@ -905,30 +1418,74 @@ export default class ChuckyScene extends Phaser.Scene {
     this.memoriesCollected += 1;
     this.criarEfeitoColeta(item.x, item.y, 0xffe8a3);
     this.mostrarFeedback(`${memory.title}. ${memory.text}`, "#fff3bf");
+    this.mostrarFotoLembranca(memory, () => {
+      if (!this.sys.isActive() || this.levelComplete) {
+        return;
+      }
 
-    if (this.memoriesCollected >= this.totalMemories) {
-      this.abrirPortaFinal();
-    } else {
-      this.invocarChuckyPorSusto();
-    }
+      if (this.memoriesCollected >= this.totalMemories) {
+        this.abrirPortaFinal();
+      } else {
+        this.invocarChuckyPorSusto();
+      }
+    });
+  }
+
+  mostrarFotoLembranca(memory, onClose) {
+    this.memoryModalOpen = true;
+    this.physics.world.pause();
+
+    let closing = false;
+    const close = () => {
+      if (closing) {
+        return;
+      }
+
+      closing = true;
+      this.memoryModalOpen = false;
+      this.physics.world.resume();
+      onClose?.();
+    };
+
+    this.game.events.emit("chucky-memory-open", {
+      id: memory.id,
+      title: memory.title,
+      text: memory.text,
+      photoUrl: memory.photoUrl,
+      close,
+    });
   }
 
   invocarChuckyPorSusto() {
     const side = this.playerDirection >= 0 ? -1 : 1;
     const x = Phaser.Math.Clamp(
-      this.player.x + side * Phaser.Math.Between(380, 560),
+      this.player.x + side * Phaser.Math.Between(260, 420),
       180,
       this.worldWidth - 300
     );
 
-    this.chucky.enableBody(false, x, FLOOR_Y - 58, true, true);
-    this.chucky.body.enable = true;
+    const chuckyX =
+      Math.abs(this.chucky.x - this.player.x) > 980 ? x : this.chucky.x;
+    this.reativarInimigo(this.chucky, chuckyX, FLOOR_Y - 90, "chucky");
+
+    if (this.ghostfaceMode === "alive") {
+      const ghostfaceX =
+        Math.abs(this.ghostface.x - this.player.x) > 1200
+          ? Phaser.Math.Clamp(this.player.x - side * 520, 220, this.worldWidth - 380)
+          : this.ghostface.x;
+      this.reativarInimigo(
+        this.ghostface,
+        ghostfaceX,
+        FLOOR_Y - 90,
+        "ghostface"
+      );
+    }
+
     this.chucky.setVisible(true).setAlpha(1);
     this.chuckyHunting = true;
-    this.chuckyHideAt = this.time.now + 6600 + this.memoriesCollected * 720;
     this.chuckyStunnedUntil = 0;
     this.chucky.anims.play("chucky-scare", true);
-    this.mostrarFeedback("Corre, acende a lanterna ou acha uma luz segura.", "#ffcfdf");
+    this.mostrarFeedback("O barulho chamou os dois. Corre, usa a lanterna, a faca ou uma luz segura.", "#ffcfdf");
   }
 
   esconderChucky(message) {
@@ -948,26 +1505,217 @@ export default class ChuckyScene extends Phaser.Scene {
     }
   }
 
+  acertarGhostface(objectA, objectB) {
+    const ghostface = objectA === this.ghostface ? objectA : objectB;
+    const knife = objectA === this.ghostface ? objectB : objectA;
+
+    if (ghostface !== this.ghostface || !knife || knife === this.ghostface) {
+      return;
+    }
+
+    if (!knife.active || this.time.now - this.lastGhostHitAt < 180) {
+      return;
+    }
+
+    knife.destroy();
+
+    if (this.ghostfaceMode === "ghost") {
+      this.mostrarTextoFlutuante(ghostface.x, ghostface.y - 58, "atravessou", "#d8f3ff");
+      return;
+    }
+
+    this.lastGhostHitAt = this.time.now;
+    this.ghostfaceHealth -= 1;
+    this.ghostfaceStunnedUntil = this.time.now + 980;
+    this.criarEfeitoColeta(ghostface.x, ghostface.y, 0xd8f3ff);
+    this.mostrarTextoFlutuante(ghostface.x, ghostface.y - 66, "-1", "#d8f3ff");
+
+    if (this.ghostfaceHealth <= 0) {
+      this.transformarGhostfaceEmFantasma();
+      return;
+    }
+
+    this.mostrarFeedback("A faca acertou o Ghostface. Chucky nem liga para ela.", "#d8f3ff");
+  }
+
+  transformarGhostfaceEmFantasma() {
+    this.ghostfaceMode = "ghost";
+    this.ghostfaceHealth = 0;
+    this.ghostfaceStunnedUntil = 0;
+    this.ghostface.setActive(true).setVisible(true).setDepth(26);
+    this.ghostface.body.setVelocity(0, 0);
+    this.ghostface.body.setAllowGravity(false);
+    this.ghostface.setAlpha(0.72).setTint(0xd8f3ff);
+    this.ghostface.anims.play("ghostface-ghost", true);
+    this.ghostfaceAura.setVisible(true).setTint(0xd8f3ff).setAlpha(0.38);
+    this.mostrarFeedback("Ghostface caiu... mas voltou como fantasma. Agora so a luz segura segura ele.", "#d8f3ff");
+  }
+
+  jogadoraSaltandoPorCima(inimigo) {
+    if (!inimigo?.body || this.player.body.blocked.down) {
+      return false;
+    }
+
+    const horizontal = Math.abs(this.player.x - inimigo.x);
+    const playerAbove = this.player.y < inimigo.y - 22;
+    return horizontal < 92 && playerAbove && this.time.now < this.jumpGraceUntil;
+  }
+
   serPegaPorChucky() {
-    if (!this.chuckyHunting || this.time.now - this.lastCaughtAt < 1200) {
+    if (
+      this.levelComplete ||
+      this.guiSaved ||
+      this.rescueFailed ||
+      this.memoryModalOpen ||
+      !this.chuckyHunting ||
+      this.time.now < this.chuckyStunnedUntil ||
+      this.inimigoSobLanterna(this.chucky, 410, 125) ||
+      this.jogadoraSaltandoPorCima(this.chucky) ||
+      this.jogadoraEmZonaSegura() ||
+      this.entidadeEmZonaSegura(this.chucky) ||
+      this.time.now - this.lastCaughtAt < 1200
+    ) {
+      return;
+    }
+
+    this.receberDano("chucky");
+    this.chuckyStunnedUntil = this.time.now + 820;
+  }
+
+  serPegaPorGhostface() {
+    if (
+      this.levelComplete ||
+      this.guiSaved ||
+      this.rescueFailed ||
+      this.memoryModalOpen ||
+      this.time.now < this.ghostfaceStunnedUntil ||
+      this.inimigoSobLanterna(this.ghostface, 380, 140) ||
+      this.jogadoraSaltandoPorCima(this.ghostface) ||
+      this.jogadoraEmZonaSegura() ||
+      this.entidadeEmZonaSegura(this.ghostface) ||
+      this.time.now - this.lastCaughtAt < 1200
+    ) {
+      return;
+    }
+
+    this.receberDano(this.ghostfaceMode === "ghost" ? "fantasma" : "ghostface");
+    this.ghostfaceStunnedUntil = this.time.now + 780;
+  }
+
+  receberDano(source) {
+    if (this.levelComplete || this.guiSaved || this.rescueFailed) {
       return;
     }
 
     this.lastCaughtAt = this.time.now;
     this.lives -= 1;
-    this.esconderChucky();
     this.cameras.main.shake(260, 0.006);
     this.criarEfeitoColeta(this.player.x, this.player.y, 0xff5d8f);
-
-    if (this.lives <= 0) {
-      this.lives = 3;
-      this.mostrarFeedback("O susto foi grande... mas ela levanta e continua.", "#ffcfdf");
-    } else {
-      this.mostrarFeedback(Phaser.Utils.Array.GetRandom(CAUGHT_MESSAGES), "#ffcfdf");
-    }
-
     this.player.setPosition(this.checkpoint.x, this.checkpoint.y);
     this.player.body.setVelocity(0, 0);
+    this.playerVisual.setPosition(this.player.x, this.player.y);
+    this.reposicionarInimigosDepoisDoDano();
+
+    if (this.lives <= 0) {
+      this.continuesUsed += 1;
+      this.mostrarReinicioPorCoracoes();
+      return;
+    }
+
+    const prefix =
+      source === "fantasma"
+        ? "O fantasma encostou perto demais."
+        : source === "ghostface"
+          ? "Ghostface chegou perto demais."
+          : "Chucky chegou perto demais.";
+    this.mostrarFeedback(`${prefix} ${Phaser.Utils.Array.GetRandom(CAUGHT_MESSAGES)}`, "#ffcfdf");
+  }
+
+  mostrarReinicioPorCoracoes() {
+    if (this.rescueFailed || this.levelComplete || this.guiSaved) {
+      return;
+    }
+
+    this.rescueFailed = true;
+    this.player.body.setVelocity(0, 0);
+    this.chucky.body?.setVelocity(0, 0);
+    this.ghostface.body?.setVelocity(0, 0);
+    this.timerText.setVisible(false);
+
+    const overlay = this.add
+      .rectangle(0, 0, this.largura, this.altura, 0x05030a, 0.8)
+      .setOrigin(0)
+      .setScrollFactor(0)
+      .setDepth(100);
+    const title = this.add
+      .text(this.largura / 2, this.altura / 2 - 92, "A coragem se recompõe", {
+        fontSize: "34px",
+        color: "#fff3bf",
+        fontFamily: "Trebuchet MS",
+        fontStyle: "bold",
+        stroke: "#05030a",
+        strokeThickness: 6,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(101);
+    const message = this.add
+      .text(
+        this.largura / 2,
+        this.altura / 2 - 18,
+        "Os tres coracoes acabaram. Respira, volta ao inicio e tenta outra vez.",
+        {
+          fontSize: "22px",
+          color: "#fff8e7",
+          fontFamily: "Trebuchet MS",
+          fontStyle: "bold",
+          align: "center",
+          wordWrap: { width: 720 },
+          stroke: "#05030a",
+          strokeThickness: 5,
+        }
+      )
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(101);
+    const button = this.add
+      .rectangle(this.largura / 2, this.altura / 2 + 82, 236, 54, 0xffe8a3, 0.2)
+      .setStrokeStyle(2, 0xfff3bf, 0.9)
+      .setScrollFactor(0)
+      .setDepth(101)
+      .setInteractive({ useHandCursor: true });
+    const label = this.add
+      .text(this.largura / 2, this.altura / 2 + 82, "RECOMECAR", {
+        fontSize: "22px",
+        color: "#fff8e7",
+        fontFamily: "Trebuchet MS",
+        fontStyle: "bold",
+        stroke: "#05030a",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(102)
+      .setInteractive({ useHandCursor: true });
+
+    const restart = () => this.scene.restart();
+    button.on("pointerdown", restart);
+    label.on("pointerdown", restart);
+    button.on("pointerover", () => button.setFillStyle(0xffe8a3, 0.36));
+    button.on("pointerout", () => button.setFillStyle(0xffe8a3, 0.2));
+
+    this.heartFailureOverlayItems = [overlay, title, message, button, label];
+  }
+
+  reposicionarInimigosDepoisDoDano() {
+    const side = this.playerDirection >= 0 ? -1 : 1;
+    const chuckyX = Phaser.Math.Clamp(this.checkpoint.x + side * 520, 220, this.worldWidth - 360);
+    const ghostX = Phaser.Math.Clamp(this.checkpoint.x - side * 620, 260, this.worldWidth - 420);
+
+    this.reativarInimigo(this.chucky, chuckyX, FLOOR_Y - 92, "chucky");
+    this.chuckyHunting = true;
+
+    this.reativarInimigo(this.ghostface, ghostX, FLOOR_Y - 92, "ghostface");
   }
 
   abrirPortaFinal() {
@@ -977,9 +1725,9 @@ export default class ChuckyScene extends Phaser.Scene {
     this.exitGlow.setAlpha(0.34);
     this.guiAura.setTint(0xffe8a3).setAlpha(0.46);
     this.guiPrompt.setText("ela precisa te salvar");
-    this.objectiveText.setText("A porta abriu, mas ele ainda esta assustado. Encontre-o.");
+    this.objectiveText.setText("A porta abriu. Salve ele antes que Chucky e Ghostface cheguem.");
+    this.iniciarContagemResgate();
     this.mostrarFeedback("As lembrancas acenderam o caminho. Agora ela precisa te buscar no escuro.", "#fff3bf");
-    this.esconderChucky();
 
     this.tweens.add({
       targets: this.exitGlow,
@@ -990,6 +1738,127 @@ export default class ChuckyScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1,
     });
+  }
+
+  iniciarContagemResgate(duration = RESCUE_COUNTDOWN_MS) {
+    this.rescueDeadline = this.time.now + duration;
+    this.timerText.setVisible(true);
+  }
+
+  atualizarTimerResgate(time) {
+    if (!this.rescueReady || this.guiSaved || !this.rescueDeadline) {
+      if (this.timerText) {
+        this.timerText.setVisible(false);
+      }
+      return;
+    }
+
+    const remaining = Math.max(0, this.rescueDeadline - time);
+    const seconds = Math.ceil(remaining / 1000);
+    this.timerText.setVisible(true).setText(`Resgate: ${seconds}s`);
+    this.timerText.setColor(seconds <= 12 ? "#ff8fab" : "#ffcfdf");
+
+    if (remaining <= 0) {
+      this.mostrarFalhaResgate();
+    }
+  }
+
+  mostrarFalhaResgate() {
+    if (this.rescueFailed || this.guiSaved) {
+      return;
+    }
+
+    this.rescueFailed = true;
+    this.continuesUsed += 1;
+    this.player.body.setVelocity(0, 0);
+    this.chucky.body.setVelocity(0, 0);
+    this.ghostface.body.setVelocity(0, 0);
+    this.timerText.setVisible(false);
+
+    const overlay = this.add
+      .rectangle(0, 0, this.largura, this.altura, 0x05030a, 0.72)
+      .setOrigin(0)
+      .setScrollFactor(0)
+      .setDepth(92);
+    const gui = this.add
+      .sprite(this.largura / 2, this.altura / 2 - 46, "guiScaredSprite", 0)
+      .setDisplaySize(126, 126)
+      .setScrollFactor(0)
+      .setDepth(94);
+    gui.anims.play("gui-scared", true);
+    const chucky = this.add
+      .sprite(this.largura / 2 - 155, this.altura / 2 - 30, "chuckySprite", 10)
+      .setDisplaySize(128, 112)
+      .setScrollFactor(0)
+      .setDepth(94);
+    const ghost = this.add
+      .sprite(this.largura / 2 + 155, this.altura / 2 - 34, "ghostfaceSprite", 19)
+      .setDisplaySize(132, 132)
+      .setScrollFactor(0)
+      .setDepth(94)
+      .setAlpha(0.86);
+    const message = this.add
+      .text(
+        this.largura / 2,
+        this.altura / 2 + 102,
+        "Chucky e Ghostface chegaram ate voce primeiro. Mas ainda existe continue: ela respira, volta para a luz e tenta de novo.",
+        {
+          fontSize: "22px",
+          color: "#fff8e7",
+          fontFamily: "Trebuchet MS",
+          fontStyle: "bold",
+          align: "center",
+          wordWrap: { width: 780 },
+          stroke: "#05030a",
+          strokeThickness: 5,
+        }
+      )
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(95);
+    const button = this.add
+      .rectangle(this.largura / 2, this.altura / 2 + 208, 214, 50, 0xffe8a3, 0.2)
+      .setStrokeStyle(2, 0xfff3bf, 0.8)
+      .setScrollFactor(0)
+      .setDepth(95)
+      .setInteractive({ useHandCursor: true });
+    const label = this.add
+      .text(this.largura / 2, this.altura / 2 + 208, "CONTINUE", {
+        fontSize: "22px",
+        color: "#fff8e7",
+        fontFamily: "Trebuchet MS",
+        fontStyle: "bold",
+        stroke: "#05030a",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(96)
+      .setInteractive({ useHandCursor: true });
+
+    this.failureOverlayItems = [overlay, gui, chucky, ghost, message, button, label];
+    const retry = () => this.continuarDepoisDaFalha();
+    button.on("pointerdown", retry);
+    label.on("pointerdown", retry);
+    button.on("pointerover", () => button.setFillStyle(0xffe8a3, 0.34));
+    button.on("pointerout", () => button.setFillStyle(0xffe8a3, 0.2));
+  }
+
+  continuarDepoisDaFalha() {
+    if (!this.rescueFailed) {
+      return;
+    }
+
+    this.failureOverlayItems?.forEach((item) => item.destroy());
+    this.failureOverlayItems = [];
+    this.rescueFailed = false;
+    this.lives = 3;
+    this.player.setPosition(this.checkpoint.x, this.checkpoint.y);
+    this.player.body.setVelocity(0, 0);
+    this.playerVisual.setPosition(this.player.x, this.player.y);
+    this.reposicionarInimigosDepoisDoDano();
+    this.iniciarContagemResgate(RESCUE_COUNTDOWN_MS + 14000);
+    this.mostrarFeedback("Continue. Dessa vez ela ja sabe por onde a luz volta.", "#fff3bf");
   }
 
   tentarSair() {
@@ -1013,7 +1882,7 @@ export default class ChuckyScene extends Phaser.Scene {
       return;
     }
 
-    if (!this.rescueReady) {
+    if (this.memoriesCollected < this.totalMemories || !this.rescueReady) {
       if (this.time.now - this.lastGuiPromptAt > 1400) {
         this.lastGuiPromptAt = this.time.now;
         this.mostrarFeedback(
@@ -1028,20 +1897,49 @@ export default class ChuckyScene extends Phaser.Scene {
   }
 
   finalizarResgateGui() {
+    if (this.memoriesCollected < this.totalMemories || !this.rescueReady) {
+      return;
+    }
+
     this.levelComplete = true;
     this.guiSaved = true;
+    this.rescueFailed = false;
+    this.rescueDeadline = null;
+    this.heartFailureOverlayItems?.forEach((item) => item.destroy());
+    this.failureOverlayItems?.forEach((item) => item.destroy());
+    this.heartFailureOverlayItems = [];
+    this.failureOverlayItems = [];
     this.player.body.setVelocity(0, 0);
+    this.chuckyHunting = false;
+    this.physics.world.pause();
     this.esconderChucky();
+    this.ghostface.setVisible(false);
+    this.ghostfaceAura.setVisible(false);
+    this.timerText.setVisible(false);
 
     this.player.setVisible(false);
+    this.playerVisual.setVisible(false);
     this.guiRescue.setVisible(false);
     this.guiShadow.setVisible(false);
     this.guiPrompt.setVisible(false);
     this.guiAura.setAlpha(0.74).setTint(0xffe8a3);
 
+    [
+      this.hudShade,
+      this.hudTitle,
+      this.objectiveText,
+      this.timerText,
+      this.counterText,
+      this.lifeText,
+      this.chargeBack,
+      this.chargeFill,
+      this.chargeLabel,
+      this.feedbackBox,
+      this.feedbackText,
+    ].forEach((item) => item?.setVisible(false));
+
     this.cameras.main.stopFollow();
     this.cameras.main.pan(GUI_RESCUE_X, FLOOR_Y - 118, 850, "Sine.easeInOut");
-    this.cameras.main.zoomTo(1.08, 850);
 
     this.finalOverlay = this.add
       .rectangle(0, 0, this.largura, this.altura, 0x05030a, 0.54)
@@ -1059,10 +1957,10 @@ export default class ChuckyScene extends Phaser.Scene {
     this.finalMessage = this.add
       .text(
         this.largura / 2,
-        this.altura / 2 + 136,
-        "Ela me fez e me faz vencer medos, ate o medo de filmes de terror. Foi meu farol na fase mais sombria da minha vida, e segue sendo ate hoje.",
+        this.altura / 2 + 124,
+        "Te amo. Voce sempre acreditou em mim, mesmo quando eu duvidei, e isso me ajuda mais do que consigo dizer. Voce me fez e me faz vencer medos, ate o medo de filmes de terror. Foi meu farol na fase mais sombria da minha vida, e segue sendo ate hoje.",
         {
-          fontSize: "24px",
+          fontSize: "22px",
           color: "#fff8e7",
           fontFamily: "Trebuchet MS",
           fontStyle: "bold",
@@ -1077,28 +1975,71 @@ export default class ChuckyScene extends Phaser.Scene {
       .setDepth(89)
       .setAlpha(0);
 
+    const okY = Math.min(this.altura - 50, this.altura / 2 + 258);
+    this.finalOkButton = this.add
+      .rectangle(this.largura / 2, okY, 154, 48, 0xffe8a3, 0.2)
+      .setStrokeStyle(2, 0xfff3bf, 0.8)
+      .setScrollFactor(0)
+      .setDepth(90)
+      .setAlpha(0)
+      .setInteractive({ useHandCursor: true });
+
+    this.finalOkLabel = this.add
+      .text(this.largura / 2, okY, "OK", {
+        fontSize: "23px",
+        color: "#fff8e7",
+        fontFamily: "Trebuchet MS",
+        fontStyle: "bold",
+        stroke: "#05030a",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(91)
+      .setAlpha(0)
+      .setInteractive({ useHandCursor: true });
+
+    const finish = () => this.concluirFinalChucky();
+    this.finalOkButton.on("pointerdown", finish);
+    this.finalOkLabel.on("pointerdown", finish);
+    this.finalOkButton.on("pointerover", () => this.finalOkButton.setFillStyle(0xffe8a3, 0.34));
+    this.finalOkButton.on("pointerout", () => this.finalOkButton.setFillStyle(0xffe8a3, 0.2));
+
     this.tweens.add({
-      targets: [this.finalHug, this.finalMessage],
+      targets: [this.finalHug, this.finalMessage, this.finalOkButton, this.finalOkLabel],
       alpha: 1,
       y: "-=10",
       duration: 900,
       ease: "Sine.easeOut",
     });
+  }
 
-    this.time.delayedCall(5600, () => {
-      this.game.events.emit("chucky-complete");
-    });
+  concluirFinalChucky() {
+    if (this.finalAcknowledged) {
+      return;
+    }
+
+    this.finalAcknowledged = true;
+    this.game.events.emit("chucky-complete");
   }
 
   jogadoraEmZonaSegura() {
+    return this.entidadeEmZonaSegura(this.player);
+  }
+
+  entidadeEmZonaSegura(entity) {
+    if (!entity) {
+      return false;
+    }
+
     return this.safeZoneVisuals.some(
-      (zone) => Phaser.Math.Distance.Between(this.player.x, this.player.y, zone.x, FLOOR_Y - 42) < zone.radius
+      (zone) => Phaser.Math.Distance.Between(entity.x, entity.y, zone.x, FLOOR_Y - 42) < zone.radius
     );
   }
 
   atualizarHud() {
     this.counterText.setText(`Lembrancas: ${this.memoriesCollected}/${this.totalMemories}`);
-    this.lifeText.setText(`Coragem: ${"<3 ".repeat(this.lives).trim()}`);
+    this.lifeText.setText(`Coragem: ${"♥ ".repeat(this.lives).trim()}`);
     this.chargeFill.setDisplaySize(Math.max(0, 176 * (this.flashlightCharge / 100)), 14);
     this.chargeFill.setFillStyle(this.flashlightActive ? 0xfff3bf : 0xffe8a3, 0.9);
   }

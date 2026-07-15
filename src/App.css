@@ -106,6 +106,158 @@ body {
   max-height: 100vh;
 }
 
+.chucky-game-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #050713;
+}
+
+.chucky-memory-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(5, 3, 10, 0.9);
+  animation: chucky-memory-in 180ms ease-out;
+}
+
+.chucky-memory-card {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 0.85fr);
+  gap: 30px;
+  width: min(1380px, 100%);
+  height: min(660px, calc(100vh - 48px));
+  padding: 18px;
+  overflow: hidden;
+  border: 4px solid #5c2946;
+  border-radius: 6px;
+  background: #fff8e7;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.62);
+}
+
+.chucky-memory-photo-frame {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 16px;
+  border: 2px solid #c9ad83;
+  background: #eadfc9;
+}
+
+.chucky-memory-photo-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  object-fit: contain;
+  image-rendering: auto;
+}
+
+.chucky-memory-copy {
+  display: flex;
+  min-width: 0;
+  padding: 24px 18px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  color: #401d32;
+}
+
+.chucky-memory-copy .chucky-memory-kicker {
+  margin: 0 0 14px;
+  color: #7a264f;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.chucky-memory-copy h2 {
+  margin: 0 0 26px;
+  color: #2b1021;
+  font-family: "Trebuchet MS", sans-serif;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.chucky-memory-copy > p:not(.chucky-memory-kicker) {
+  max-width: 390px;
+  margin: 0 0 42px;
+  padding: 18px 20px;
+  border-left: 4px solid #9b4f72;
+  border-radius: 4px;
+  background: #f1e3c8;
+  color: #351725;
+  font-family: "Trebuchet MS", sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.chucky-memory-copy button {
+  width: min(280px, 100%);
+  min-height: 58px;
+  border: 2px solid #ffd98a;
+  border-radius: 4px;
+  background: #5c2946;
+  color: #fff8e7;
+  font-family: "Trebuchet MS", sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.chucky-memory-copy button:hover,
+.chucky-memory-copy button:focus-visible {
+  background: #74375a;
+  outline: 3px solid rgba(255, 217, 138, 0.5);
+  outline-offset: 3px;
+}
+
+.chucky-memory-copy small {
+  margin-top: 12px;
+  color: #765269;
+  font-size: 14px;
+}
+
+@keyframes chucky-memory-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 820px) {
+  .chucky-memory-card {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 12px;
+    height: calc(100vh - 32px);
+    padding: 12px;
+  }
+
+  .chucky-memory-copy {
+    padding: 8px 12px 10px;
+  }
+
+  .chucky-memory-copy h2 {
+    margin-bottom: 8px;
+    font-size: 24px;
+  }
+
+  .chucky-memory-copy > p:not(.chucky-memory-kicker) {
+    margin-bottom: 14px;
+    font-size: 16px;
+  }
+}
+
 /* TELAS DE INTRO / HOMENAGEM */
 
 .intro-card,

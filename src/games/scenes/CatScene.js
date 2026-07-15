@@ -1,6 +1,9 @@
 import Phaser from "phaser";
 
-const WORLD_WIDTH = 3200;
+const HOUSE_WIDTH = 3200;
+const BACKYARD_START_X = HOUSE_WIDTH;
+const BACKYARD_WIDTH = 1200;
+const WORLD_WIDTH = HOUSE_WIDTH + BACKYARD_WIDTH;
 const WORLD_HEIGHT = 720;
 const WALL_TOP = 92;
 const WALL_HEIGHT = 500;
@@ -89,9 +92,18 @@ const MOMENTOS_PERCY = [
     texto:
       "Quando a tela acende, Percy nao quer entender o video. Ele quer ficar ali, dividindo o mesmo silencio com ela.",
   },
+  {
+    id: "familia",
+    x: 3820,
+    y: 528,
+    estado: "familia",
+    titulo: "A familia do quintal",
+    texto:
+      "Do outro lado da casa, Percy reencontra sua turma. Cada focinho conhecido lembra que amor tambem e ter para onde voltar.",
+  },
 ];
 
-const PRINCESS_X = 3020;
+const PRINCESS_X = 4260;
 const PRINCESS_Y = 488;
 
 export default class CatScene extends Phaser.Scene {
@@ -139,6 +151,14 @@ export default class CatScene extends Phaser.Scene {
     this.load.image(
       "livinhaPercyClose",
       "/assets/characters/livinha-percy-close.png"
+    );
+    this.load.image(
+      "contemplativeHouse",
+      "/assets/backgrounds/contemplative-house.png"
+    );
+    this.load.image(
+      "percyBackyard",
+      "/assets/backgrounds/percy-backyard.png"
     );
 
     const objetos = {
@@ -247,8 +267,8 @@ export default class CatScene extends Phaser.Scene {
     );
 
     this.mostrarNarrativa(
-      "Percy e a casa",
-      "Use o teclado para passear devagar pelos cantinhos. Cada lugar guarda um jeito diferente dele amar."
+      "Percy, a casa e o quintal",
+      "Passeie sem pressa pelos cantinhos. Depois da casa, o quintal guarda um reencontro muito especial."
     );
   }
 
@@ -316,71 +336,98 @@ export default class CatScene extends Phaser.Scene {
       .rectangle(WORLD_WIDTH / 2, 360, WORLD_WIDTH, WORLD_HEIGHT, 0x121020)
       .setDepth(-60);
     this.windowGlows = [];
-
-    this.comodos = [
-      {
-        x: 0,
-        width: 560,
-        wall: "wallYellow",
-        floor: "floorHerringbone",
-        tint: 0xffe8a8,
-        floorTint: 0xd89d62,
-        name: "cozinha",
-      },
-      {
-        x: 560,
-        width: 520,
-        wall: "wallBlue",
-        floor: "floorPlank",
-        tint: 0xb7d8ef,
-        floorTint: 0xd4a05d,
-        name: "sala",
-      },
-      {
-        x: 1080,
-        width: 560,
-        wall: "wallFloral",
-        floor: "floorPlank",
-        tint: 0xd5edd0,
-        floorTint: 0xc99058,
-        name: "quarto dos pais",
-      },
-      {
-        x: 1640,
-        width: 760,
-        wall: "wallYellow",
-        floor: "floorHerringbone",
-        tint: 0xffd9df,
-        floorTint: 0xcf9662,
-        name: "quarto da Livinha",
-      },
-      {
-        x: 2400,
-        width: 420,
-        wall: "wallBlue",
-        floor: "floorPlank",
-        tint: 0xc9e6ff,
-        floorTint: 0xbc8454,
-        name: "filminho",
-      },
-      {
-        x: 2820,
-        width: 380,
-        wall: "wallFloral",
-        floor: "floorHerringbone",
-        tint: 0xf6d1ff,
-        floorTint: 0xc99663,
-        name: "encontro",
-      },
-    ];
-
-    this.comodos.forEach((comodo) => this.criarComodo(comodo));
-    this.criarDivisoriasCasa();
-    this.criarDetalhesDeCasa();
-
+    this.criarCasaIlustrada();
+    this.criarQuintal();
     this.criarLuzesAmbiente();
-    this.criarMoveis();
+    this.criarCenasCasaIlustrada();
     this.criarPoeira();
+  }
+
+  criarCasaIlustrada() {
+    const recortes = {
+      cozinha: { x: 0, width: 620 },
+      sala: { x: 620, width: 660 },
+      quarto: { x: 1280, width: 590 },
+    };
+    const secoes = [
+      { x: 0, width: 560, tipo: "cozinha" },
+      { x: 560, width: 520, tipo: "sala" },
+      { x: 1080, width: 560, tipo: "sala" },
+      { x: 1640, width: 760, tipo: "quarto" },
+      { x: 2400, width: 420, tipo: "sala" },
+      { x: 2820, width: 380, tipo: "quarto" },
+    ];
+    const cropY = 76;
+    const cropHeight = 680;
+    const alturaCena = WORLD_HEIGHT - WALL_TOP;
+    const sourceWidth = 1870;
+
+    secoes.forEach((secao) => {
+      const recorte = recortes[secao.tipo];
+      const scaleX = secao.width / recorte.width;
+      const scaleY = alturaCena / cropHeight;
+      const imageX = secao.x - (recorte.x - sourceWidth / 2) * scaleX;
+      const imagem = this.add
+        .image(imageX, WALL_TOP + alturaCena / 2, "contemplativeHouse")
+        .setCrop(recorte.x, cropY, recorte.width, cropHeight)
+        .setScale(scaleX, scaleY)
+        .setDepth(-50);
+
+      imagem.tipoComodo = secao.tipo;
+    });
+
+    [560, 1080, 1640, 2400, 2820].forEach((x) => {
+      this.add.rectangle(x, 360, 16, 536, 0x301c1a, 0.76).setDepth(-42);
+      this.add.rectangle(x, FLOOR_Y - 4, 36, 18, 0x2a1817, 0.82).setDepth(-41);
+    });
+
+    this.add
+      .rectangle(HOUSE_WIDTH / 2, WALL_TOP - 4, HOUSE_WIDTH, 12, 0x211313, 0.96)
+      .setDepth(-40);
+  }
+
+  criarQuintal() {
+    const centerX = BACKYARD_START_X + BACKYARD_WIDTH / 2;
+    const backyard = this.add
+      .image(centerX, 382, "percyBackyard")
+      .setDisplaySize(BACKYARD_WIDTH, 675)
+      .setDepth(-50);
+
+    this.add
+      .rectangle(BACKYARD_START_X + 8, 360, 18, 536, 0x2b1a18, 0.88)
+      .setDepth(-39);
+    this.add
+      .rectangle(BACKYARD_START_X + 8, FLOOR_Y - 4, 42, 18, 0x241512, 0.9)
+      .setDepth(-38);
+
+    this.add
+      .text(BACKYARD_START_X + 86, 126, "O quintal", {
+        fontSize: "19px",
+        color: "#fff3c4",
+        fontFamily: "Trebuchet MS",
+        fontStyle: "bold",
+        stroke: "#162035",
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setDepth(10);
+
+    this.familyGlow = this.add
+      .ellipse(3820, 566, 250, 76, 0xffe39a, 0.025)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(9);
+
+    this.tweens.add({
+      targets: this.familyGlow,
+      alpha: 0.085,
+      scaleX: 1.08,
+      scaleY: 1.08,
+      duration: 2100,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    backyard.setData("area", "quintal");
   }
 
   criarComodo({ x, width, tint, floorTint }) {
@@ -587,6 +634,50 @@ export default class CatScene extends Phaser.Scene {
     }
   }
 
+  criarCenasCasaIlustrada() {
+    this.meatGlow = this.add
+      .circle(326, 516, 56, 0xffd166, 0.032)
+      .setDepth(2);
+    this.add.image(190, 558, "meatPlate").setDisplaySize(82, 82).setDepth(5);
+    this.add.image(482, 560, "meatBowl").setDisplaySize(74, 74).setDepth(5);
+    this.maeSprite = this.add
+      .sprite(346, WALK_Y - 60, "maeSprite", 0)
+      .setDisplaySize(156, 188)
+      .setDepth(8);
+    this.tweens.add({
+      targets: this.meatGlow,
+      alpha: 0.065,
+      scaleX: 1.08,
+      scaleY: 1.08,
+      duration: 1800,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    this.add
+      .image(1240, 520, "paiPercySideSleep")
+      .setCrop(8, 40, 138, 126)
+      .setDisplaySize(144, 132)
+      .setDepth(7);
+
+    this.livinhaCarinho = this.add
+      .sprite(1838, WALK_Y - 34, "livinhaSprite", 8)
+      .setDisplaySize(92, 116)
+      .setDepth(7);
+    this.livinhaCarinho.anims.play("livinha-heart", true);
+
+    this.gatinhosCasa = [
+      this.add.image(2078, 570, "catBlackWhiteCuddle").setDisplaySize(98, 84),
+      this.add.image(2160, 566, "catSiameseSit").setDisplaySize(78, 88),
+    ].map((gatinho) => gatinho.setDepth(8));
+
+    this.notebookScene = this.add
+      .image(2606, 524, "notebookPaused")
+      .setCrop(8, 0, 252, 132)
+      .setDisplaySize(246, 130)
+      .setDepth(8);
+  }
+
   criarMoveis() {
     this.add.ellipse(330, 584, 326, 48, 0x120c1f, 0.22).setDepth(1);
     this.meatGlow = this.add
@@ -595,8 +686,8 @@ export default class CatScene extends Phaser.Scene {
     this.add.image(188, 558, "meatPlate").setDisplaySize(90, 90).setDepth(5);
     this.add.image(486, 562, "meatBowl").setDisplaySize(82, 82).setDepth(5);
     this.maeSprite = this.add
-      .sprite(346, WALK_Y - 29, "maeSprite", 0)
-      .setDisplaySize(104, 126)
+      .sprite(346, WALK_Y - 60, "maeSprite", 0)
+      .setDisplaySize(156, 188)
       .setDepth(8);
     this.tweens.add({
       targets: this.meatGlow,
@@ -1303,6 +1394,7 @@ export default class CatScene extends Phaser.Scene {
       "carinho",
       "gatinhos",
       "notebook",
+      "familia",
     ]);
     const framePorEstado = {
       carne: 6,
@@ -1312,6 +1404,7 @@ export default class CatScene extends Phaser.Scene {
       carinho: 6,
       gatinhos: 0,
       notebook: 0,
+      familia: 0,
       idle: 0,
     };
 
@@ -1570,14 +1663,27 @@ export default class CatScene extends Phaser.Scene {
         yoyo: true,
       });
     }
+
+    if (momento.estado === "familia") {
+      this.tweens.add({
+        targets: this.familyGlow,
+        alpha: 0.16,
+        scaleX: 1.18,
+        scaleY: 1.18,
+        duration: 620,
+        yoyo: true,
+      });
+      this.cameras.main.shake(180, 0.0007);
+      this.tocarSinoCasa();
+    }
   }
 
   liberarPrincesa() {
     this.princesaPronta = true;
     this.princesaGlow.setFillStyle(0xffd166, 0.14);
     this.mostrarNarrativa(
-      "Tudo ficou em silencio bom",
-      "Percy juntou os cantinhos da casa. Agora ele pode ir ate Livinha."
+      "Casa e quintal viraram uma so lembranca",
+      "Percy reencontrou sua familia de gatinhos. Agora Livinha espera por ele no fim do quintal."
     );
   }
 
@@ -1593,7 +1699,7 @@ export default class CatScene extends Phaser.Scene {
         this.ultimoAvisoPrincesa = agora;
         this.mostrarNarrativa(
           "Ainda tem caminho",
-          "Percy quer chegar nela, mas antes precisa visitar todos os cantinhos."
+          "Percy quer chegar nela, mas antes precisa visitar a casa e encontrar sua familia no quintal."
         );
       }
 

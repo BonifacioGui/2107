@@ -104,14 +104,18 @@ export default class BatmanScene extends Phaser.Scene {
     this.load.image("enemyAgulha", "/assets/enemies/agulha.png");
     this.load.image("enemyReceio", "/assets/enemies/receio.png");
 
-    this.load.spritesheet(
-      "jokerBoss",
-      "/assets/characters/joker-user-spritesheet.png",
-      {
-        frameWidth: 96,
-        frameHeight: 96,
-      }
-    );
+    this.load.spritesheet("jokerLaughNew", "/assets/characters/joker-laugh-2x64.png", {
+      frameWidth: 64,
+      frameHeight: 64,
+    });
+    this.load.spritesheet("jokerWalkNew", "/assets/characters/joker-walk-6x64.png", {
+      frameWidth: 64,
+      frameHeight: 64,
+    });
+    this.load.spritesheet("jokerDamageNew", "/assets/characters/joker-damage-3x64.png", {
+      frameWidth: 64,
+      frameHeight: 64,
+    });
 
     this.load.image("rooftopPlatform", "/assets/platforms/rooftop-platform.png");
     this.load.image("rooftopGround", "/assets/platforms/rooftop-ground.png");
@@ -181,6 +185,8 @@ export default class BatmanScene extends Phaser.Scene {
     this.bossDerrotado = false;
     this.faseDoBoss = false;
     this.ultimoDanoCoringa = -9999;
+    this.proximaCartaCoringa = 0;
+    this.proximaInvestidaCoringa = 0;
     this.raioColetaItem = 78;
     this.alcanceAcertoBatarangue = 76;
     this.alcanceAssistenciaBatarangue = 620;
@@ -220,6 +226,7 @@ export default class BatmanScene extends Phaser.Scene {
 
     criarCenarioGotham(this);
     this.criarTexturasGeradas();
+    this.criarTexturaCartaCoringa();
     this.criarAtmosferaHeroica();
 
     this.tituloFaseText = this.add
@@ -265,6 +272,10 @@ export default class BatmanScene extends Phaser.Scene {
     this.prepararTrilhaGotham();
 
     this.batarangues = this.physics.add.group({
+      allowGravity: false,
+    });
+
+    this.cartasCoringa = this.physics.add.group({
       allowGravity: false,
     });
 
@@ -432,6 +443,22 @@ export default class BatmanScene extends Phaser.Scene {
     if (this.plataformasMoveis) {
       this.physics.add.collider(this.sombras, this.plataformasMoveis);
     }
+    this.physics.add.collider(
+      this.cartasCoringa,
+      this.plataformas,
+      this.destruirCartaCoringa,
+      null,
+      this
+    );
+    if (this.plataformasMoveis) {
+      this.physics.add.collider(
+        this.cartasCoringa,
+        this.plataformasMoveis,
+        this.destruirCartaCoringa,
+        null,
+        this
+      );
+    }
 
     this.physics.add.overlap(
       this.player,
@@ -445,6 +472,14 @@ export default class BatmanScene extends Phaser.Scene {
       this.player,
       this.sombras,
       this.tocarMedo,
+      null,
+      this
+    );
+
+    this.physics.add.overlap(
+      this.player,
+      this.cartasCoringa,
+      this.atingirBatmanComCarta,
       null,
       this
     );
@@ -572,7 +607,7 @@ export default class BatmanScene extends Phaser.Scene {
   criarAnimacoesHeroi() {
     this.criarAnimacaoSeNaoExistir({
       key: "batman-idle",
-      frames: [{ key: "batmanHero", frame: 1 }],
+      frames: [{ key: "batmanHero", frame: 0 }],
       frameRate: 2,
       repeat: -1,
     });
@@ -580,10 +615,10 @@ export default class BatmanScene extends Phaser.Scene {
     this.criarAnimacaoSeNaoExistir({
       key: "batman-walk",
       frames: this.anims.generateFrameNumbers("batmanHero", {
-        start: 2,
+        start: 1,
         end: 5,
       }),
-      frameRate: 8,
+      frameRate: 10,
       repeat: -1,
     });
 
@@ -600,8 +635,8 @@ export default class BatmanScene extends Phaser.Scene {
     this.criarAnimacaoSeNaoExistir({
       key: "batman-hurt",
       frames: this.anims.generateFrameNumbers("batmanHero", {
-        start: 8,
-        end: 8,
+        start: 11,
+        end: 11,
       }),
       frameRate: 1,
       repeat: 0,
@@ -629,22 +664,32 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.criarAnimacaoSeNaoExistir({
       key: "joker-idle-v2",
-      frames: this.anims.generateFrameNumbers("jokerBoss", {
+      frames: this.anims.generateFrameNumbers("jokerLaughNew", {
         start: 0,
-        end: 3,
+        end: 1,
       }),
-      frameRate: 3,
+      frameRate: 4,
       repeat: -1,
     });
 
     this.criarAnimacaoSeNaoExistir({
       key: "joker-walk-v2",
-      frames: this.anims.generateFrameNumbers("jokerBoss", {
-        start: 4,
-        end: 7,
+      frames: this.anims.generateFrameNumbers("jokerWalkNew", {
+        start: 0,
+        end: 5,
       }),
-      frameRate: 5,
+      frameRate: 10,
       repeat: -1,
+    });
+
+    this.criarAnimacaoSeNaoExistir({
+      key: "joker-hurt-v2",
+      frames: this.anims.generateFrameNumbers("jokerDamageNew", {
+        start: 0,
+        end: 2,
+      }),
+      frameRate: 9,
+      repeat: 0,
     });
   }
 
@@ -655,7 +700,7 @@ export default class BatmanScene extends Phaser.Scene {
   }
 
   criarTexturasGeradas() {
-    if (this.textures.exists("jokerBoss")) {
+    if (this.textures.exists("jokerLaughNew")) {
       return;
     }
 
@@ -681,6 +726,26 @@ export default class BatmanScene extends Phaser.Scene {
     grafico.fillRect(58, 76, 12, 20);
     grafico.generateTexture("jokerBoss", 128, 128);
     grafico.destroy();
+  }
+
+  criarTexturaCartaCoringa() {
+    if (this.textures.exists("cartaCoringa")) {
+      return;
+    }
+
+    const carta = this.make.graphics({ x: 0, y: 0, add: false });
+
+    carta.fillStyle(0xf8f1df, 1);
+    carta.fillRoundedRect(1, 1, 34, 22, 3);
+    carta.lineStyle(2, 0x6e184c, 1);
+    carta.strokeRoundedRect(1, 1, 34, 22, 3);
+    carta.fillStyle(0xd62567, 1);
+    carta.fillTriangle(7, 5, 12, 11, 7, 17);
+    carta.fillTriangle(29, 5, 24, 11, 29, 17);
+    carta.fillCircle(18, 9, 3);
+    carta.fillTriangle(15, 11, 21, 11, 18, 17);
+    carta.generateTexture("cartaCoringa", 36, 24);
+    carta.destroy();
   }
 
   criarAtmosferaHeroica() {
@@ -1178,7 +1243,7 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.batmanAtaque = this.add
       .sprite(this.player.x, this.player.y, "batmanHero", 9)
-      .setDisplaySize(98, 98)
+      .setDisplaySize(88, 88)
       .setFlipX(flipVisualAtaque)
       .setDepth(32);
 
@@ -1425,6 +1490,14 @@ export default class BatmanScene extends Phaser.Scene {
     this.ultimoDanoCoringa = agora;
     coringa = this.chefeCoringa;
     coringa.vida = Math.max(0, coringa.vida - 1);
+    coringa.atordoadoAte = agora + 320;
+    coringa.preparandoInvestida = false;
+    coringa.investidaAte = 0;
+    coringa.body.setVelocity(
+      coringa.x < this.player.x ? -210 : 210,
+      -55
+    );
+    coringa.anims.play("joker-hurt-v2", true);
     this.atualizarVidaCoringa();
     this.cameras.main.shake(90, 0.003);
     this.mostrarTextoFlutuante(coringa.x, coringa.y - 74, "-1", "#ffe08a");
@@ -1468,6 +1541,7 @@ export default class BatmanScene extends Phaser.Scene {
 
   derrotarCoringa() {
     this.bossDerrotado = true;
+    this.limparAtaquesCoringa();
 
     if (this.chefeCoringa?.body) {
       this.chefeCoringa.body.setVelocity(0);
@@ -1482,6 +1556,15 @@ export default class BatmanScene extends Phaser.Scene {
         scaleY: 1.8,
         duration: 420,
         onComplete: () => this.coringaAura?.destroy(),
+      });
+    }
+
+    if (this.coringaSombra) {
+      this.tweens.add({
+        targets: this.coringaSombra,
+        alpha: 0,
+        duration: 260,
+        onComplete: () => this.coringaSombra?.destroy(),
       });
     }
 
@@ -1745,21 +1828,23 @@ export default class BatmanScene extends Phaser.Scene {
 
   criarCoringa() {
     const x = this.worldWidth - 260;
-    const y = this.chaoY - 78;
+    const y = this.chaoY - 58;
 
     if (this.chefeCoringa?.active) {
       return;
     }
 
-    this.chefeCoringa = this.physics.add.sprite(x, y, "jokerBoss");
+    this.chefeCoringa = this.physics.add.sprite(x, y, "jokerLaughNew");
 
-    this.chefeCoringa.setDisplaySize(112, 112);
+    this.chefeCoringa.setDisplaySize(128, 128);
+    this.chefeCoringa.setOrigin(0.5, 0.5);
+    this.chefeCoringa.setCollideWorldBounds(true);
     this.chefeCoringa.setDepth(62);
     this.chefeCoringa.anims.play("joker-idle-v2", true);
 
     this.chefeCoringa.body.setAllowGravity(false);
     this.chefeCoringa.body.setImmovable(true);
-    this.chefeCoringa.body.setSize(44, 68, true);
+    this.chefeCoringa.body.setSize(30, 48, true);
 
     this.chefeCoringa.baseX = x;
     this.chefeCoringa.alcance = 88;
@@ -1767,6 +1852,14 @@ export default class BatmanScene extends Phaser.Scene {
     this.chefeCoringa.velocidade = 118;
     this.chefeCoringa.vidaMaxima = 5;
     this.chefeCoringa.vida = this.chefeCoringa.vidaMaxima;
+    this.chefeCoringa.atordoadoAte = 0;
+    this.chefeCoringa.investidaAte = 0;
+    this.chefeCoringa.preparandoInvestida = false;
+    this.chefeCoringa.atacandoComCartaAte = 0;
+
+    this.coringaSombra = this.add
+      .ellipse(x, y + 56, 58, 14, 0x05030a, 0.58)
+      .setDepth(57);
 
     this.coringaAura = this.add
       .circle(x, y, 58, 0xff2f7d, 0.1)
@@ -1791,14 +1884,6 @@ export default class BatmanScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    this.tweens.add({
-      targets: this.chefeCoringa,
-      angle: 4,
-      duration: 860,
-      yoyo: true,
-      repeat: -1,
-    });
-
     this.physics.add.overlap(
       this.player,
       this.chefeCoringa,
@@ -1815,6 +1900,8 @@ export default class BatmanScene extends Phaser.Scene {
       this
     );
 
+    this.proximaCartaCoringa = this.time.now + 1200;
+    this.proximaInvestidaCoringa = this.time.now + 3300;
     this.atualizarVidaCoringa();
   }
 
@@ -1825,6 +1912,7 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.faseDoBoss = true;
     this.ultimoDanoCoringa = -9999;
+    this.limparAtaquesCoringa();
     this.checkpoint = {
       x: this.worldWidth - 760,
       y: this.chaoY - 70,
@@ -1840,7 +1928,7 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.tituloFaseText.setText("Fase 1.2: O Boss da Coragem");
     this.objetivoFaseText.setText(
-      "Sem itens agora: desvie do Coringa, mantenha distancia e aperte X para atacar."
+      "Desvie das cartas, interrompa a investida e use X para acertar o Coringa."
     );
 
     this.bossVidaText.setVisible(true);
@@ -1986,7 +2074,7 @@ export default class BatmanScene extends Phaser.Scene {
     });
   }
 
-  atualizarCoringa() {
+  atualizarCoringa(time) {
     const coringa = this.chefeCoringa;
 
     if (
@@ -1999,27 +2087,205 @@ export default class BatmanScene extends Phaser.Scene {
       return;
     }
 
+    coringa.y = Phaser.Math.Clamp(coringa.y, 116, this.chaoY - 58);
+
+    if (this.coringaAura) {
+      this.coringaAura.setPosition(coringa.x, coringa.y);
+    }
+
+    if (this.coringaSombra) {
+      const altura = Math.max(0, this.chaoY - 58 - coringa.y);
+      const escala = Phaser.Math.Clamp(1 - altura / 900, 0.62, 1);
+      this.coringaSombra
+        .setPosition(coringa.x, coringa.y + 56)
+        .setScale(escala)
+        .setAlpha(0.3 + escala * 0.28);
+    }
+
+    if (this.coringaLabel) {
+      this.coringaLabel.setPosition(coringa.x, coringa.y - 72);
+    }
+
+    if (time < coringa.atordoadoAte) {
+      this.coringaLabel?.setText("Atordoado").setColor("#ffe08a");
+      return;
+    }
+
+    if (coringa.preparandoInvestida) {
+      coringa.body.setVelocity(0);
+      coringa.anims.play("joker-idle-v2", true);
+      return;
+    }
+
+    if (time < coringa.atacandoComCartaAte) {
+      coringa.body.setVelocity(0);
+      coringa.anims.play("joker-idle-v2", true);
+      return;
+    }
+
+    if (time < coringa.investidaAte) {
+      coringa.anims.play("joker-walk-v2", true);
+      return;
+    }
+
     const dx = this.player.x - coringa.x;
     const dy = this.player.y - coringa.y;
     const distancia = Math.max(1, Math.hypot(dx, dy));
     const vidaPerdida = coringa.vidaMaxima - coringa.vida;
     const velocidade = coringa.velocidade + vidaPerdida * 12;
 
+    this.coringaLabel?.setText("Coringa").setColor("#ffd166");
+
     coringa.body.setVelocity(
       (dx / distancia) * velocidade,
       (dy / distancia) * velocidade * 0.72
     );
 
-    coringa.setFlipX(dx > 0);
+    coringa.setFlipX(dx < 0);
     coringa.anims.play(Math.abs(dx) > 18 ? "joker-walk-v2" : "joker-idle-v2", true);
-    coringa.y = Phaser.Math.Clamp(coringa.y, 116, this.chaoY - 66);
 
-    if (this.coringaAura) {
-      this.coringaAura.setPosition(coringa.x, coringa.y);
+    if (coringa.vida <= 2 && time >= this.proximaInvestidaCoringa) {
+      this.prepararInvestidaCoringa();
+      this.proximaInvestidaCoringa = time + 4100;
+      return;
     }
 
-    if (this.coringaLabel) {
-      this.coringaLabel.setPosition(coringa.x, coringa.y - 72);
+    if (time >= this.proximaCartaCoringa) {
+      this.lancarCartaCoringa();
+      const intervaloCarta = coringa.vida <= 2 ? 1350 : 2050;
+      this.proximaCartaCoringa = time + intervaloCarta;
+    }
+  }
+
+  lancarCartaCoringa() {
+    const coringa = this.chefeCoringa;
+
+    if (!coringa?.active || !this.player?.active || this.bossDerrotado) {
+      return;
+    }
+
+    const direcao = this.player.x >= coringa.x ? 1 : -1;
+
+    coringa.atacandoComCartaAte = this.time.now + 520;
+    coringa.body.setVelocity(0);
+    coringa.setFlipX(direcao < 0);
+    coringa.anims.play("joker-idle-v2", true);
+    this.coringaLabel?.setText("HAHA!").setColor("#ff8fbd");
+    this.mostrarTextoFlutuante(coringa.x, coringa.y - 78, "CARTA!", "#ff79b0");
+    coringa.setTint(0xffd1e3);
+
+    this.time.delayedCall(260, () => {
+      if (
+        !coringa.active ||
+        !this.player?.active ||
+        this.bossDerrotado ||
+        coringa.atordoadoAte > this.time.now
+      ) {
+        coringa.clearTint();
+        return;
+      }
+
+      coringa.clearTint();
+      this.dispararCartaCoringa();
+    });
+  }
+
+  dispararCartaCoringa() {
+    const coringa = this.chefeCoringa;
+
+    if (!coringa?.active || !this.player?.active || this.bossDerrotado) {
+      return;
+    }
+
+    const direcao = this.player.x >= coringa.x ? 1 : -1;
+    const origemX = coringa.x + direcao * 48;
+    const origemY = coringa.y - 8;
+    const dx = this.player.x - origemX;
+    const dy = this.player.y - origemY;
+    const distancia = Math.max(1, Math.hypot(dx, dy));
+
+    coringa.setFlipX(direcao < 0);
+    const carta = this.physics.add.sprite(origemX, origemY, "cartaCoringa");
+
+    carta.setDisplaySize(38, 25);
+    carta.setDepth(64);
+    carta.body.setAllowGravity(false);
+    carta.body.setSize(30, 18, true);
+    carta.body.setVelocity((dx / distancia) * 390, (dy / distancia) * 390);
+    carta.tipo = "carta";
+    this.cartasCoringa.add(carta);
+
+    this.tweens.add({
+      targets: carta,
+      angle: 720,
+      duration: 1150,
+    });
+
+    this.time.delayedCall(1900, () => {
+      if (carta.active) {
+        carta.destroy();
+      }
+    });
+  }
+
+  prepararInvestidaCoringa() {
+    const coringa = this.chefeCoringa;
+
+    if (!coringa?.active || coringa.preparandoInvestida || this.bossDerrotado) {
+      return;
+    }
+
+    coringa.preparandoInvestida = true;
+    coringa.body.setVelocity(0);
+    coringa.setTint(0xff5d9e);
+    this.coringaLabel?.setText("CUIDADO!").setColor("#ff8fbd");
+    this.cameras.main.flash(120, 120, 20, 78, false);
+
+    this.tweens.add({
+      targets: coringa,
+      scaleX: coringa.scaleX * 1.08,
+      scaleY: coringa.scaleY * 0.94,
+      duration: 130,
+      yoyo: true,
+      repeat: 1,
+    });
+
+    this.time.delayedCall(520, () => {
+      if (!coringa.active || this.bossDerrotado || coringa.atordoadoAte > this.time.now) {
+        coringa.preparandoInvestida = false;
+        return;
+      }
+
+      const direcao = this.player.x >= coringa.x ? 1 : -1;
+      const diferencaY = Phaser.Math.Clamp(this.player.y - coringa.y, -150, 150);
+      coringa.preparandoInvestida = false;
+      coringa.investidaAte = this.time.now + 680;
+      coringa.setFlipX(direcao < 0);
+      coringa.clearTint();
+      coringa.body.setVelocity(direcao * 560, diferencaY * 1.1);
+      this.coringaLabel?.setText("HAHA!").setColor("#ffd166");
+    });
+  }
+
+  atingirBatmanComCarta(player, carta) {
+    if (!carta?.active) {
+      return;
+    }
+
+    const origemX = carta.x;
+    carta.destroy();
+    this.tocarMedo(player, { x: origemX, tipo: "carta" });
+  }
+
+  destruirCartaCoringa(carta) {
+    if (carta?.active) {
+      carta.destroy();
+    }
+  }
+
+  limparAtaquesCoringa() {
+    if (this.cartasCoringa) {
+      this.cartasCoringa.clear(true, true);
     }
   }
 
@@ -2370,6 +2636,7 @@ export default class BatmanScene extends Phaser.Scene {
   }
 
   recomecarComResiliencia() {
+    this.limparAtaquesCoringa();
     this.mostrarFeedback(
       "Coracoes restaurados. A coragem dela sempre encontra um jeito de continuar.",
       "#ffd166"
@@ -2389,6 +2656,16 @@ export default class BatmanScene extends Phaser.Scene {
       this.player.setVisible(true);
       this.player.setPosition(this.checkpoint.x, this.checkpoint.y);
       this.tocarAnimacao("batman-idle");
+
+      if (this.faseDoBoss && this.chefeCoringa?.active) {
+        this.chefeCoringa.setPosition(this.worldWidth - 260, this.chaoY - 58);
+        this.chefeCoringa.body.setVelocity(0);
+        this.chefeCoringa.atordoadoAte = this.time.now + 700;
+        this.chefeCoringa.investidaAte = 0;
+        this.chefeCoringa.preparandoInvestida = false;
+        this.proximaCartaCoringa = this.time.now + 1500;
+        this.proximaInvestidaCoringa = this.time.now + 3600;
+      }
     });
   }
 
