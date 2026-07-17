@@ -15,7 +15,7 @@ const RECOMPENSAS_BATMAN = [
     image: "/assets/rewards/real/congresso-criminal.jpg",
     titulo: "Trajetoria",
     legenda:
-      "Ela aprende, cresce e se coloca no mundo. Isso tambem e coragem.",
+      "Fazendo duas coisas que você tanto gosta: psicologia e cometer crimes... digo, aprender sobre crimes.",
   },
   {
     id: "tcc",
@@ -31,7 +31,7 @@ const RECOMPENSAS_BATMAN = [
     image: "/assets/rewards/real/nafaculdade.jpg",
     titulo: "Na faculdade",
     legenda:
-      "Olhar atento, mente trabalhando. A coragem dela tambem mora no estudo.",
+      "Um menina estudiosa, linda e dedicada. Tudo que você quiser fazer, você consegue!",
   },
   {
     id: "brilho",
@@ -47,7 +47,7 @@ const RECOMPENSAS_BATMAN = [
     image: "/assets/rewards/real/percy-real.jpg",
     titulo: "Percy",
     legenda:
-      "Todo heroi precisa de casa, colo e alguem que o veja com ternura.",
+      "O velho que devia ser o alfa da casa, mas é tratado como um nenê. Incrivelmente ele parece com vc: come que só, dorme que só e não gosta de confusão kkkk",
   },
 ];
 
@@ -98,7 +98,7 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.load.image("enemyMedo", "/assets/enemies/medo.png");
     this.load.image("enemyAgulha", "/assets/enemies/agulha.png");
-    this.load.image("enemyReceio", "/assets/enemies/receio.png");
+    this.load.image("enemyReceio", "/assets/ /receio.png");
 
     this.load.spritesheet("jokerLaughNew", "/assets/characters/joker-laugh-2x64.png", {
       frameWidth: 64,
@@ -1485,14 +1485,23 @@ export default class BatmanScene extends Phaser.Scene {
       this.mostrarCardItem({
         titulo: "O medo nao decidiu por ela",
         descricao:
-          "A agulha assusta, mas ela respira fundo e enfrenta mesmo assim. Aperte Enter ou OK para continuar.",
+          "A agulha pode até te assustar, mas vocêe enfrenta e vence o medo. Nada te para!.",
       });
       this.mostrarTextoFlutuante(sombra.x, sombra.y - 64, "CORAGEM", "#ffd166");
-    } else {
+    } 
+    else if (sombra.tipo === "receio") {
+      this.mostrarCardItem({
+        titulo: "Será que devo enfrentar?",
+        descricao:
+          "Mesmo com dúvida, vc enfrenta. Esse parece ser o seu inimigo mais fraco!",
+      });
+      this.mostrarTextoFlutuante(sombra.x, sombra.y - 64, "CORAGEM", "#ffd166");
+    }
+    else {
       this.mostrarCardItem({
         titulo: "Mais um medo atravessado",
         descricao:
-          "Coragem nao e deixar de sentir medo. E continuar mesmo quando ele aparece.",
+          "Esse aí foi genérico kkkkkk podia ser um poste? barca viking?",
       });
     }
   }
