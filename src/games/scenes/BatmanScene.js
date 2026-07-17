@@ -99,7 +99,7 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.load.image("enemyMedo", "/assets/enemies/medo.png");
     this.load.image("enemyAgulha", "/assets/enemies/agulha.png");
-    this.load.image("enemyReceio", "/assets/ /receio.png");
+    this.load.image("enemyReceio", "/assets/enemies/receio.png");
 
     this.load.spritesheet("jokerLaughNew", "/assets/characters/joker-laugh-2x64.png", {
       frameWidth: 64,
