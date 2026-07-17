@@ -34,12 +34,12 @@ const RECOMPENSAS_BATMAN = [
       "Olhar atento, mente trabalhando. A coragem dela tambem mora no estudo.",
   },
   {
-    id: "comeco",
-    key: "rewardNossoComeco",
-    image: "/assets/rewards/real/nosso-comeco.jpg",
-    titulo: "Nosso comeco",
+    id: "brilho",
+    key: "rewardLiviaLinda",
+    image: "/assets/rewards/real/livialinda.jpg",
+    titulo: "Brilho",
     legenda:
-      "Antes de qualquer boss, ja existia esse lugar onde a gente escolheu ficar.",
+      "Ela ilumina o caminho sem precisar diminuir a propria luz.",
   },
   {
     id: "percy",
@@ -52,19 +52,15 @@ const RECOMPENSAS_BATMAN = [
 ];
 
 const RECOMPENSA_BOSS = {
-  key: "rewardEuELivia",
-  image: "/assets/rewards/real/eu-e-livia.jpg",
-  titulo: "Depois da escuridao",
+  key: "rewardLindona",
+  image: "/assets/rewards/real/lindona.jpg",
+  titulo: "A luz depois da escuridao",
   legenda:
-    "No fim da fase, nao e sobre vencer sozinho. E sobre voltar para o que faz tudo valer a pena.",
+    "No fim da fase, a recompensa e ver a coragem e a luz que sempre estiveram nela.",
 };
 
 const FOTOS_EXTRAS_BATMAN = [
-  { key: "rewardLindona", image: "/assets/rewards/real/lindona.jpg" },
-  { key: "rewardLiviaLinda", image: "/assets/rewards/real/livialinda.jpg" },
   { key: "rewardTccMesa", image: "/assets/rewards/real/tcc-1.jpg" },
-  { key: "rewardViajando", image: "/assets/rewards/real/viajando.jpg" },
-  { key: "rewardNoite", image: "/assets/rewards/real/noite.jpg" },
 ];
 
 export default class BatmanScene extends Phaser.Scene {
@@ -174,6 +170,8 @@ export default class BatmanScene extends Phaser.Scene {
     };
 
     this.faseConcluida = false;
+    this.jogoPausadoPorCard = false;
+    this.acaoAoFecharCard = null;
     this.ultimoToqueMedo = 0;
     this.estaMachucado = false;
     this.estaAtacando = false;
@@ -288,6 +286,9 @@ export default class BatmanScene extends Phaser.Scene {
     this.attackKey = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.X
     );
+    this.enterKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.ENTER
+    );
 
     this.coragem = 0;
     this.totalCoragem = 5;
@@ -376,7 +377,7 @@ export default class BatmanScene extends Phaser.Scene {
       .setScrollFactor(0);
 
     this.itemCardBox = this.add
-      .rectangle(this.largura / 2, this.altura - 102, 760, 126, 0x050713, 0.84)
+      .rectangle(this.largura / 2, this.altura - 112, 760, 188, 0x050713, 0.92)
       .setStrokeStyle(1, 0xf5c542, 0.46)
       .setVisible(false)
       .setDepth(104)
@@ -431,6 +432,26 @@ export default class BatmanScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(105)
       .setScrollFactor(0);
+
+    this.itemCardOkBox = this.add
+      .rectangle(this.largura / 2, this.altura - 38, 126, 38, 0xf5c542, 0.94)
+      .setStrokeStyle(2, 0xffffff, 0.56)
+      .setInteractive({ useHandCursor: true })
+      .setVisible(false)
+      .setDepth(106)
+      .setScrollFactor(0);
+    this.itemCardOkText = this.add
+      .text(this.largura / 2, this.altura - 38, "OK", {
+        fontSize: "18px",
+        color: "#050713",
+        fontFamily: "Trebuchet MS",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setVisible(false)
+      .setDepth(107)
+      .setScrollFactor(0);
+    this.itemCardOkBox.on("pointerdown", () => this.fecharCardItem());
 
     this.physics.add.collider(this.player, this.plataformas);
     if (this.plataformasMoveis) {
@@ -525,6 +546,13 @@ export default class BatmanScene extends Phaser.Scene {
   }
 
   update(time) {
+    if (this.jogoPausadoPorCard) {
+      if (Phaser.Input.Keyboard.JustDown(this.enterKey)) {
+        this.fecharCardItem();
+      }
+      return;
+    }
+
     atualizarCenarioGotham(this);
     this.atualizarAtmosferaHeroica(time);
     this.atualizarTrechosNarrativos();
@@ -836,8 +864,8 @@ export default class BatmanScene extends Phaser.Scene {
     this.barreiras = this.physics.add.staticGroup();
 
     [
-      { x: 1510, y: this.chaoY - 66, nome: "Cadeado do Coringa" },
-      { x: 2480, y: this.chaoY - 154, nome: "Cadeado do Coringa" },
+      { x: 1510, y: this.chaoY - 66, nome: "Barreira selada" },
+      { x: 2480, y: this.chaoY - 154, nome: "Barreira selada" },
     ].forEach((barreira) => {
       const visual = this.add
         .image(barreira.x, barreira.y, "jokerPadlockClosed")
@@ -847,28 +875,22 @@ export default class BatmanScene extends Phaser.Scene {
         .circle(barreira.x, barreira.y, 62, 0x7d35ff, 0.12)
         .setDepth(20)
         .setBlendMode(Phaser.BlendModes.ADD);
-      const dica = this.add.container(barreira.x + 48, barreira.y - 58).setDepth(25);
-      const tecla = this.add
-        .rectangle(0, 0, 34, 28, 0x050713, 0.82)
-        .setStrokeStyle(2, 0xf5c542, 0.65);
-      const teclaTexto = this.add
-        .text(0, 0, "X", {
-          fontSize: "17px",
-          color: "#ffe08a",
-          fontFamily: "Trebuchet MS",
-          fontStyle: "bold",
-          stroke: "#050713",
-          strokeThickness: 3,
+      const legenda = this.add
+        .text(barreira.x, barreira.y - 66, "Barreira: use X", {
+          fontFamily: '"Trebuchet MS", sans-serif',
+          fontSize: "14px",
+          color: "#ffe5a6",
+          stroke: "#130d21",
+          strokeThickness: 4,
         })
-        .setOrigin(0.5);
-      dica.add([tecla, teclaTexto]);
-
+        .setOrigin(0.5)
+        .setDepth(25);
       const zona = this.add.zone(barreira.x, barreira.y, 58, 126);
 
       this.physics.add.existing(zona, true);
       zona.nome = barreira.nome;
       zona.visual = visual;
-      zona.partes = [visual, brilho, dica];
+      zona.partes = [visual, brilho, legenda];
       this.barreiras.add(zona);
 
       this.tweens.add({
@@ -943,13 +965,23 @@ export default class BatmanScene extends Phaser.Scene {
         .setDepth(19);
       const visual = this.add
         .image(checkpoint.x, this.chaoY - 66, "checkpointBatOff")
-        .setDisplaySize(112, 74)
+        .setDisplaySize(58, 40)
         .setDepth(20);
+      const legenda = this.add
+        .text(checkpoint.x, this.chaoY - 101, "Ponto de retorno", {
+          fontFamily: '"Trebuchet MS", sans-serif',
+          fontSize: "13px",
+          color: "#bff5e8",
+          stroke: "#08141c",
+          strokeThickness: 4,
+        })
+        .setOrigin(0.5)
+        .setDepth(21);
 
       zona.visual = visual;
       zona.base = base;
       zona.luz = luz;
-      zona.partes = [base, luz, visual];
+      zona.partes = [base, luz, visual, legenda];
       this.checkpoints.add(zona);
 
       this.tweens.add({
@@ -977,10 +1009,13 @@ export default class BatmanScene extends Phaser.Scene {
 
     if (!checkpoint.ativado) {
       checkpoint.ativado = true;
-      checkpoint.visual?.setTexture("checkpointBatActive").setDisplaySize(118, 84);
+      checkpoint.visual?.setTexture("checkpointBatActive").setDisplaySize(64, 44);
       checkpoint.base?.setFillStyle(0xf5c542, 0.24);
       checkpoint.luz?.setFillStyle(0xf5c542, 0.16);
-      this.mostrarFeedback("Ponto seguro aceso. Daqui ela continua.", "#bff5e8");
+      this.mostrarFeedback(
+        "Ponto de retorno aceso. Se os coracoes acabarem, ela volta daqui.",
+        "#bff5e8"
+      );
     }
   }
 
@@ -1446,20 +1481,19 @@ export default class BatmanScene extends Phaser.Scene {
     sombra.destroy();
 
     if (sombra.tipo === "agulha") {
-      this.mostrarFeedback(
-        "Agulha vencida. Ela sente medo, respira fundo e enfrenta mesmo assim.",
-        "#ffd166"
-      );
+      this.mostrarCardItem({
+        titulo: "O medo nao decidiu por ela",
+        descricao:
+          "A agulha assusta, mas ela respira fundo e enfrenta mesmo assim. Aperte Enter ou OK para continuar.",
+      });
       this.mostrarTextoFlutuante(sombra.x, sombra.y - 64, "CORAGEM", "#ffd166");
     } else {
-      this.mostrarFeedback("O ataque venceu um medo.", "#f5c542");
+      this.mostrarCardItem({
+        titulo: "Mais um medo atravessado",
+        descricao:
+          "Coragem nao e deixar de sentir medo. E continuar mesmo quando ele aparece.",
+      });
     }
-
-    this.time.delayedCall(900, () => {
-      if (!this.faseConcluida) {
-        this.esconderFeedback();
-      }
-    });
   }
 
   acertarCoringa(batarangue, coringa) {
@@ -1585,9 +1619,9 @@ export default class BatmanScene extends Phaser.Scene {
     this.tocarAcordeRecompensa();
     this.time.delayedCall(360, () => {
       this.mostrarCardItem({
-        titulo: "Surpresa liberada",
+        titulo: "Ultimo medo vencido",
         descricao:
-          "A recompensa ficou guardada. Atravesse a saida para abrir o mural.",
+          "A recompensa ficou guardada. Aperte Enter ou OK e atravesse a saida para abrir o mural.",
       });
     });
   }
@@ -1790,6 +1824,15 @@ export default class BatmanScene extends Phaser.Scene {
     });
 
     this.criarMedo({
+      x: 620,
+      y: this.chaoY - 104,
+      chave: "enemyReceio",
+      tipo: "receio",
+      alcance: 115,
+      tamanho: 68,
+    });
+
+    this.criarMedo({
       x: 1120,
       y: this.chaoY - 52,
       chave: "enemyMedo",
@@ -1805,6 +1848,15 @@ export default class BatmanScene extends Phaser.Scene {
       tipo: "agulha",
       alcance: 150,
       tamanho: 76,
+    });
+
+    this.criarMedo({
+      x: 2720,
+      y: this.chaoY - 246,
+      chave: "enemyAgulha",
+      tipo: "agulha",
+      alcance: 115,
+      tamanho: 70,
     });
 
     this.criarMedo({
@@ -2168,7 +2220,7 @@ export default class BatmanScene extends Phaser.Scene {
 
     coringa.atacandoComCartaAte = this.time.now + 520;
     coringa.body.setVelocity(0);
-    coringa.setFlipX(direcao < 0);
+    coringa.setFlipX(direcao > 0);
     coringa.anims.play("joker-idle-v2", true);
     this.coringaLabel?.setText("HAHA!").setColor("#ff8fbd");
     this.mostrarTextoFlutuante(coringa.x, coringa.y - 78, "CARTA!", "#ff79b0");
@@ -2198,33 +2250,44 @@ export default class BatmanScene extends Phaser.Scene {
     }
 
     const direcao = this.player.x >= coringa.x ? 1 : -1;
-    const origemX = coringa.x + direcao * 48;
+    const origemX = coringa.x + direcao * 32;
     const origemY = coringa.y - 8;
     const dx = this.player.x - origemX;
     const dy = this.player.y - origemY;
     const distancia = Math.max(1, Math.hypot(dx, dy));
 
-    coringa.setFlipX(direcao < 0);
-    const carta = this.physics.add.sprite(origemX, origemY, "cartaCoringa");
+    coringa.setFlipX(direcao > 0);
+    const anguloBase = Math.atan2(dy / distancia, dx / distancia);
+    const desvios = coringa.vida <= 3 ? [-0.16, 0, 0.16] : [0];
 
-    carta.setDisplaySize(38, 25);
-    carta.setDepth(64);
-    carta.body.setAllowGravity(false);
-    carta.body.setSize(30, 18, true);
-    carta.body.setVelocity((dx / distancia) * 390, (dy / distancia) * 390);
-    carta.tipo = "carta";
-    this.cartasCoringa.add(carta);
+    desvios.forEach((desvio) => {
+      const angulo = anguloBase + desvio;
+      const carta = this.physics.add.sprite(origemX, origemY, "cartaCoringa");
+      const velocidade = coringa.vida <= 2 ? 440 : 390;
 
-    this.tweens.add({
-      targets: carta,
-      angle: 720,
-      duration: 1150,
-    });
+      carta.setDisplaySize(38, 25);
+      carta.setDepth(64);
+      carta.setFlipX(Math.cos(angulo) < 0);
+      carta.body.setAllowGravity(false);
+      carta.body.setSize(30, 18, true);
+      carta.body.setVelocity(
+        Math.cos(angulo) * velocidade,
+        Math.sin(angulo) * velocidade
+      );
+      carta.tipo = "carta";
+      this.cartasCoringa.add(carta);
 
-    this.time.delayedCall(1900, () => {
-      if (carta.active) {
-        carta.destroy();
-      }
+      this.tweens.add({
+        targets: carta,
+        angle: 720 * direcao,
+        duration: 1150,
+      });
+
+      this.time.delayedCall(1900, () => {
+        if (carta.active) {
+          carta.destroy();
+        }
+      });
     });
   }
 
@@ -2497,20 +2560,22 @@ export default class BatmanScene extends Phaser.Scene {
     if (item.recompensa) {
       this.tocarAcordeRecompensa();
     }
-    this.mostrarCardItem(item);
-
-    if (this.coragem === this.totalCoragem) {
-      this.time.delayedCall(650, () => {
+    this.mostrarCardItem(item, () => {
+      if (this.coragem === this.totalCoragem) {
         this.iniciarFaseCoringa();
-      });
-    }
+      }
+    });
   }
 
-  mostrarCardItem(item) {
-    if (this.itemCardTimer) {
-      this.itemCardTimer.remove(false);
+  mostrarCardItem(item, aoFechar = null) {
+    if (this.jogoPausadoPorCard) {
+      return;
     }
 
+    this.jogoPausadoPorCard = true;
+    this.acaoAoFecharCard = aoFechar;
+    this.player?.body?.setVelocity(0);
+    this.physics.world.pause();
     this.itemCardBox.setVisible(true);
     this.itemCardPhotoFrame.setVisible(false);
     this.itemCardPhoto.setVisible(false);
@@ -2521,9 +2586,12 @@ export default class BatmanScene extends Phaser.Scene {
     );
     this.itemCardText.setText(
       item.nome
-        ? "A fase nao mostra tudo agora. Continue ate o fim para abrir a recompensa de verdade."
+        ? `${item.descricao || item.mensagem}\n\nAperte Enter ou OK para continuar.`
         : item.descricao || item.mensagem
     );
+
+    this.itemCardOkBox.setVisible(true).setAlpha(0);
+    this.itemCardOkText.setVisible(true).setAlpha(0);
 
     this.itemCardBox.setAlpha(0);
     this.itemCardPhotoFrame.setAlpha(0);
@@ -2538,31 +2606,32 @@ export default class BatmanScene extends Phaser.Scene {
         this.itemCardKicker,
         this.itemCardTitle,
         this.itemCardText,
+        this.itemCardOkBox,
+        this.itemCardOkText,
       ],
       alpha: 1,
       duration: 180,
     });
+  }
 
-    this.itemCardTimer = this.time.delayedCall(3400, () => {
-      this.tweens.add({
-        targets: [
-          this.itemCardBox,
-          this.itemCardKicker,
-          this.itemCardTitle,
-          this.itemCardText,
-        ],
-        alpha: 0,
-        duration: 220,
-        onComplete: () => {
-          this.itemCardBox.setVisible(false);
-          this.itemCardPhotoFrame.setVisible(false);
-          this.itemCardPhoto.setVisible(false);
-          this.itemCardKicker.setText("");
-          this.itemCardTitle.setText("");
-          this.itemCardText.setText("");
-        },
-      });
-    });
+  fecharCardItem() {
+    if (!this.jogoPausadoPorCard) {
+      return;
+    }
+
+    const aoFechar = this.acaoAoFecharCard;
+    this.acaoAoFecharCard = null;
+    this.jogoPausadoPorCard = false;
+    this.itemCardBox.setVisible(false);
+    this.itemCardPhotoFrame.setVisible(false);
+    this.itemCardPhoto.setVisible(false);
+    this.itemCardKicker.setText("");
+    this.itemCardTitle.setText("");
+    this.itemCardText.setText("");
+    this.itemCardOkBox.setVisible(false);
+    this.itemCardOkText.setVisible(false);
+    this.physics.world.resume();
+    aoFechar?.();
   }
 
   criarEfeitoColeta(x, y) {

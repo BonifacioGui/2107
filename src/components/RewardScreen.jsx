@@ -24,29 +24,9 @@ const rewardMoments = [
     caption: "O olhar atento de quem segue aprendendo mesmo nos dias dificeis.",
   },
   {
-    title: "Nosso comeco",
-    image: "/assets/rewards/photos/nosso-comeco.jpg",
-    caption: "Antes de qualquer boss, ja existia esse lugar bom de escolher ficar.",
-  },
-  {
     title: "Percy",
     image: "/assets/rewards/photos/percy-real.jpg",
     caption: "Todo heroi tambem precisa de coberta, colo e um olhar muito serio.",
-  },
-  {
-    title: "A gente viajando",
-    image: "/assets/rewards/photos/viajando.jpg",
-    caption: "Uma pausa no mundo para existir junto e guardar sol na memoria.",
-  },
-  {
-    title: "Noite boa",
-    image: "/assets/rewards/photos/noite.jpg",
-    caption: "Quando a cidade escurece, ainda tem luz no rosto dela.",
-  },
-  {
-    title: "Eu e Livia",
-    image: "/assets/rewards/photos/eu-e-livia.jpg",
-    caption: "No fim da fase, o premio e lembrar da gente.",
   },
   {
     title: "Lindona",

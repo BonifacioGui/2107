@@ -19,8 +19,8 @@ const screens = new Set([
   "batman",
   "reward",
   "batmanTribute",
-  "cat",
   "chucky",
+  "cat",
   "finalTribute",
 ]);
 
@@ -46,7 +46,7 @@ function App() {
       {screen === "batman" && (
         <GameLayout
           title="A Coragem que Eu Vejo em Voce"
-          description="Colete os simbolos de coragem, use o batarangue e enfrente o Coringa."
+          description="Explore os telhados, encontre coragem e siga em frente."
         >
           <BatmanGame onComplete={() => setScreen("reward")} />
         </GameLayout>
@@ -61,25 +61,25 @@ function App() {
           title={tributes.batman.title}
           paragraphs={tributes.batman.paragraphs}
           buttonText="Continuar"
-          onNext={() => setScreen("cat")}
+          onNext={() => setScreen("chucky")}
         />
-      )}
-
-      {screen === "cat" && (
-        <GameLayout
-          title="Percy e os Cantinhos da Casa"
-          description="Passeie sem pressa, guarde pequenas memorias e encontre Livinha no fim."
-        >
-          <CatGame onComplete={() => setScreen("chucky")} />
-        </GameLayout>
       )}
 
       {screen === "chucky" && (
         <GameLayout
           title="O Susto que Vira Risada"
-          description="Colete lembrancas, use a lanterna e encontre quem ficou assustado no escuro."
+          description="Atravesse o escuro, encontre lembrancas e volte para a luz."
         >
-          <ChuckyGame onComplete={() => setScreen("finalTribute")} />
+          <ChuckyGame onComplete={() => setScreen("cat")} />
+        </GameLayout>
+      )}
+
+      {screen === "cat" && (
+        <GameLayout
+          title="Percy e os Cantinhos da Casa"
+          description="Passeie sem pressa e guarde as pequenas memorias da casa."
+        >
+          <CatGame onComplete={() => setScreen("finalTribute")} />
         </GameLayout>
       )}
 

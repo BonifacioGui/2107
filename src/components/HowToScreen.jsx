@@ -13,7 +13,7 @@ export default function HowToScreen({ onStart }) {
 
         <article>
           <strong>Acao</strong>
-          <p>No Batman, X arremessa. No Chucky, X ou F acende a lanterna.</p>
+          <p>Cada etapa apresenta seus comandos quando eles forem necessarios.</p>
         </article>
 
         <article>
@@ -23,7 +23,7 @@ export default function HowToScreen({ onStart }) {
 
         <article>
           <strong>Objetivo</strong>
-          <p>Cada fase guarda um jeito de continuar: coragem, carinho, susto e lembranca.</p>
+          <p>Explore, observe o ambiente e descubra o objetivo sem pressa.</p>
         </article>
       </div>
 
