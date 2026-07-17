@@ -257,6 +257,8 @@ export default class ChuckyScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.audio("chuckyTheme", "/assets/audio/chucky-theme-8bit.mp3");
+    this.load.audio("runawayRescue", "/assets/audio/runaway.mp3");
     this.load.spritesheet(
       "liviaRockSprite",
       "/assets/chucky/livia-rock-spritesheet.png",
@@ -1912,6 +1914,7 @@ export default class ChuckyScene extends Phaser.Scene {
     this.player.body.setVelocity(0, 0);
     this.chuckyHunting = false;
     this.physics.world.pause();
+    this.tocarMusicaDoResgate();
     this.esconderChucky();
     this.ghostface.setVisible(false);
     this.ghostfaceAura.setVisible(false);
@@ -2109,32 +2112,31 @@ export default class ChuckyScene extends Phaser.Scene {
   }
 
   ativarTrilhaChucky() {
-    if (this.trilhaChuckyAtivada || !this.sound?.context) {
+    if (this.trilhaChuckyAtivada || !this.sound) {
       return;
     }
 
-    const contexto = this.sound.context;
     this.trilhaChuckyAtivada = true;
-    this.trilhaChuckyMaster = contexto.createGain();
-    this.trilhaChuckyMaster.gain.value = 0.0001;
-    this.trilhaChuckyMaster.connect(contexto.destination);
-
-    this.tweens.addCounter({
-      from: 0.0001,
-      to: 0.052,
-      duration: 1300,
-      onUpdate: (tween) => {
-        if (this.trilhaChuckyMaster) {
-          this.trilhaChuckyMaster.gain.value = tween.getValue();
-        }
-      },
-    });
-
-    this.trilhaChuckyTimer = this.time.addEvent({
-      delay: 660,
+    this.trilhaChucky = this.sound.add("chuckyTheme", {
       loop: true,
-      callback: () => this.tocarPulsoChucky(),
+      volume: 0.27,
     });
+    this.trilhaChucky.play();
+  }
+
+  tocarMusicaDoResgate() {
+    this.trilhaChucky?.stop();
+
+    if (!this.musicaResgate) {
+      this.musicaResgate = this.sound.add("runawayRescue", {
+        loop: false,
+        volume: 0.4,
+      });
+    }
+
+    if (!this.musicaResgate.isPlaying) {
+      this.musicaResgate.play();
+    }
   }
 
   tocarPulsoChucky() {
@@ -2180,6 +2182,18 @@ export default class ChuckyScene extends Phaser.Scene {
     if (this.trilhaChuckyMaster) {
       this.trilhaChuckyMaster.disconnect();
       this.trilhaChuckyMaster = null;
+    }
+
+    if (this.trilhaChucky) {
+      this.trilhaChucky.stop();
+      this.trilhaChucky.destroy();
+      this.trilhaChucky = null;
+    }
+
+    if (this.musicaResgate) {
+      this.musicaResgate.stop();
+      this.musicaResgate.destroy();
+      this.musicaResgate = null;
     }
   }
 }

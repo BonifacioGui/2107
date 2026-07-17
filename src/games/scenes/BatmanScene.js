@@ -69,6 +69,7 @@ export default class BatmanScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.audio("batmanTheme", "/assets/audio/batman-theme-8bit.mp3");
     this.load.image("gothamBackdrop", "/assets/backgrounds/gotham-user.jpg");
     this.load.image("gothamSky", "/assets/backgrounds/gotham-sky.png");
 
@@ -1114,38 +1115,16 @@ export default class BatmanScene extends Phaser.Scene {
   }
 
   iniciarTrilhaGotham() {
-    if (this.trilhaAtivada || !this.sound?.context) {
+    if (this.trilhaAtivada || !this.sound) {
       return;
     }
 
-    const contexto = this.sound.context;
     this.trilhaAtivada = true;
-
-    if (contexto.state === "suspended") {
-      contexto.resume();
-    }
-
-    this.trilhaMaster = contexto.createGain();
-    this.trilhaMaster.gain.value = 0.0001;
-    this.trilhaMaster.connect(contexto.destination);
-
-    this.tweens.addCounter({
-      from: 0.0001,
-      to: 0.12,
-      duration: 1400,
-      onUpdate: (tween) => {
-        if (this.trilhaMaster) {
-          this.trilhaMaster.gain.value = tween.getValue();
-        }
-      },
-    });
-
-    this.tocarCompassoGotham();
-    this.trilhaTimer = this.time.addEvent({
-      delay: 3600,
+    this.trilhaGotham = this.sound.add("batmanTheme", {
       loop: true,
-      callback: () => this.tocarCompassoGotham(),
+      volume: 0.32,
     });
+    this.trilhaGotham.play();
   }
 
   tocarCompassoGotham() {
@@ -1186,24 +1165,9 @@ export default class BatmanScene extends Phaser.Scene {
   }
 
   tocarAcordeRecompensa() {
-    if (!this.sound?.context) {
-      return;
-    }
-
     if (!this.trilhaAtivada) {
       this.iniciarTrilhaGotham();
     }
-
-    if (!this.trilhaMaster) {
-      return;
-    }
-
-    const contexto = this.sound.context;
-    const inicio = contexto.currentTime + 0.03;
-
-    [261.63, 329.63, 392, 523.25].forEach((freq, index) => {
-      this.tocarNotaGotham(freq, inicio + index * 0.045, 0.58, "sine", 0.045);
-    });
   }
 
   pararTrilhaGotham() {
@@ -1215,6 +1179,12 @@ export default class BatmanScene extends Phaser.Scene {
     if (this.trilhaMaster) {
       this.trilhaMaster.disconnect();
       this.trilhaMaster = null;
+    }
+
+    if (this.trilhaGotham) {
+      this.trilhaGotham.stop();
+      this.trilhaGotham.destroy();
+      this.trilhaGotham = null;
     }
   }
 
@@ -2230,7 +2200,7 @@ export default class BatmanScene extends Phaser.Scene {
 
     coringa.atacandoComCartaAte = this.time.now + 520;
     coringa.body.setVelocity(0);
-    coringa.setFlipX(direcao > 0);
+    coringa.setFlipX(direcao < 0);
     coringa.anims.play("joker-idle-v2", true);
     this.coringaLabel?.setText("HAHA!").setColor("#ff8fbd");
     this.mostrarTextoFlutuante(coringa.x, coringa.y - 78, "CARTA!", "#ff79b0");
@@ -2259,20 +2229,21 @@ export default class BatmanScene extends Phaser.Scene {
       return;
     }
 
-    const direcao = this.player.x >= coringa.x ? 1 : -1;
-    const origemX = coringa.x + direcao * 32;
+    const alvoX = this.player.body?.center?.x ?? this.player.x;
+    const alvoY = this.player.body?.center?.y ?? this.player.y;
+    const direcao = alvoX >= coringa.x ? 1 : -1;
+    const origemX = coringa.x + direcao * 48;
     const origemY = coringa.y - 8;
-    const dx = this.player.x - origemX;
-    const dy = this.player.y - origemY;
-    const distancia = Math.max(1, Math.hypot(dx, dy));
+    const dx = alvoX - origemX;
+    const dy = alvoY - origemY;
 
-    coringa.setFlipX(direcao > 0);
-    const anguloBase = Math.atan2(dy / distancia, dx / distancia);
+    coringa.setFlipX(direcao < 0);
+    const anguloBase = Math.atan2(dy, dx);
     const desvios = coringa.vida <= 3 ? [-0.16, 0, 0.16] : [0];
 
     desvios.forEach((desvio) => {
       const angulo = anguloBase + desvio;
-      const carta = this.physics.add.sprite(origemX, origemY, "cartaCoringa");
+      const carta = this.cartasCoringa.create(origemX, origemY, "cartaCoringa");
       const velocidade = coringa.vida <= 2 ? 440 : 390;
 
       carta.setDisplaySize(38, 25);
@@ -2280,12 +2251,13 @@ export default class BatmanScene extends Phaser.Scene {
       carta.setFlipX(Math.cos(angulo) < 0);
       carta.body.setAllowGravity(false);
       carta.body.setSize(30, 18, true);
+      carta.tipo = "carta";
+      carta.direcao = direcao;
+      carta.ignorarColisaoAte = this.time.now + 140;
       carta.body.setVelocity(
         Math.cos(angulo) * velocidade,
         Math.sin(angulo) * velocidade
       );
-      carta.tipo = "carta";
-      this.cartasCoringa.add(carta);
 
       this.tweens.add({
         targets: carta,
@@ -2351,7 +2323,10 @@ export default class BatmanScene extends Phaser.Scene {
   }
 
   destruirCartaCoringa(carta) {
-    if (carta?.active) {
+    if (
+      carta?.active &&
+      this.time.now >= (carta.ignorarColisaoAte ?? 0)
+    ) {
       carta.destroy();
     }
   }
