@@ -6,6 +6,7 @@ import HowToScreen from "./components/HowToScreen";
 import GameLayout from "./components/GameLayout";
 import RewardScreen from "./components/RewardScreen";
 import TributeScreen from "./components/TributeScreen";
+import ChapterTransition from "./components/ChapterTransition";
 
 import BatmanGame from "./games/BatmanGame";
 import CatGame from "./games/CatGame";
@@ -19,7 +20,9 @@ const screens = new Set([
   "batman",
   "reward",
   "batmanTribute",
+  "transitionTwo",
   "chucky",
+  "transitionThree",
   "cat",
   "finalTribute",
 ]);
@@ -61,6 +64,15 @@ function App() {
           title={tributes.batman.title}
           paragraphs={tributes.batman.paragraphs}
           buttonText="Continuar"
+          onNext={() => setScreen("transitionTwo")}
+        />
+      )}
+
+      {screen === "transitionTwo" && (
+        <ChapterTransition
+          eyebrow="Capitulo concluido"
+          title="Uma nova porta se abriu"
+          text="A coragem muda de forma, mas continua caminhando ao lado dela."
           onNext={() => setScreen("chucky")}
         />
       )}
@@ -70,8 +82,17 @@ function App() {
           title="O Susto que Vira Risada"
           description="Atravesse o escuro, encontre lembrancas e volte para a luz."
         >
-          <ChuckyGame onComplete={() => setScreen("cat")} />
+          <ChuckyGame onComplete={() => setScreen("transitionThree")} />
         </GameLayout>
+      )}
+
+      {screen === "transitionThree" && (
+        <ChapterTransition
+          eyebrow="Capitulo concluido"
+          title="Depois da tempestade"
+          text="Agora, o caminho pede menos pressa e mais atencao aos pequenos afetos."
+          onNext={() => setScreen("cat")}
+        />
       )}
 
       {screen === "cat" && (

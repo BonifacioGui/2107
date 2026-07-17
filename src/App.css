@@ -441,6 +441,81 @@ body {
   line-height: 1.75;
 }
 
+/* TRANSICAO ENTRE CAPITULOS */
+
+.chapter-transition {
+  width: min(760px, 100%);
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 34px;
+  text-align: center;
+  animation: chapterReveal 0.65s ease both;
+}
+
+.chapter-transition__line {
+  width: 96px;
+  height: 3px;
+  margin-bottom: 30px;
+  background: var(--gold);
+  box-shadow: 0 0 24px rgba(245, 197, 66, 0.42);
+}
+
+.chapter-transition__eyebrow {
+  margin: 0 0 14px;
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.chapter-transition h1 {
+  margin: 0;
+  color: #fff7dd;
+  font-family: var(--font-display);
+  font-size: clamp(38px, 6vw, 64px);
+  line-height: 1.06;
+}
+
+.chapter-transition__text {
+  max-width: 590px;
+  margin: 24px 0 34px;
+  color: #dfe4ff;
+  font-size: 19px;
+  line-height: 1.7;
+}
+
+.chapter-transition button {
+  min-width: 180px;
+  min-height: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.44);
+  border-radius: 6px;
+  background: var(--gold);
+  color: #090b18;
+  font: 700 17px var(--font-ui);
+  cursor: pointer;
+}
+
+.chapter-transition small {
+  margin-top: 12px;
+  color: #9da6c8;
+  font-size: 13px;
+}
+
+@keyframes chapterReveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes pulseGlow {
   0% {
     transform: scale(0.95);

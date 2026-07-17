@@ -8,7 +8,8 @@ const githubPagesAssetPaths = () => ({
     return {
       code: code
         .replaceAll('"/assets/', '"/2107/assets/')
-        .replaceAll("'/assets/", "'/2107/assets/"),
+        .replaceAll("'/assets/", "'/2107/assets/")
+        .replaceAll('`/assets/', '`/2107/assets/'),
       map: null,
     }
   },

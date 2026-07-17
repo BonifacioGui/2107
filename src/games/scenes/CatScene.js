@@ -455,42 +455,16 @@ export default class CatScene extends Phaser.Scene {
   }
 
   criarCasaIlustrada() {
-    const recortes = {
-      cozinha: { x: 0, width: 620 },
-      sala: { x: 620, width: 660 },
-      quarto: { x: 1280, width: 590 },
-    };
-    const secoes = [
-      { x: 0, width: 560, tipo: "cozinha" },
-      { x: 560, width: 520, tipo: "sala" },
-      { x: 1080, width: 560, tipo: "sala" },
-      { x: 1640, width: 760, tipo: "quarto" },
-      { x: 2400, width: 420, tipo: "sala" },
-      { x: 2820, width: 380, tipo: "quarto" },
-    ];
     const cropY = 76;
     const cropHeight = 680;
     const alturaCena = WORLD_HEIGHT - WALL_TOP;
     const sourceWidth = 1870;
 
-    secoes.forEach((secao) => {
-      const recorte = recortes[secao.tipo];
-      const scaleX = secao.width / recorte.width;
-      const scaleY = alturaCena / cropHeight;
-      const imageX = secao.x - (recorte.x - sourceWidth / 2) * scaleX;
-      const imagem = this.add
-        .image(imageX, WALL_TOP + alturaCena / 2, "contemplativeHouse")
-        .setCrop(recorte.x, cropY, recorte.width, cropHeight)
-        .setScale(scaleX, scaleY)
-        .setDepth(-50);
-
-      imagem.tipoComodo = secao.tipo;
-    });
-
-    [560, 1080, 1640, 2400, 2820].forEach((x) => {
-      this.add.rectangle(x, 360, 16, 536, 0x301c1a, 0.76).setDepth(-42);
-      this.add.rectangle(x, FLOOR_Y - 4, 36, 18, 0x2a1817, 0.82).setDepth(-41);
-    });
+    this.add
+      .image(HOUSE_WIDTH / 2, WALL_TOP + alturaCena / 2, "contemplativeHouse")
+      .setCrop(0, cropY, sourceWidth, cropHeight)
+      .setDisplaySize(HOUSE_WIDTH, alturaCena)
+      .setDepth(-50);
 
     this.add
       .rectangle(HOUSE_WIDTH / 2, WALL_TOP - 4, HOUSE_WIDTH, 12, 0x211313, 0.96)
@@ -749,7 +723,7 @@ export default class CatScene extends Phaser.Scene {
     this.criarAnimacaoSeNaoExistir({
       key: "percy-run",
       frames: PERCY_RUN_KEYS.map((key) => ({ key })),
-      frameRate: 8,
+      frameRate: 12,
       repeat: -1,
     });
 

@@ -377,7 +377,7 @@ export default class BatmanScene extends Phaser.Scene {
       .setScrollFactor(0);
 
     this.itemCardBox = this.add
-      .rectangle(this.largura / 2, this.altura - 112, 760, 188, 0x050713, 0.92)
+      .rectangle(this.largura / 2, this.altura / 2, 860, 286, 0x050713, 0.96)
       .setStrokeStyle(1, 0xf5c542, 0.46)
       .setVisible(false)
       .setDepth(104)
@@ -398,8 +398,8 @@ export default class BatmanScene extends Phaser.Scene {
       .setScrollFactor(0);
 
     this.itemCardKicker = this.add
-      .text(this.largura / 2, this.altura - 136, "", {
-        fontSize: "13px",
+      .text(this.largura / 2, this.altura / 2 - 92, "", {
+        fontSize: "14px",
         color: "#f5c542",
         fontFamily: "Trebuchet MS",
         fontStyle: "bold",
@@ -410,8 +410,8 @@ export default class BatmanScene extends Phaser.Scene {
       .setScrollFactor(0);
 
     this.itemCardTitle = this.add
-      .text(this.largura / 2, this.altura - 108, "", {
-        fontSize: "22px",
+      .text(this.largura / 2, this.altura / 2 - 52, "", {
+        fontSize: "25px",
         color: "#ffe08a",
         fontFamily: "Trebuchet MS",
         fontStyle: "bold",
@@ -422,26 +422,27 @@ export default class BatmanScene extends Phaser.Scene {
       .setScrollFactor(0);
 
     this.itemCardText = this.add
-      .text(this.largura / 2, this.altura - 76, "", {
-        fontSize: "18px",
+      .text(this.largura / 2, this.altura / 2 + 8, "", {
+        fontSize: "19px",
         color: "#edf0ff",
         fontFamily: "Trebuchet MS",
         align: "center",
-        wordWrap: { width: 650 },
+        lineSpacing: 7,
+        wordWrap: { width: 720 },
       })
       .setOrigin(0.5)
       .setDepth(105)
       .setScrollFactor(0);
 
     this.itemCardOkBox = this.add
-      .rectangle(this.largura / 2, this.altura - 38, 126, 38, 0xf5c542, 0.94)
+      .rectangle(this.largura / 2, this.altura / 2 + 98, 146, 44, 0xf5c542, 0.94)
       .setStrokeStyle(2, 0xffffff, 0.56)
       .setInteractive({ useHandCursor: true })
       .setVisible(false)
       .setDepth(106)
       .setScrollFactor(0);
     this.itemCardOkText = this.add
-      .text(this.largura / 2, this.altura - 38, "OK", {
+      .text(this.largura / 2, this.altura / 2 + 98, "OK", {
         fontSize: "18px",
         color: "#050713",
         fontFamily: "Trebuchet MS",
@@ -2576,6 +2577,9 @@ export default class BatmanScene extends Phaser.Scene {
     this.acaoAoFecharCard = aoFechar;
     this.player?.body?.setVelocity(0);
     this.physics.world.pause();
+    this.feedbackBox.setVisible(false);
+    this.feedbackText.setText("");
+    this.mensagem.setText("");
     this.itemCardBox.setVisible(true);
     this.itemCardPhotoFrame.setVisible(false);
     this.itemCardPhoto.setVisible(false);
