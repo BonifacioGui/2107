@@ -80,17 +80,6 @@ const MOMENTOS_PERCY = [
       "No sofa, Percy se encaixa no colo do pai dela e transforma sono em protecao.",
   },
   {
-    id: "cama",
-    x: 2735,
-    y: 536,
-    requerInteracao: true,
-    prompt: "E  subir na cama",
-    estado: "cama",
-    titulo: "O pulo para a cama",
-    texto:
-      "Ele calcula a distancia, pula com coragem e escolhe ficar pertinho dela.",
-  },
-  {
     id: "carinho",
     x: 1880,
     y: 536,
@@ -226,7 +215,10 @@ export default class CatScene extends Phaser.Scene {
       "percyBackyard",
       "/assets/backgrounds/percy-backyard.png"
     );
-    this.load.image("backyardDoor", "/assets/cat/backyard-door.png");
+    this.load.spritesheet("backyardDoor", "/assets/cat/backyard-door.png", {
+      frameWidth: 256,
+      frameHeight: 288,
+    });
 
     const objetos = {
       wallBlue: "/assets/backgrounds/wall-blue.png",
@@ -512,9 +504,8 @@ export default class CatScene extends Phaser.Scene {
       .setDepth(-38);
 
     this.backyardDoorSprite = this.add
-      .image(BACKYARD_START_X + 8, FLOOR_Y - 116, "backyardDoor")
-      .setCrop(570, 0, 214, 288)
-      .setDisplaySize(172, 232)
+      .image(BACKYARD_START_X + 8, FLOOR_Y - 116, "backyardDoor", 2)
+      .setDisplaySize(206, 232)
       .setDepth(12);
     this.passagemQuintalGlow = this.add
       .ellipse(BACKYARD_START_X + 8, 522, 86, 180, 0xffe0a3, 0.035)
@@ -1546,7 +1537,6 @@ export default class CatScene extends Phaser.Scene {
     const texturaPorEstado = {
       sofa: PERCY_MOVIMENTO_KEYS[23],
       pai: PERCY_MOVIMENTO_KEYS[23],
-      cama: PERCY_MOVIMENTO_KEYS[16],
       carinho: PERCY_MOVIMENTO_KEYS[40],
       gatinhos: PERCY_TEXTURE_IDLE,
       notebook: PERCY_TEXTURE_IDLE,
@@ -1912,7 +1902,7 @@ export default class CatScene extends Phaser.Scene {
 
     this.mostrarNarrativa(
       "Percy encontrou Livinha",
-      "Sem pressa, sem susto. So carinho, cama quentinha e um lugar seguro para ficar."
+      "Sem pressa, sem susto. So carinho, um cantinho quentinho e um lugar seguro para ficar."
     );
 
     this.time.delayedCall(4200, () => {
