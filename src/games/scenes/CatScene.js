@@ -104,7 +104,7 @@ const MOMENTOS_PERCY = [
     estado: "notebook",
     titulo: "Assistindo juntinhos",
     texto:
-      "Quando a tela acende, Percy nao quer entender o video. Ele quer ficar ali, dividindo o mesmo silencio com ela.",
+      "Velho safado fica assistindo Youtube. Tem que tirar as telas da lenda!",
   },
   {
     id: "familia",
@@ -113,7 +113,7 @@ const MOMENTOS_PERCY = [
     estado: "familia",
     titulo: "A familia do quintal",
     texto:
-      "Do outro lado da casa, Percy reencontra sua turma. Cada focinho conhecido lembra que amor tambem e ter para onde voltar.",
+      "Do outro lado da casa, Percy reencontra sua turma. As lendas estão sempre juntas.",
   },
 ];
 
@@ -543,7 +543,7 @@ export default class CatScene extends Phaser.Scene {
     this.tocarSinoCasa();
     this.mostrarNarrativa(
       "A passagem para o quintal",
-      "Percy conhece esse caminho. A luz muda, o jardim aparece e as patinhas da familia ja perceberam que ele chegou."
+      "Percy conhece esse caminho. Ele vai lá só para apanhar, mas aqui não! kkkk"
     );
   }
 
@@ -1172,7 +1172,7 @@ export default class CatScene extends Phaser.Scene {
       lingua: {
         texture: PERCY_MOVIMENTO_KEYS[40],
         titulo: "Linguinha do Percy",
-        texto: "Quando ela faz carinho, Percy entrega o segredo: ele esta feliz.",
+        texto: "Quando vc faz carinho,o velhote fica louco.",
       },
       sono: {
         texture: PERCY_MOVIMENTO_KEYS[23],
@@ -1183,7 +1183,7 @@ export default class CatScene extends Phaser.Scene {
         texture: PERCY_EAT_KEYS[0],
         animacao: "percy-eat",
         titulo: "Hora da carninha",
-        texto: "Percy saboreia cada pedacinho do carinho que ganhou.",
+        texto: "Percy saboreia cada pedacinho da carninha que ganhou.",
       },
       normal: {
         texture: PERCY_TEXTURE_IDLE,
