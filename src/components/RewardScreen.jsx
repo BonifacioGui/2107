@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-const requestedSongPath = "/assets/audio/somos-so-nos-dois.mp3";
+const requestedSongPath = "/assets/audio/batman-theme-8bit.mp3";
 
 const rewardMoments = [
   {
@@ -24,11 +24,6 @@ const rewardMoments = [
     caption: "O olhar atento de quem segue aprendendo mesmo nos dias dificeis.",
   },
   {
-    title: "Percy",
-    image: "/assets/rewards/photos/percy-real.jpg",
-    caption: "Todo heroi tambem precisa de coberta, colo e um olhar muito serio.",
-  },
-  {
     title: "Lindona",
     image: "/assets/rewards/photos/livialinda.jpg",
     caption: "Ela bonita desse jeito que parece facil, mas e so ela sendo ela.",
@@ -44,11 +39,8 @@ export default function RewardScreen({ onNext }) {
   const [collected, setCollected] = useState(false);
   const [selectedMoment, setSelectedMoment] = useState(null);
   const [musicPlaying, setMusicPlaying] = useState(false);
-  const [musicLabel, setMusicLabel] = useState("Tocar trilha");
+  const [musicLabel, setMusicLabel] = useState("Tocar tema 8-bit");
   const audioRef = useRef(null);
-  const audioContextRef = useRef(null);
-  const gainRef = useRef(null);
-  const musicTimerRef = useRef(null);
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -65,94 +57,14 @@ export default function RewardScreen({ onNext }) {
     };
   }, []);
 
-  function playTone(frequency, start, duration, type = "sine", volume = 0.035) {
-    const context = audioContextRef.current;
-    const master = gainRef.current;
-
-    if (!context || !master) {
-      return;
-    }
-
-    const oscillator = context.createOscillator();
-    const envelope = context.createGain();
-
-    oscillator.type = type;
-    oscillator.frequency.setValueAtTime(frequency, start);
-    envelope.gain.setValueAtTime(0.0001, start);
-    envelope.gain.exponentialRampToValueAtTime(volume, start + 0.06);
-    envelope.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-
-    oscillator.connect(envelope);
-    envelope.connect(master);
-    oscillator.start(start);
-    oscillator.stop(start + duration + 0.05);
-  }
-
-  function playGeneratedLoop() {
-    const context = audioContextRef.current;
-
-    if (!context) {
-      return;
-    }
-
-    const start = context.currentTime + 0.04;
-    const melody = [220, 277.18, 329.63, 369.99, 329.63, 277.18, 246.94];
-
-    melody.forEach((note, index) => {
-      playTone(note, start + index * 0.42, 0.34, "triangle", 0.025);
-    });
-
-    [110, 164.81, 146.83, 123.47].forEach((note, index) => {
-      playTone(note, start + index * 0.84, 0.64, "sine", 0.018);
-    });
-  }
-
-  function startGeneratedMusic() {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-
-    if (!AudioContext) {
-      setMusicPlaying(false);
-      setMusicLabel("Trilha indisponivel");
-      return;
-    }
-
-    const context = new AudioContext();
-    const gain = context.createGain();
-
-    gain.gain.value = 0.085;
-    gain.connect(context.destination);
-    audioContextRef.current = context;
-    gainRef.current = gain;
-
-    playGeneratedLoop();
-    musicTimerRef.current = window.setInterval(playGeneratedLoop, 3600);
-    setMusicLabel("Trilha suave tocando");
-  }
-
   function stopMusic() {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
-      audioRef.current = null;
-    }
-
-    if (musicTimerRef.current) {
-      window.clearInterval(musicTimerRef.current);
-      musicTimerRef.current = null;
-    }
-
-    if (gainRef.current) {
-      gainRef.current.disconnect();
-      gainRef.current = null;
-    }
-
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
     }
 
     setMusicPlaying(false);
-    setMusicLabel("Tocar trilha");
+    setMusicLabel("Tocar tema 8-bit");
   }
 
   async function toggleMusic() {
@@ -164,35 +76,32 @@ export default function RewardScreen({ onNext }) {
     setMusicPlaying(true);
 
     try {
-      const response = await fetch(requestedSongPath, { method: "HEAD" });
+      const audio = audioRef.current;
 
-      if (!response.ok) {
-        throw new Error("audio-not-found");
+      if (!audio) {
+        throw new Error("audio-player-not-ready");
       }
 
-      const audio = new Audio(requestedSongPath);
-      audio.loop = true;
-      audio.volume = 0.45;
-      audioRef.current = audio;
       await audio.play();
-      setMusicLabel("Musica tocando");
+      setMusicLabel("Tema 8-bit tocando");
     } catch {
-      startGeneratedMusic();
+      setMusicPlaying(false);
+      setMusicLabel("Tentar tocar novamente");
     }
   }
 
   return (
     <section className="reward-screen">
+      <audio ref={audioRef} src={requestedSongPath} loop preload="auto" />
       <div className="reward-panel">
-        <span className="screen-label">Recompensa desbloqueada</span>
+        <span className="screen-label">Pacote Livia desbloqueado</span>
 
-        <h1>{collected ? "Um mural nosso" : "Colete sua recompensa"}</h1>
+        <h1>{collected ? "As muitas formas de brilhar" : "Colete sua recompensa"}</h1>
 
         {!collected && (
           <p>
-            Depois de enfrentar o medo em Gotham, vem a parte boa: abrir as
-            lembrancas que mostram por que ela nunca desiste, mesmo quando a
-            fase fica dificil.
+            Depois de enfrentar o medo, vem a parte boa: abrir lembrancas que
+            mostram por que ela nunca desiste, mesmo quando a fase fica dificil.
           </p>
         )}
 

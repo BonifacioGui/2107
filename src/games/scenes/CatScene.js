@@ -122,7 +122,7 @@ const MOMENTOS_PERCY = [
   },
 ];
 
-const PRINCESS_X = 4260;
+const PRINCESS_X = 4140;
 const PRINCESS_Y = 536;
 
 export default class CatScene extends Phaser.Scene {
@@ -220,6 +220,7 @@ export default class CatScene extends Phaser.Scene {
       "percyBackyard",
       "/assets/backgrounds/percy-backyard.png"
     );
+    this.load.image("backyardDoor", "/assets/cat/backyard-door.png");
 
     const objetos = {
       wallBlue: "/assets/backgrounds/wall-blue.png",
@@ -296,8 +297,16 @@ export default class CatScene extends Phaser.Scene {
       interact: Phaser.Input.Keyboard.KeyCodes.E,
       tongue: Phaser.Input.Keyboard.KeyCodes.L,
       sleep: Phaser.Input.Keyboard.KeyCodes.Z,
+      close: Phaser.Input.Keyboard.KeyCodes.X,
       confirm: Phaser.Input.Keyboard.KeyCodes.ENTER,
       cancel: Phaser.Input.Keyboard.KeyCodes.ESC,
+    });
+    ["keydown-X", "keydown-ENTER", "keydown-ESC"].forEach((evento) => {
+      this.input.keyboard.on(evento, () => {
+        if (this.percyPreviewAberto) {
+          this.esconderPercyGrande();
+        }
+      });
     });
     this.poseToggleKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
     this.poseDebugAtivo =
@@ -351,6 +360,7 @@ export default class CatScene extends Phaser.Scene {
       const fecharPreview =
         Phaser.Input.Keyboard.JustDown(this.keys.tongue) ||
         Phaser.Input.Keyboard.JustDown(this.keys.sleep) ||
+        Phaser.Input.Keyboard.JustDown(this.keys.close) ||
         Phaser.Input.Keyboard.JustDown(this.keys.confirm) ||
         Phaser.Input.Keyboard.JustDown(this.keys.cancel);
 
@@ -485,37 +495,18 @@ export default class CatScene extends Phaser.Scene {
       .rectangle(BACKYARD_START_X + 8, FLOOR_Y - 4, 42, 18, 0x241512, 0.9)
       .setDepth(-38);
 
-    this.add
-      .text(BACKYARD_START_X + 86, 126, "O quintal", {
-        fontSize: "19px",
-        color: "#fff3c4",
-        fontFamily: "Trebuchet MS",
-        fontStyle: "bold",
-        stroke: "#162035",
-        strokeThickness: 4,
-      })
-      .setOrigin(0.5)
-      .setDepth(10);
-
-    this.add
-      .rectangle(BACKYARD_START_X + 8, 432, 104, 326, 0x120d12, 0.96)
-      .setDepth(9);
-    this.add
-      .rectangle(BACKYARD_START_X + 8, 272, 128, 18, 0x4b3027, 0.96)
-      .setDepth(12);
-    this.add
-      .rectangle(BACKYARD_START_X - 48, 432, 14, 336, 0x4b3027, 0.96)
-      .setDepth(12);
-    this.add
-      .rectangle(BACKYARD_START_X + 64, 432, 14, 336, 0x4b3027, 0.96)
+    this.backyardDoorSprite = this.add
+      .image(BACKYARD_START_X + 8, FLOOR_Y - 116, "backyardDoor")
+      .setCrop(570, 0, 214, 288)
+      .setDisplaySize(172, 232)
       .setDepth(12);
     this.passagemQuintalGlow = this.add
       .ellipse(BACKYARD_START_X + 8, 522, 86, 180, 0xffe0a3, 0.035)
       .setBlendMode(Phaser.BlendModes.ADD)
       .setDepth(11);
     this.add
-      .rectangle(BACKYARD_START_X + 8, 584, 122, 8, 0x6b4430, 0.78)
-      .setDepth(12);
+      .ellipse(BACKYARD_START_X + 8, FLOOR_Y - 2, 138, 18, 0x2a1712, 0.34)
+      .setDepth(11);
     this.backyardDoorOpened = false;
     this.backyardDoorZone = this.add.zone(BACKYARD_START_X - 54, 532, 190, 188);
     this.physics.add.existing(this.backyardDoorZone);
@@ -938,6 +929,10 @@ export default class CatScene extends Phaser.Scene {
       .circle(PRINCESS_X, PRINCESS_Y + 10, 82, 0xffd166, 0.025)
       .setDepth(18);
 
+    this.livinhaShadow = this.add
+      .ellipse(PRINCESS_X, FLOOR_Y - 3, 74, 16, 0x142015, 0.34)
+      .setDepth(34);
+
     this.livinha = this.add.container(PRINCESS_X, PRINCESS_Y).setDepth(35);
 
     this.livinhaPrincesaSprite = this.add
@@ -1047,6 +1042,23 @@ export default class CatScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(200);
 
+    this.controlesText = this.add
+      .text(
+        24,
+        this.altura - 24,
+        "L linguinha   Z soneca   X/Esc/Enter fecha   Espaco pula   E interage",
+        {
+          fontSize: "13px",
+          color: "#fff3c4",
+          fontFamily: "Trebuchet MS",
+          stroke: "#120c1f",
+          strokeThickness: 4,
+        }
+      )
+      .setOrigin(0, 1)
+      .setScrollFactor(0)
+      .setDepth(200);
+
     this.narrativaBox = this.add
       .rectangle(this.largura / 2, 54, 880, 74, 0x120c1f, 0.86)
       .setStrokeStyle(1, 0xffd166, 0.32)
@@ -1127,12 +1139,19 @@ export default class CatScene extends Phaser.Scene {
         fontFamily: "Trebuchet MS",
         fontStyle: "bold",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
 
     bloqueio.on("pointerdown", () => this.esconderPercyGrande());
     fecharFundo.on("pointerdown", (pointer, localX, localY, event) => {
       event?.stopPropagation();
       this.esconderPercyGrande();
+    });
+    fecharTexto.on("pointerdown", () => this.esconderPercyGrande());
+    this.input.on("pointerdown", () => {
+      if (this.percyPreviewAberto) {
+        this.esconderPercyGrande();
+      }
     });
 
     this.percyPreviewOverlay.add([
@@ -1777,10 +1796,6 @@ export default class CatScene extends Phaser.Scene {
       });
     }
 
-    if (momento.estado === "cama") {
-      this.pularPercy({ altura: 54, duracao: 680, forcar: true });
-    }
-
     if (momento.estado === "carinho") {
       this.livinhaCarinho.anims.play("livia-cats-recut", true);
       this.tweens.add({
@@ -1870,8 +1885,10 @@ export default class CatScene extends Phaser.Scene {
     this.cameras.main.pan(PRINCESS_X, PRINCESS_Y, 1200, "Sine.easeInOut");
     this.livinhaFinalSprite.setAlpha(0);
     this.tweens.add({
-      targets: this.livinha,
-      y: "-=12",
+      targets: this.princesaGlow,
+      alpha: 0.16,
+      scaleX: 1.14,
+      scaleY: 1.14,
       duration: 650,
       yoyo: true,
       repeat: 2,
