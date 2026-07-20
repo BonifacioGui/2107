@@ -52,6 +52,8 @@ const MOMENTOS_PERCY = [
     id: "carne",
     x: 320,
     y: 510,
+    requerInteracao: true,
+    prompt: "E  pedir carninha",
     estado: "carne",
     titulo: "A carne que a mae da",
     texto:
@@ -59,8 +61,10 @@ const MOMENTOS_PERCY = [
   },
   {
     id: "sofa",
-    x: 760,
+    x: 1770,
     y: 540,
+    requerInteracao: true,
+    prompt: "E  descansar no sofa",
     estado: "sofa",
     titulo: "Dono do sofa",
     texto:
@@ -77,8 +81,10 @@ const MOMENTOS_PERCY = [
   },
   {
     id: "cama",
-    x: 2290,
+    x: 2735,
     y: 536,
+    requerInteracao: true,
+    prompt: "E  subir na cama",
     estado: "cama",
     titulo: "O pulo para a cama",
     texto:
@@ -395,19 +401,29 @@ export default class CatScene extends Phaser.Scene {
       return;
     }
 
-    if (
-      Phaser.Input.Keyboard.JustDown(this.keys.interact) &&
-      this.carneZone &&
-      !this.carneZone.visitado &&
-      Phaser.Math.Distance.Between(
-        this.player.x,
-        this.player.y,
-        this.carneZone.x,
-        this.carneZone.y
-      ) < 145
-    ) {
-      this.entrarNoMomento(this.player, this.carneZone, true);
-      return;
+    if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) {
+      const zonaInteracao = this.momentos
+        .getChildren()
+        .filter(
+          (zona) =>
+            zona.momento?.requerInteracao &&
+            !zona.visitado &&
+            Phaser.Math.Distance.Between(
+              this.player.x,
+              this.player.y,
+              zona.x,
+              zona.y
+            ) < 132
+        )
+        .sort((zonaA, zonaB) =>
+          Phaser.Math.Distance.Between(this.player.x, this.player.y, zonaA.x, zonaA.y) -
+          Phaser.Math.Distance.Between(this.player.x, this.player.y, zonaB.x, zonaB.y)
+        )[0];
+
+      if (zonaInteracao) {
+        this.entrarNoMomento(this.player, zonaInteracao, true);
+        return;
+      }
     }
 
     const velocidade = this.keys.run.isDown ? 158 : 118;
@@ -982,7 +998,7 @@ export default class CatScene extends Phaser.Scene {
     this.momentos = this.physics.add.group();
 
     MOMENTOS_PERCY.forEach((momento) => {
-      const zona = this.add.zone(momento.x, momento.y, 170, 118);
+      const zona = this.add.zone(momento.x, momento.y, 126, 96);
       this.physics.add.existing(zona);
       zona.body.setAllowGravity(false);
       zona.body.setImmovable(true);
@@ -1002,7 +1018,7 @@ export default class CatScene extends Phaser.Scene {
         .text(
           momento.x,
           momento.y - 74,
-          momento.id === "carne" ? "E  pedir carninha" : "aproxime-se",
+          momento.prompt ?? "aproxime-se",
           {
           fontSize: "12px",
           color: "#fff3c4",
@@ -1719,7 +1735,7 @@ export default class CatScene extends Phaser.Scene {
       return;
     }
 
-    if (zona.momento.id === "carne" && !interacaoConfirmada) {
+    if (zona.momento.requerInteracao && !interacaoConfirmada) {
       return;
     }
 
