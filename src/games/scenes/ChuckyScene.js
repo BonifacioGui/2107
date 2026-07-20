@@ -17,7 +17,7 @@ const MEMORIES = [
     photoTexture: "memoryFirstPhoto",
     photoUrl: "/assets/chucky/memories/primeira-foto.png",
     title: "Nossa primeira foto",
-    text: "Antes de tantas fases, ja existia esse carinho encontrando um jeito de ficar.",
+    text: "Estávamos aqui no nosso cantinho de sempre...",
   },
   {
     id: "carta",
@@ -28,7 +28,7 @@ const MEMORIES = [
     photoTexture: "memoryBeginning",
     photoUrl: "/assets/chucky/memories/nosso-comeco.jpg",
     title: "Nosso comeco",
-    text: "Foi aqui que dois caminhos comecaram a virar uma historia so nossa.",
+    text: "Aqui a gente tava branco pra cassete viu. E você linda como sempre!",
   },
   {
     id: "coracao",
@@ -39,7 +39,7 @@ const MEMORIES = [
     photoTexture: "memoryFirstTrip",
     photoUrl: "/assets/chucky/memories/primeira-viagem.jpg",
     title: "Nossa primeira viagem",
-    text: "Cada lugar ficou mais leve porque a melhor parte era estar junto.",
+    text: "Foi tudo muitio massa. Não vou esquecer de você revoltada por ter se molhado kkkk.",
   },
   {
     id: "urso",
@@ -50,7 +50,7 @@ const MEMORIES = [
     photoTexture: "memoryNightTogether",
     photoUrl: "/assets/chucky/memories/noite-juntos.jpg",
     title: "Uma noite juntos",
-    text: "Mesmo no escuro, estar ao seu lado sempre fez o medo parecer menor.",
+    text: "Rolêzinho no parque...",
   },
   {
     id: "chave",
@@ -61,7 +61,7 @@ const MEMORIES = [
     photoTexture: "memoryUsTogether",
     photoUrl: "/assets/chucky/memories/nos-dois.jpg",
     title: "Nos dois",
-    text: "Entre dias comuns e momentos especiais, voce continua sendo meu lugar favorito.",
+    text: "Nosso dia dos namorados mais recente. Conhecendo um novo lugar",
   },
   {
     id: "luz",
@@ -72,7 +72,7 @@ const MEMORIES = [
     photoTexture: "memoryBeachTrip",
     photoUrl: "/assets/chucky/memories/viagem-praia.jpg",
     title: "A gente viajando",
-    text: "O mundo fica maior quando a gente descobre cada pedacinho dele lado a lado.",
+    text: "Fico muito feliz de ter vivido isso com você. E ainda vamos viver muito mais.",
   },
   {
     id: "farol",
@@ -244,7 +244,7 @@ const DECOR = [
 const CAUGHT_MESSAGES = [
   "Foi so um susto. Respira e tenta de novo.",
   "O medo apareceu, mas nao venceu.",
-  "Ela sempre continua, mesmo quando assusta.",
+  "Você sempre continua, mesmo quando assusta.",
   "Respira. Um passo de cada vez.",
 ];
 
@@ -1961,7 +1961,7 @@ export default class ChuckyScene extends Phaser.Scene {
       .text(
         this.largura / 2,
         this.altura / 2 + 124,
-        "Te amo. Voce sempre acreditou em mim, mesmo quando eu duvidei, e isso me ajuda mais do que consigo dizer. Voce me fez e me faz vencer medos, ate o medo de filmes de terror. Foi meu farol na fase mais sombria da minha vida, e segue sendo ate hoje.",
+        "Voce sempre acreditou em mim, mesmo quando eu duvidei, e isso me ajuda mais do que consigo dizer. Voce me fez e me faz vencer medos, ate o medo de filmes de terror. Foi meu farol na fase mais sombria da minha vida, e segue sendo ate hoje. Te amo.",
         {
           fontSize: "22px",
           color: "#fff8e7",
