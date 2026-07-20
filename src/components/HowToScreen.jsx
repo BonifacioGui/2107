@@ -8,12 +8,12 @@ export default function HowToScreen({ onStart }) {
       <div className="how-to-grid">
         <article>
           <strong>Movimento</strong>
-          <p>Use o teclado para andar, pular e explorar. A fase do Percy tambem aceita WASD.</p>
+          <p>Use o teclado para andar, pular e explorar. As fases tambem aceitam WASD.</p>
         </article>
 
         <article>
-          <strong>Batarangue</strong>
-          <p>Aperte X para arremessar. Ele machuca os medos e tambem o Coringa.</p>
+          <strong>Acao</strong>
+          <p>Cada etapa apresenta seus comandos quando eles forem necessarios.</p>
         </article>
 
         <article>
@@ -23,7 +23,7 @@ export default function HowToScreen({ onStart }) {
 
         <article>
           <strong>Objetivo</strong>
-          <p>Primeiro junte os simbolos. Depois enfrente o Coringa e libere a recompensa.</p>
+          <p>Explore, observe o ambiente e descubra o objetivo sem pressa.</p>
         </article>
       </div>
 

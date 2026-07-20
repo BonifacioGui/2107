@@ -1,0 +1,8 @@
+Espacos reservados para trilhas licenciadas pelo dono do projeto:
+
+- tema-telhados.mp3: trilha da primeira fase
+- runaway.mp3: musica do resgate na segunda fase
+
+As gravacoes comerciais nao podem ser distribuidas no repositorio sem autorizacao.
+Quando os arquivos licenciados forem adicionados aqui, o jogo podera conecta-los
+aos momentos correspondentes.

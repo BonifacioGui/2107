@@ -94,12 +94,12 @@ function criarPlataformaComImagem(scene, { x, y, largura, altura, tipo, textura 
   }
 
   scene.add
-    .rectangle(x, superficieY + 54, largura, 92, 0x02040a, 0.62)
+    .rectangle(x, superficieY + 36, largura, 54, 0x02040a, 0.62)
     .setDepth(8);
 
   scene.add
-    .image(x, superficieY + 22, textura)
-    .setDisplaySize(largura, 130)
+    .image(x, superficieY + 14, textura)
+    .setDisplaySize(largura, 76)
     .setAlpha(1)
     .setDepth(10);
 }
@@ -150,12 +150,12 @@ function criarPlataformaMovel(scene, { x, y, largura, altura, movimento }) {
   scene.plataformasMoveis.add(colisor);
 
   const sombra = scene.add
-    .rectangle(x, y + 54, largura, 92, 0x02040a, 0.62)
+    .rectangle(x, y + 36, largura, 54, 0x02040a, 0.62)
     .setDepth(12);
 
   const plataforma = scene.add
-    .image(x, y + 22, textura)
-    .setDisplaySize(largura, 130)
+    .image(x, y + 14, textura)
+    .setDisplaySize(largura, 76)
     .setDepth(13);
 
   const brilho = scene.add
@@ -171,8 +171,8 @@ function criarPlataformaMovel(scene, { x, y, largura, altura, movimento }) {
     yoyo: true,
     repeat: -1,
     onUpdate: () => {
-      plataforma.setPosition(colisor.x, colisor.y + 22);
-      sombra.setPosition(colisor.x, colisor.y + 54);
+      plataforma.setPosition(colisor.x, colisor.y + 14);
+      sombra.setPosition(colisor.x, colisor.y + 36);
       brilho.setPosition(colisor.x, colisor.y - altura / 2);
       colisor.body.updateFromGameObject();
     },

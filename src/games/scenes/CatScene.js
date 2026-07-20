@@ -1,6 +1,9 @@
 import Phaser from "phaser";
 
-const WORLD_WIDTH = 3200;
+const HOUSE_WIDTH = 3200;
+const BACKYARD_START_X = HOUSE_WIDTH;
+const BACKYARD_WIDTH = 1200;
+const WORLD_WIDTH = HOUSE_WIDTH + BACKYARD_WIDTH;
 const WORLD_HEIGHT = 720;
 const WALL_TOP = 92;
 const WALL_HEIGHT = 500;
@@ -12,17 +15,36 @@ const WALK_MAX_Y = 574;
 const PERCY_SIZE = 68;
 const PERCY_DRAW_OFFSET_Y = 4;
 
+const criarChavesPercy = (prefixo, inicio, fim) =>
+  Array.from({ length: fim - inicio + 1 }, (_, indice) => {
+    const numero = String(inicio + indice).padStart(2, "0");
+    return `${prefixo}-${numero}`;
+  });
+
+const PERCY_MOVIMENTO_KEYS = criarChavesPercy("percy-movimento", 1, 41);
+const PERCY_CARNINHA_KEYS = criarChavesPercy("percy-carninha", 1, 30);
+const PERCY_IDLE_KEYS = PERCY_MOVIMENTO_KEYS.slice(0, 5);
+const PERCY_WALK_KEYS = PERCY_MOVIMENTO_KEYS.slice(6, 11);
+const PERCY_RUN_KEYS = PERCY_MOVIMENTO_KEYS.slice(11, 15);
+const PERCY_JUMP_KEYS = PERCY_MOVIMENTO_KEYS.slice(15, 19);
+const PERCY_EAT_KEYS = PERCY_CARNINHA_KEYS.slice(15, 24);
+const PERCY_TEXTURE_IDLE = PERCY_IDLE_KEYS[0];
+const LIVIA_RECUT_KEYS = Array.from(
+  { length: 12 },
+  (_, indice) => `livia-recut-${String(indice + 1).padStart(2, "0")}`
+);
+
 const POSES_DEBUG_PERCY = [
   { frame: 0, label: "F0 parado" },
-  { frame: 1, label: "F1 parado" },
-  { frame: 2, label: "F2 andar" },
-  { frame: 3, label: "F3 andar" },
-  { frame: 4, label: "F4 andar" },
-  { frame: 5, label: "F5 andar" },
-  { frame: 6, label: "F6 sentado" },
-  { frame: 7, label: "F7 sono" },
-  { frame: 8, label: "F8 lingua" },
-  { frame: 9, label: "F9 rosto" },
+  { frame: 6, label: "F6 andando" },
+  { frame: 12, label: "F12 correndo" },
+  { frame: 18, label: "F18 pulando" },
+  { frame: 24, label: "F24 sentado" },
+  { frame: 28, label: "F28 sono" },
+  { frame: 30, label: "F30 carinho" },
+  { frame: 35, label: "F35 bolinha" },
+  { frame: 42, label: "F42 rosto" },
+  { frame: 43, label: "F43 lingua" },
 ];
 
 const MOMENTOS_PERCY = [
@@ -30,6 +52,8 @@ const MOMENTOS_PERCY = [
     id: "carne",
     x: 320,
     y: 510,
+    requerInteracao: true,
+    prompt: "E  pedir carninha",
     estado: "carne",
     titulo: "A carne que a mae da",
     texto:
@@ -37,8 +61,10 @@ const MOMENTOS_PERCY = [
   },
   {
     id: "sofa",
-    x: 760,
+    x: 1770,
     y: 540,
+    requerInteracao: true,
+    prompt: "E  descansar no sofa",
     estado: "sofa",
     titulo: "Dono do sofa",
     texto:
@@ -52,15 +78,6 @@ const MOMENTOS_PERCY = [
     titulo: "Soneca com o pai dela",
     texto:
       "No sofa, Percy se encaixa no colo do pai dela e transforma sono em protecao.",
-  },
-  {
-    id: "cama",
-    x: 2290,
-    y: 536,
-    estado: "cama",
-    titulo: "O pulo para a cama",
-    texto:
-      "Ele calcula a distancia, pula com coragem e escolhe ficar pertinho dela.",
   },
   {
     id: "carinho",
@@ -89,10 +106,19 @@ const MOMENTOS_PERCY = [
     texto:
       "Quando a tela acende, Percy nao quer entender o video. Ele quer ficar ali, dividindo o mesmo silencio com ela.",
   },
+  {
+    id: "familia",
+    x: 3820,
+    y: 528,
+    estado: "familia",
+    titulo: "A familia do quintal",
+    texto:
+      "Do outro lado da casa, Percy reencontra sua turma. Cada focinho conhecido lembra que amor tambem e ter para onde voltar.",
+  },
 ];
 
-const PRINCESS_X = 3020;
-const PRINCESS_Y = 488;
+const PRINCESS_X = 4140;
+const PRINCESS_Y = 536;
 
 export default class CatScene extends Phaser.Scene {
   constructor() {
@@ -100,13 +126,54 @@ export default class CatScene extends Phaser.Scene {
   }
 
   preload() {
+    PERCY_MOVIMENTO_KEYS.forEach((key, indice) => {
+      const numero = String(indice + 1).padStart(2, "0");
+      this.load.image(
+        key,
+        `/assets/cat/percy-recut/movimentos/movimento_${numero}.png`
+      );
+    });
+
+    PERCY_CARNINHA_KEYS.forEach((key, indice) => {
+      const numero = String(indice + 1).padStart(2, "0");
+      this.load.image(
+        key,
+        `/assets/cat/percy-recut/comendo-carninha/carninha_${numero}.png`
+      );
+    });
+
+    LIVIA_RECUT_KEYS.forEach((key, indice) => {
+      const numero = String(indice + 1).padStart(2, "0");
+      this.load.image(key, `/assets/cat/livia-recut/livia_sprite_${numero}.png`);
+    });
+
     this.load.spritesheet(
-      "percySpriteFixedV3",
-      "/assets/characters/percy-spritesheet-fixed-v3.png",
+      "percyContemplative",
+      "/assets/cat/percy-spritesheet.png",
       {
-        frameWidth: 144,
-        frameHeight: 144,
+        frameWidth: 72,
+        frameHeight: 72,
       }
+    );
+
+    this.load.spritesheet(
+      "liviaFamilyScenes",
+      "/assets/cat/livia-family-scenes.png",
+      { frameWidth: 144, frameHeight: 144 }
+    );
+    this.load.spritesheet(
+      "notebookScenes",
+      "/assets/cat/notebook-scenes.png",
+      { frameWidth: 176, frameHeight: 176 }
+    );
+    this.load.image(
+      "motherFeedingScenes",
+      "/assets/cat/mother-feeding-scenes.png"
+    );
+    this.load.spritesheet(
+      "parentsPercyScenes",
+      "/assets/cat/parents-percy-scenes.png",
+      { frameWidth: 144, frameHeight: 216 }
     );
 
     this.load.spritesheet(
@@ -140,6 +207,14 @@ export default class CatScene extends Phaser.Scene {
       "livinhaPercyClose",
       "/assets/characters/livinha-percy-close.png"
     );
+    this.load.image(
+      "contemplativeHouse",
+      "/assets/backgrounds/contemplative-house.png"
+    );
+    this.load.image(
+      "percyBackyard",
+      "/assets/backgrounds/percy-backyard.png"
+    );
 
     const objetos = {
       wallBlue: "/assets/backgrounds/wall-blue.png",
@@ -163,10 +238,7 @@ export default class CatScene extends Phaser.Scene {
       bedRedSingle: "/assets/objects/bed-red-single.png",
       pinkRug: "/assets/objects/pink-rug.png",
       bedWood: "/assets/objects/bed-wood.png",
-      meatPlate: "/assets/objects/meat-plate.png",
-      meatBowl: "/assets/objects/meat-bowl.png",
       catEatingMeat: "/assets/objects/cat-eating-meat.png",
-      percyEatingMeat: "/assets/objects/percy-eating-meat.png",
       floorLamp: "/assets/objects/floor-lamp.png",
       rugSmall: "/assets/objects/rug-small.png",
       catPicture: "/assets/objects/cat-picture.png",
@@ -201,14 +273,13 @@ export default class CatScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);
     this.physics.world.setBounds(0, 0, this.worldWidth, this.worldHeight);
 
+    this.criarFramesCenasFamiliares();
     this.criarAnimacoesPersonagens();
     this.criarAmbienteContemplativo();
     this.criarPrincesaLivinha();
     this.criarPercy();
     this.criarMomentos();
     this.criarNarrativa();
-    this.criarInteracoesPercy();
-
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys({
       left: Phaser.Input.Keyboard.KeyCodes.A,
@@ -216,6 +287,21 @@ export default class CatScene extends Phaser.Scene {
       up: Phaser.Input.Keyboard.KeyCodes.W,
       down: Phaser.Input.Keyboard.KeyCodes.S,
       jump: Phaser.Input.Keyboard.KeyCodes.SPACE,
+      run: Phaser.Input.Keyboard.KeyCodes.SHIFT,
+      interact: Phaser.Input.Keyboard.KeyCodes.E,
+      tongue: Phaser.Input.Keyboard.KeyCodes.L,
+      sleep: Phaser.Input.Keyboard.KeyCodes.Z,
+      eat: Phaser.Input.Keyboard.KeyCodes.C,
+      close: Phaser.Input.Keyboard.KeyCodes.X,
+      confirm: Phaser.Input.Keyboard.KeyCodes.ENTER,
+      cancel: Phaser.Input.Keyboard.KeyCodes.ESC,
+    });
+    ["keydown-C", "keydown-X", "keydown-ENTER", "keydown-ESC"].forEach((evento) => {
+      this.input.keyboard.on(evento, () => {
+        if (this.percyPreviewAberto) {
+          this.esconderPercyGrande();
+        }
+      });
     });
     this.poseToggleKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
     this.poseDebugAtivo =
@@ -227,7 +313,7 @@ export default class CatScene extends Phaser.Scene {
 
     this.prepararTrilhaCasa();
 
-    this.cameras.main.startFollow(this.player, true, 0.045, 0.045);
+    this.cameras.main.startFollow(this.player, true, 0.085, 0.085);
     this.cameras.main.setDeadzone(300, 170);
 
     this.physics.add.overlap(
@@ -246,9 +332,17 @@ export default class CatScene extends Phaser.Scene {
       this
     );
 
+    this.physics.add.overlap(
+      this.player,
+      this.backyardDoorZone,
+      this.abrirPortaQuintal,
+      null,
+      this
+    );
+
     this.mostrarNarrativa(
-      "Percy e a casa",
-      "Use o teclado para passear devagar pelos cantinhos. Cada lugar guarda um jeito diferente dele amar."
+      "Percy, a casa e o quintal",
+      "Passeie sem pressa pelos cantinhos. Depois da casa, o quintal guarda um reencontro muito especial."
     );
   }
 
@@ -256,6 +350,24 @@ export default class CatScene extends Phaser.Scene {
     this.atualizarParallax(time);
     this.atualizarPainelDebug();
     this.atualizarDicasMomentos();
+
+    if (this.percyPreviewAberto) {
+      const fecharPreview =
+        Phaser.Input.Keyboard.JustDown(this.keys.tongue) ||
+        Phaser.Input.Keyboard.JustDown(this.keys.sleep) ||
+        Phaser.Input.Keyboard.JustDown(this.keys.eat) ||
+        Phaser.Input.Keyboard.JustDown(this.keys.close) ||
+        Phaser.Input.Keyboard.JustDown(this.keys.confirm) ||
+        Phaser.Input.Keyboard.JustDown(this.keys.cancel);
+
+      if (fecharPreview) {
+        this.esconderPercyGrande();
+      }
+
+      this.player.body.setVelocity(0);
+      this.atualizarVisualPercy(time);
+      return;
+    }
 
     if (this.faseConcluida) {
       this.player.body.setVelocity(0);
@@ -269,7 +381,47 @@ export default class CatScene extends Phaser.Scene {
       return;
     }
 
-    const velocidade = 132;
+    if (Phaser.Input.Keyboard.JustDown(this.keys.tongue)) {
+      this.mostrarPercyGrande("lingua");
+      return;
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.keys.sleep)) {
+      this.mostrarPercyGrande("sono");
+      return;
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.keys.eat)) {
+      this.mostrarPercyGrande("carne");
+      return;
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) {
+      const zonaInteracao = this.momentos
+        .getChildren()
+        .filter(
+          (zona) =>
+            zona.momento?.requerInteracao &&
+            !zona.visitado &&
+            Phaser.Math.Distance.Between(
+              this.player.x,
+              this.player.y,
+              zona.x,
+              zona.y
+            ) < 132
+        )
+        .sort((zonaA, zonaB) =>
+          Phaser.Math.Distance.Between(this.player.x, this.player.y, zonaA.x, zonaA.y) -
+          Phaser.Math.Distance.Between(this.player.x, this.player.y, zonaB.x, zonaB.y)
+        )[0];
+
+      if (zonaInteracao) {
+        this.entrarNoMomento(this.player, zonaInteracao, true);
+        return;
+      }
+    }
+
+    const velocidade = this.keys.run.isDown ? 158 : 118;
     const velocidadeVertical = 54;
 
     this.player.body.setVelocity(0);
@@ -316,71 +468,83 @@ export default class CatScene extends Phaser.Scene {
       .rectangle(WORLD_WIDTH / 2, 360, WORLD_WIDTH, WORLD_HEIGHT, 0x121020)
       .setDepth(-60);
     this.windowGlows = [];
-
-    this.comodos = [
-      {
-        x: 0,
-        width: 560,
-        wall: "wallYellow",
-        floor: "floorHerringbone",
-        tint: 0xffe8a8,
-        floorTint: 0xd89d62,
-        name: "cozinha",
-      },
-      {
-        x: 560,
-        width: 520,
-        wall: "wallBlue",
-        floor: "floorPlank",
-        tint: 0xb7d8ef,
-        floorTint: 0xd4a05d,
-        name: "sala",
-      },
-      {
-        x: 1080,
-        width: 560,
-        wall: "wallFloral",
-        floor: "floorPlank",
-        tint: 0xd5edd0,
-        floorTint: 0xc99058,
-        name: "quarto dos pais",
-      },
-      {
-        x: 1640,
-        width: 760,
-        wall: "wallYellow",
-        floor: "floorHerringbone",
-        tint: 0xffd9df,
-        floorTint: 0xcf9662,
-        name: "quarto da Livinha",
-      },
-      {
-        x: 2400,
-        width: 420,
-        wall: "wallBlue",
-        floor: "floorPlank",
-        tint: 0xc9e6ff,
-        floorTint: 0xbc8454,
-        name: "filminho",
-      },
-      {
-        x: 2820,
-        width: 380,
-        wall: "wallFloral",
-        floor: "floorHerringbone",
-        tint: 0xf6d1ff,
-        floorTint: 0xc99663,
-        name: "encontro",
-      },
-    ];
-
-    this.comodos.forEach((comodo) => this.criarComodo(comodo));
-    this.criarDivisoriasCasa();
-    this.criarDetalhesDeCasa();
-
+    this.criarCasaIlustrada();
+    this.criarQuintal();
     this.criarLuzesAmbiente();
-    this.criarMoveis();
+    this.criarCenasCasaIlustrada();
     this.criarPoeira();
+  }
+
+  criarCasaIlustrada() {
+    const cropY = 76;
+    const cropHeight = 680;
+    const alturaCena = WORLD_HEIGHT - WALL_TOP;
+    const sourceWidth = 1870;
+
+    this.add
+      .image(HOUSE_WIDTH / 2, WALL_TOP + alturaCena / 2, "contemplativeHouse")
+      .setCrop(0, cropY, sourceWidth, cropHeight)
+      .setDisplaySize(HOUSE_WIDTH, alturaCena)
+      .setDepth(-50);
+
+    this.add
+      .rectangle(HOUSE_WIDTH / 2, WALL_TOP - 4, HOUSE_WIDTH, 12, 0x211313, 0.96)
+      .setDepth(-40);
+  }
+
+  criarQuintal() {
+    const centerX = BACKYARD_START_X + BACKYARD_WIDTH / 2;
+    const backyard = this.add
+      .image(centerX, 382, "percyBackyard")
+      .setDisplaySize(BACKYARD_WIDTH, 675)
+      .setDepth(-50);
+
+    this.passagemQuintalGlow = this.add
+      .ellipse(BACKYARD_START_X + 8, 548, 118, 54, 0xffe0a3, 0.025)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(-38);
+    this.backyardDoorOpened = false;
+    this.backyardDoorZone = this.add.zone(BACKYARD_START_X - 54, 532, 190, 188);
+    this.physics.add.existing(this.backyardDoorZone);
+    this.backyardDoorZone.body.setAllowGravity(false);
+    this.backyardDoorZone.body.setImmovable(true);
+
+    this.familyGlow = this.add
+      .ellipse(3820, 566, 250, 76, 0xffe39a, 0.025)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(9);
+
+    this.tweens.add({
+      targets: this.familyGlow,
+      alpha: 0.085,
+      scaleX: 1.08,
+      scaleY: 1.08,
+      duration: 2100,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    backyard.setData("area", "quintal");
+  }
+
+  abrirPortaQuintal() {
+    if (this.backyardDoorOpened) {
+      return;
+    }
+
+    this.backyardDoorOpened = true;
+    this.tweens.add({
+      targets: this.passagemQuintalGlow,
+      alpha: 0.16,
+      scaleX: 1.35,
+      duration: 520,
+      yoyo: true,
+    });
+    this.tocarSinoCasa();
+    this.mostrarNarrativa(
+      "A passagem para o quintal",
+      "Percy conhece esse caminho. A luz muda, o jardim aparece e as patinhas da familia ja perceberam que ele chegou."
+    );
   }
 
   criarComodo({ x, width, tint, floorTint }) {
@@ -531,31 +695,60 @@ export default class CatScene extends Phaser.Scene {
   criarAnimacoesPersonagens() {
     this.criarAnimacaoSeNaoExistir({
       key: "percy-idle",
-      frames: this.anims.generateFrameNumbers("percySpriteFixedV3", {
-        start: 0,
-        end: 1,
-      }),
-      frameRate: 2,
+      frames: PERCY_IDLE_KEYS.map((key) => ({ key })),
+      frameRate: 3,
       repeat: -1,
     });
 
     this.criarAnimacaoSeNaoExistir({
       key: "percy-walk",
-      frames: this.anims.generateFrameNumbers("percySpriteFixedV3", {
-        start: 2,
-        end: 5,
-      }),
-      frameRate: 7,
+      frames: PERCY_WALK_KEYS.map((key) => ({ key })),
+      frameRate: 9,
+      repeat: -1,
+    });
+
+    this.criarAnimacaoSeNaoExistir({
+      key: "percy-run",
+      frames: PERCY_RUN_KEYS.map((key) => ({ key })),
+      frameRate: 12,
       repeat: -1,
     });
 
     this.criarAnimacaoSeNaoExistir({
       key: "percy-jump",
-      frames: this.anims.generateFrameNumbers("percySpriteFixedV3", {
-        start: 3,
-        end: 5,
-      }),
+      frames: PERCY_JUMP_KEYS.map((key) => ({ key })),
       frameRate: 10,
+      repeat: -1,
+    });
+
+    this.criarAnimacaoSeNaoExistir({
+      key: "percy-eat",
+      frames: PERCY_EAT_KEYS.map((key) => ({ key })),
+      frameRate: 6,
+      repeat: -1,
+    });
+
+    this.criarAnimacaoSeNaoExistir({
+      key: "livia-walk-recut",
+      frames: LIVIA_RECUT_KEYS.slice(0, 4).map((key) => ({ key })),
+      frameRate: 6,
+      repeat: -1,
+    });
+
+    this.criarAnimacaoSeNaoExistir({
+      key: "livia-cats-recut",
+      frames: LIVIA_RECUT_KEYS.slice(8, 12).map((key) => ({ key })),
+      frameRate: 2,
+      repeat: 0,
+    });
+
+    this.criarAnimacaoSeNaoExistir({
+      key: "notebook-together",
+      frames: this.anims.generateFrameNumbers("notebookScenes", {
+        start: 0,
+        end: 7,
+      }),
+      frameRate: 2,
       repeat: -1,
     });
 
@@ -587,16 +780,64 @@ export default class CatScene extends Phaser.Scene {
     }
   }
 
+  criarFramesCenasFamiliares() {
+    const texture = this.textures.get("motherFeedingScenes");
+
+    if (!texture.has("mother-idle")) {
+      texture.add("mother-idle", 0, 8, 90, 70, 130);
+      texture.add("mother-feeding", 0, 258, 250, 77, 125);
+    }
+  }
+
+  criarCenasCasaIlustrada() {
+    this.meatGlow = this.add
+      .circle(326, 516, 56, 0xffd166, 0.032)
+      .setDepth(2);
+    this.maeSprite = this.add
+      .image(346, WALK_Y - 58, "motherFeedingScenes", "mother-idle")
+      .setDisplaySize(96, 178)
+      .setDepth(8);
+    this.maeFeedingSprite = this.add
+      .image(346, WALK_Y - 50, "motherFeedingScenes", "mother-feeding")
+      .setDisplaySize(120, 184)
+      .setDepth(9)
+      .setVisible(false);
+    this.tweens.add({
+      targets: this.meatGlow,
+      alpha: 0.065,
+      scaleX: 1.08,
+      scaleY: 1.08,
+      duration: 1800,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    this.add
+      .sprite(1240, 520, "parentsPercyScenes", 7)
+      .setDisplaySize(154, 154)
+      .setDepth(7);
+
+    this.livinhaCarinho = this.add
+      .sprite(1990, WALK_Y + 14, LIVIA_RECUT_KEYS[8])
+      .setOrigin(0.5, 1)
+      .setScale(0.46)
+      .setDepth(7);
+
+    this.notebookScene = this.add
+      .sprite(2606, 518, "notebookScenes", 6)
+      .setDisplaySize(184, 184)
+      .setDepth(8);
+    this.notebookScene.anims.play("notebook-together", true);
+  }
+
   criarMoveis() {
     this.add.ellipse(330, 584, 326, 48, 0x120c1f, 0.22).setDepth(1);
     this.meatGlow = this.add
       .circle(326, 508, 56, 0xffd166, 0.032)
       .setDepth(2);
-    this.add.image(188, 558, "meatPlate").setDisplaySize(90, 90).setDepth(5);
-    this.add.image(486, 562, "meatBowl").setDisplaySize(82, 82).setDepth(5);
     this.maeSprite = this.add
-      .sprite(346, WALK_Y - 29, "maeSprite", 0)
-      .setDisplaySize(104, 126)
+      .sprite(346, WALK_Y - 60, "maeSprite", 0)
+      .setDisplaySize(156, 188)
       .setDepth(8);
     this.tweens.add({
       targets: this.meatGlow,
@@ -639,11 +880,6 @@ export default class CatScene extends Phaser.Scene {
     this.add.image(1810, 350, "catPicture").setDisplaySize(86, 72).setDepth(-5);
 
     this.add.image(1954, 448, "bookshelfRoom").setDisplaySize(116, 148).setDepth(3);
-    this.gatinhosCasa = [
-      this.add.image(2078, 570, "catBlackWhiteCuddle").setDisplaySize(98, 84),
-      this.add.image(2160, 566, "catSiameseSit").setDisplaySize(78, 88),
-    ].map((gatinho) => gatinho.setDepth(8));
-
     this.add.image(2290, 556, "bedRedSingle").setDisplaySize(170, 124).setDepth(4);
     this.add.image(2230, 570, "rugSmall").setDisplaySize(112, 76).setTint(0xdfe8f2).setDepth(3);
 
@@ -689,15 +925,19 @@ export default class CatScene extends Phaser.Scene {
       .circle(PRINCESS_X, PRINCESS_Y + 10, 82, 0xffd166, 0.025)
       .setDepth(18);
 
+    this.livinhaShadow = this.add
+      .ellipse(PRINCESS_X, FLOOR_Y - 3, 74, 16, 0x142015, 0.34)
+      .setDepth(34);
+
     this.livinha = this.add.container(PRINCESS_X, PRINCESS_Y).setDepth(35);
 
     this.livinhaPrincesaSprite = this.add
-      .image(0, 0, "livinhaPrincesa")
-      .setCrop(0, 8, 72, 99)
-      .setDisplaySize(106, 146);
+      .sprite(0, 0, "liviaFamilyScenes", 4)
+      .setDisplaySize(116, 116);
     this.livinhaFinalSprite = this.add
-      .image(0, 0, "livinhaFinalCats")
-      .setDisplaySize(210, 190)
+      .sprite(0, 52, LIVIA_RECUT_KEYS[4])
+      .setOrigin(0.5, 1)
+      .setScale(0.42)
       .setAlpha(0);
 
     this.livinha.add([this.livinhaPrincesaSprite, this.livinhaFinalSprite]);
@@ -720,9 +960,9 @@ export default class CatScene extends Phaser.Scene {
       .ellipse(118, WALK_Y + 28, 48, 12, 0x120c1f, 0.34)
       .setDepth(54);
     this.percySprite = this.add
-      .sprite(118, WALK_Y + PERCY_DRAW_OFFSET_Y, "percySpriteFixedV3", 0)
-      .setDisplaySize(PERCY_SIZE, PERCY_SIZE)
+      .sprite(118, WALK_Y + PERCY_DRAW_OFFSET_Y, PERCY_TEXTURE_IDLE)
       .setDepth(60);
+    this.ajustarTamanhoVisualPercy(PERCY_SIZE);
     this.percySprite.anims.play("percy-idle", true);
     this.catZzz = this.add.text(34, -54, "zzz", {
       fontSize: "16px",
@@ -738,7 +978,7 @@ export default class CatScene extends Phaser.Scene {
     this.momentos = this.physics.add.group();
 
     MOMENTOS_PERCY.forEach((momento) => {
-      const zona = this.add.zone(momento.x, momento.y, 170, 118);
+      const zona = this.add.zone(momento.x, momento.y, 126, 96);
       this.physics.add.existing(zona);
       zona.body.setAllowGravity(false);
       zona.body.setImmovable(true);
@@ -746,18 +986,27 @@ export default class CatScene extends Phaser.Scene {
       zona.momento = momento;
       zona.visitado = false;
 
+      if (momento.id === "carne") {
+        this.carneZone = zona;
+      }
+
       zona.glow = this.add
         .circle(momento.x, momento.y + 28, 30, 0xffd166, 0.02)
         .setStrokeStyle(1, 0xffd166, 0.1)
         .setDepth(12);
       zona.label = this.add
-        .text(momento.x, momento.y - 74, "aproxime-se", {
+        .text(
+          momento.x,
+          momento.y - 74,
+          momento.prompt ?? "aproxime-se",
+          {
           fontSize: "12px",
           color: "#fff3c4",
           fontFamily: "Trebuchet MS",
           stroke: "#120c1f",
           strokeThickness: 3,
-        })
+          }
+        )
         .setOrigin(0.5)
         .setAlpha(0)
         .setDepth(30);
@@ -786,6 +1035,23 @@ export default class CatScene extends Phaser.Scene {
         strokeThickness: 3,
       })
       .setOrigin(1, 0)
+      .setScrollFactor(0)
+      .setDepth(200);
+
+    this.controlesText = this.add
+      .text(
+        24,
+        this.altura - 24,
+        "L linguinha   Z soneca   C carninha   X/Esc/Enter fecha   Espaco pula   E interage",
+        {
+          fontSize: "13px",
+          color: "#fff3c4",
+          fontFamily: "Trebuchet MS",
+          stroke: "#120c1f",
+          strokeThickness: 4,
+        }
+      )
+      .setOrigin(0, 1)
       .setScrollFactor(0)
       .setDepth(200);
 
@@ -818,81 +1084,6 @@ export default class CatScene extends Phaser.Scene {
       .setDepth(181);
   }
 
-  criarInteracoesPercy() {
-    this.percyInteractionUi = this.add
-      .container(18, this.altura - 76)
-      .setScrollFactor(0)
-      .setDepth(230);
-
-    const fundo = this.add
-      .rectangle(0, 0, 344, 58, 0x120c1f, 0.72)
-      .setOrigin(0)
-      .setStrokeStyle(1, 0xffd166, 0.26);
-
-    const titulo = this.add.text(14, 12, "Percy", {
-      fontSize: "15px",
-      color: "#ffe08a",
-      fontFamily: "Trebuchet MS",
-      fontStyle: "bold",
-    });
-
-    const botoes = [
-      {
-        x: 102,
-        label: "Linguinha",
-        onClick: () => this.mostrarPercyGrande("lingua"),
-      },
-      {
-        x: 202,
-        label: "Pular",
-        onClick: () => this.pularPercy({ altura: 62, duracao: 620, forcar: true }),
-      },
-      {
-        x: 292,
-        label: "Soneca",
-        onClick: () => this.mostrarPercyGrande("sono"),
-      },
-    ];
-
-    this.percyInteractionUi.add([fundo, titulo]);
-
-    botoes.forEach((botao) => {
-      this.percyInteractionUi.add(
-        this.criarBotaoInteracaoPercy(botao.x, 29, botao.label, botao.onClick)
-      );
-    });
-  }
-
-  criarBotaoInteracaoPercy(x, y, label, onClick) {
-    const container = this.add.container(x, y);
-    const fundo = this.add
-      .rectangle(0, 0, label === "Linguinha" ? 92 : 76, 30, 0xffd166, 0.2)
-      .setStrokeStyle(1, 0xffd166, 0.48)
-      .setInteractive({ useHandCursor: true });
-    const texto = this.add
-      .text(0, 0, label, {
-        fontSize: "13px",
-        color: "#fff7dd",
-        fontFamily: "Trebuchet MS",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
-
-    fundo.on("pointerover", () => {
-      fundo.setFillStyle(0xffd166, 0.32);
-    });
-    fundo.on("pointerout", () => {
-      fundo.setFillStyle(0xffd166, 0.2);
-    });
-    fundo.on("pointerdown", (pointer, localX, localY, event) => {
-      event?.stopPropagation();
-      onClick();
-    });
-
-    container.add([fundo, texto]);
-    return container;
-  }
-
   criarOverlayPercyGrande() {
     this.percyPreviewOverlay = this.add
       .container(this.largura / 2, this.altura / 2)
@@ -912,7 +1103,7 @@ export default class CatScene extends Phaser.Scene {
     const sombra = this.add.ellipse(0, 102, 174, 32, 0x000000, 0.34);
 
     this.percyPreviewSprite = this.add
-      .sprite(0, -24, "percySpriteFixedV3", 8)
+      .sprite(0, -24, PERCY_MOVIMENTO_KEYS[40])
       .setDisplaySize(286, 286);
     this.percyPreviewTitulo = this.add
       .text(0, -180, "", {
@@ -944,12 +1135,19 @@ export default class CatScene extends Phaser.Scene {
         fontFamily: "Trebuchet MS",
         fontStyle: "bold",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
 
     bloqueio.on("pointerdown", () => this.esconderPercyGrande());
     fecharFundo.on("pointerdown", (pointer, localX, localY, event) => {
       event?.stopPropagation();
       this.esconderPercyGrande();
+    });
+    fecharTexto.on("pointerdown", () => this.esconderPercyGrande());
+    this.input.on("pointerdown", () => {
+      if (this.percyPreviewAberto) {
+        this.esconderPercyGrande();
+      }
     });
 
     this.percyPreviewOverlay.add([
@@ -972,17 +1170,23 @@ export default class CatScene extends Phaser.Scene {
 
     const estados = {
       lingua: {
-        frame: 8,
+        texture: PERCY_MOVIMENTO_KEYS[40],
         titulo: "Linguinha do Percy",
         texto: "Quando ela faz carinho, Percy entrega o segredo: ele esta feliz.",
       },
       sono: {
-        frame: 7,
+        texture: PERCY_MOVIMENTO_KEYS[23],
         titulo: "Soneca do Percy",
         texto: "Ele dorme como quem sabe que esta seguro e muito amado.",
       },
+      carne: {
+        texture: PERCY_EAT_KEYS[0],
+        animacao: "percy-eat",
+        titulo: "Hora da carninha",
+        texto: "Percy saboreia cada pedacinho do carinho que ganhou.",
+      },
       normal: {
-        frame: 0,
+        texture: PERCY_TEXTURE_IDLE,
         titulo: "Percy",
         texto: "Pequeno guardiao da casa, sempre por perto.",
       },
@@ -990,11 +1194,19 @@ export default class CatScene extends Phaser.Scene {
     const estado = estados[tipo] ?? estados.normal;
 
     this.percyPreviewSprite.anims.stop();
-    this.percyPreviewSprite.setFrame(estado.frame);
+    this.percyPreviewSprite.setTexture(estado.texture);
+    if (estado.animacao) {
+      this.percyPreviewSprite.anims.play(estado.animacao, true);
+    }
     this.percyPreviewSprite.setFlipX(false);
+    const previewProporcao =
+      this.percyPreviewSprite.frame.realWidth /
+      this.percyPreviewSprite.frame.realHeight;
+    this.percyPreviewSprite.setDisplaySize(250 * previewProporcao, 250);
     this.percyPreviewTitulo.setText(estado.titulo);
     this.percyPreviewTexto.setText(estado.texto);
     this.percyPreviewOverlay.setVisible(true).setAlpha(0);
+    this.percyPreviewAberto = true;
 
     this.tweens.add({
       targets: this.percyPreviewOverlay,
@@ -1005,9 +1217,11 @@ export default class CatScene extends Phaser.Scene {
   }
 
   esconderPercyGrande() {
-    if (!this.percyPreviewOverlay) {
+    if (!this.percyPreviewOverlay || !this.percyPreviewAberto) {
       return;
     }
+
+    this.percyPreviewAberto = false;
 
     this.tweens.add({
       targets: this.percyPreviewOverlay,
@@ -1049,7 +1263,7 @@ export default class CatScene extends Phaser.Scene {
     const sombra = this.add.ellipse(316, 188, 104, 24, 0x000000, 0.25);
 
     this.posePercyPreview = this.add
-      .sprite(316, 124, "percySpriteFixedV3", 0)
+      .sprite(316, 124, "percyContemplative", 0)
       .setDisplaySize(146, 146);
 
     this.posePercyTexto = this.add
@@ -1089,7 +1303,7 @@ export default class CatScene extends Phaser.Scene {
     this.posePercyPanel.add(
       this.criarBotaoControlePosePercy(112, 226, "Andar", () => {
         this.posePercySelecionada = {
-          frame: 2,
+          frame: 6,
           label: "Anim andar",
           animacao: "percy-walk",
         };
@@ -1264,7 +1478,7 @@ export default class CatScene extends Phaser.Scene {
       }
     }
 
-    const bob = andando ? Math.sin(time * 0.012) * 3 : Math.sin(time * 0.002) * 1.2;
+    const bob = andando ? 0 : Math.sin(time * 0.002) * 0.45;
     const shadowScale = this.percyPulando ? 1 - Math.sin(puloT * Math.PI) * 0.34 : 1;
 
     this.percyShadow.setPosition(x, y + 28);
@@ -1275,17 +1489,29 @@ export default class CatScene extends Phaser.Scene {
     this.catZzz.setPosition(x + 28 * this.ultimaDirecao, y - 54 + bob);
     this.catZzz.setVisible(dormindo);
 
+    if (this.estadoGatinho === "carne") {
+      this.percySprite.setFlipX(false);
+      this.percySprite.setAngle(0);
+      this.tocarAnimacaoPercy("percy-eat");
+      this.ajustarTamanhoVisualPercy(76);
+      return;
+    }
+
     if (this.percyPulando) {
       this.percySprite.setFlipX(this.ultimaDirecao < 0);
       this.percySprite.setAngle(Math.sin(puloT * Math.PI) * 4 * this.ultimaDirecao);
       this.tocarAnimacaoPercy("percy-jump");
+      this.ajustarTamanhoVisualPercy(PERCY_SIZE);
       return;
     }
 
     if (andando) {
       this.percySprite.setAngle(0);
       this.percySprite.setFlipX(this.ultimaDirecao < 0);
-      this.tocarAnimacaoPercy("percy-walk");
+      this.tocarAnimacaoPercy(
+        Math.abs(this.player.body.velocity.x) > 145 ? "percy-run" : "percy-walk"
+      );
+      this.ajustarTamanhoVisualPercy(PERCY_SIZE);
       return;
     }
 
@@ -1293,6 +1519,7 @@ export default class CatScene extends Phaser.Scene {
       this.percySprite.setAngle(0);
       this.percySprite.setFlipX(this.ultimaDirecao < 0);
       this.tocarAnimacaoPercy("percy-idle");
+      this.ajustarTamanhoVisualPercy(PERCY_SIZE);
       return;
     }
 
@@ -1303,16 +1530,16 @@ export default class CatScene extends Phaser.Scene {
       "carinho",
       "gatinhos",
       "notebook",
+      "familia",
     ]);
-    const framePorEstado = {
-      carne: 6,
-      sofa: 7,
-      pai: 7,
-      cama: 2,
-      carinho: 6,
-      gatinhos: 0,
-      notebook: 0,
-      idle: 0,
+    const texturaPorEstado = {
+      sofa: PERCY_MOVIMENTO_KEYS[23],
+      pai: PERCY_MOVIMENTO_KEYS[23],
+      carinho: PERCY_MOVIMENTO_KEYS[40],
+      gatinhos: PERCY_TEXTURE_IDLE,
+      notebook: PERCY_TEXTURE_IDLE,
+      familia: PERCY_TEXTURE_IDLE,
+      idle: PERCY_TEXTURE_IDLE,
     };
 
     this.percySprite.anims.stop();
@@ -1320,11 +1547,25 @@ export default class CatScene extends Phaser.Scene {
     this.percySprite.setFlipX(
       !estadosFrontais.has(this.estadoGatinho) && this.ultimaDirecao < 0
     );
-    this.percySprite.setFrame(framePorEstado[this.estadoGatinho] ?? 0);
+    this.percySprite.setTexture(
+      texturaPorEstado[this.estadoGatinho] ?? PERCY_TEXTURE_IDLE
+    );
+    this.ajustarTamanhoVisualPercy(PERCY_SIZE);
+  }
+
+  ajustarTamanhoVisualPercy(altura) {
+    const larguraFonte = this.percySprite.frame?.realWidth || this.percySprite.width;
+    const alturaFonte = this.percySprite.frame?.realHeight || this.percySprite.height;
+    const proporcao = alturaFonte > 0 ? larguraFonte / alturaFonte : 1;
+
+    this.percySprite.setDisplaySize(altura * proporcao, altura);
   }
 
   tocarAnimacaoPercy(nomeAnimacao) {
-    if (this.percySprite.anims.currentAnim?.key === nomeAnimacao) {
+    if (
+      this.percySprite.anims.currentAnim?.key === nomeAnimacao &&
+      this.percySprite.anims.isPlaying
+    ) {
       return;
     }
 
@@ -1477,8 +1718,12 @@ export default class CatScene extends Phaser.Scene {
     }
   }
 
-  entrarNoMomento(player, zona) {
+  entrarNoMomento(player, zona, interacaoConfirmada = false) {
     if (this.interacaoTravada || this.faseConcluida || zona.visitado) {
+      return;
+    }
+
+    if (zona.momento.requerInteracao && !interacaoConfirmada) {
       return;
     }
 
@@ -1500,7 +1745,16 @@ export default class CatScene extends Phaser.Scene {
     this.mostrarNarrativa(momento.titulo, momento.texto);
     this.animarMomento(momento);
 
-    this.time.delayedCall(1850, () => {
+    const duracaoMomento = momento.estado === "carne" ? 3400 : 1850;
+
+    this.time.delayedCall(duracaoMomento, () => {
+      if (momento.estado === "carne") {
+        this.maeSprite.setVisible(true);
+        this.maeFeedingSprite.setVisible(false);
+        this.percySprite.setVisible(true);
+        this.percyShadow.setVisible(true);
+      }
+
       this.momentoAtual = null;
       this.interacaoTravada = false;
       this.player.y = Phaser.Math.Clamp(this.player.y, WALK_MIN_Y, WALK_MAX_Y);
@@ -1513,6 +1767,11 @@ export default class CatScene extends Phaser.Scene {
 
   animarMomento(momento) {
     if (momento.estado === "carne") {
+      this.maeSprite.setVisible(false);
+      this.maeFeedingSprite.setVisible(true);
+      this.percySprite.setVisible(false);
+      this.percyShadow.setVisible(false);
+
       this.tweens.add({
         targets: this.meatGlow,
         scaleX: 1.18,
@@ -1523,18 +1782,26 @@ export default class CatScene extends Phaser.Scene {
       });
 
       this.tweens.add({
-        targets: this.maeSprite,
+        targets: this.maeFeedingSprite,
         y: "-=8",
         duration: 420,
         yoyo: true,
       });
-    }
 
-    if (momento.estado === "cama") {
-      this.pularPercy({ altura: 54, duracao: 680, forcar: true });
+      this.time.delayedCall(900, () => {
+        this.maeSprite.setVisible(true);
+        this.maeFeedingSprite.setVisible(false);
+        this.player.setPosition(420, WALK_Y);
+        this.percySprite.setVisible(true);
+        this.percyShadow.setVisible(true);
+        this.estadoGatinho = "carne";
+        this.percySprite.anims.stop();
+        this.atualizarVisualPercy(this.time.now);
+      });
     }
 
     if (momento.estado === "carinho") {
+      this.livinhaCarinho.anims.play("livia-cats-recut", true);
       this.tweens.add({
         targets: this.livinhaCarinho,
         y: "-=8",
@@ -1552,12 +1819,13 @@ export default class CatScene extends Phaser.Scene {
     }
 
     if (momento.estado === "gatinhos") {
+      this.livinhaCarinho.anims.play("livia-cats-recut", true);
       this.tweens.add({
-        targets: this.gatinhosCasa,
-        y: "-=8",
-        duration: 420,
+        targets: this.livinhaCarinho,
+        scaleX: 0.49,
+        scaleY: 0.49,
+        duration: 520,
         yoyo: true,
-        stagger: 80,
       });
     }
 
@@ -1570,14 +1838,27 @@ export default class CatScene extends Phaser.Scene {
         yoyo: true,
       });
     }
+
+    if (momento.estado === "familia") {
+      this.tweens.add({
+        targets: this.familyGlow,
+        alpha: 0.16,
+        scaleX: 1.18,
+        scaleY: 1.18,
+        duration: 620,
+        yoyo: true,
+      });
+      this.cameras.main.shake(180, 0.0007);
+      this.tocarSinoCasa();
+    }
   }
 
   liberarPrincesa() {
     this.princesaPronta = true;
     this.princesaGlow.setFillStyle(0xffd166, 0.14);
     this.mostrarNarrativa(
-      "Tudo ficou em silencio bom",
-      "Percy juntou os cantinhos da casa. Agora ele pode ir ate Livinha."
+      "Casa e quintal viraram uma so lembranca",
+      "Percy reencontrou sua familia de gatinhos. Agora Livinha espera por ele no fim do quintal."
     );
   }
 
@@ -1593,7 +1874,7 @@ export default class CatScene extends Phaser.Scene {
         this.ultimoAvisoPrincesa = agora;
         this.mostrarNarrativa(
           "Ainda tem caminho",
-          "Percy quer chegar nela, mas antes precisa visitar todos os cantinhos."
+          "Percy quer chegar nela, mas antes precisa visitar a casa e encontrar sua familia no quintal."
         );
       }
 
@@ -1606,20 +1887,12 @@ export default class CatScene extends Phaser.Scene {
     this.atualizarVisualPercy(this.time.now);
 
     this.cameras.main.pan(PRINCESS_X, PRINCESS_Y, 1200, "Sine.easeInOut");
+    this.livinhaFinalSprite.setAlpha(0);
     this.tweens.add({
-      targets: this.livinhaPrincesaSprite,
-      alpha: 0,
-      duration: 520,
-    });
-    this.tweens.add({
-      targets: this.livinhaFinalSprite,
-      alpha: 1,
-      duration: 720,
-      delay: 120,
-    });
-    this.tweens.add({
-      targets: this.livinha,
-      y: "-=12",
+      targets: this.princesaGlow,
+      alpha: 0.16,
+      scaleX: 1.14,
+      scaleY: 1.14,
       duration: 650,
       yoyo: true,
       repeat: 2,
@@ -1627,7 +1900,7 @@ export default class CatScene extends Phaser.Scene {
 
     this.mostrarNarrativa(
       "Percy encontrou Livinha",
-      "Sem pressa, sem susto. So carinho, cama quentinha e um lugar seguro para ficar."
+      "Sem pressa, sem susto. So carinho, um cantinho quentinho e um lugar seguro para ficar."
     );
 
     this.time.delayedCall(4200, () => {

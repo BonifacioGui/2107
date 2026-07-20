@@ -2,9 +2,9 @@ export const tributes = {
   batman: {
     title: "Voce enfrentou o medo",
     paragraphs: [
-      "Coragem nao e ausencia de medo. Coragem e continuar mesmo quando o mundo parece maior do que a gente.",
-      "E isso que eu admiro tanto em voce: a sua forma de respirar fundo, insistir e atravessar o que assusta.",
-      "Voce talvez nem perceba, mas a sua resiliencia me inspira de um jeito que eu guardo com muito carinho.",
+      "Coragem nao é ausencia de medo. Coragem é continuar mesmo quando estamos com medo.",
+      "E eu admiro muito em você. Você sempre foi, para mim, um exemplo de enfrentamento ao medo. Você não deixa seus medos lhe paralisarem. TU É BRABA!",
+      "E eu aprendo muito com você, sempre aprendi.",
     ],
   },
 
