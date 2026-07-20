@@ -215,10 +215,6 @@ export default class CatScene extends Phaser.Scene {
       "percyBackyard",
       "/assets/backgrounds/percy-backyard.png"
     );
-    this.load.spritesheet("backyardDoor", "/assets/cat/backyard-door.png", {
-      frameWidth: 256,
-      frameHeight: 288,
-    });
 
     const objetos = {
       wallBlue: "/assets/backgrounds/wall-blue.png",
@@ -496,24 +492,10 @@ export default class CatScene extends Phaser.Scene {
       .setDisplaySize(BACKYARD_WIDTH, 675)
       .setDepth(-50);
 
-    this.add
-      .rectangle(BACKYARD_START_X + 8, 360, 18, 536, 0x2b1a18, 0.88)
-      .setDepth(-39);
-    this.add
-      .rectangle(BACKYARD_START_X + 8, FLOOR_Y - 4, 42, 18, 0x241512, 0.9)
-      .setDepth(-38);
-
-    this.backyardDoorSprite = this.add
-      .image(BACKYARD_START_X + 8, FLOOR_Y - 116, "backyardDoor", 2)
-      .setDisplaySize(206, 232)
-      .setDepth(12);
     this.passagemQuintalGlow = this.add
-      .ellipse(BACKYARD_START_X + 8, 522, 86, 180, 0xffe0a3, 0.035)
+      .ellipse(BACKYARD_START_X + 8, 548, 118, 54, 0xffe0a3, 0.025)
       .setBlendMode(Phaser.BlendModes.ADD)
-      .setDepth(11);
-    this.add
-      .ellipse(BACKYARD_START_X + 8, FLOOR_Y - 2, 138, 18, 0x2a1712, 0.34)
-      .setDepth(11);
+      .setDepth(-38);
     this.backyardDoorOpened = false;
     this.backyardDoorZone = this.add.zone(BACKYARD_START_X - 54, 532, 190, 188);
     this.physics.add.existing(this.backyardDoorZone);
