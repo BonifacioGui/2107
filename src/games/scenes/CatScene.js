@@ -291,11 +291,12 @@ export default class CatScene extends Phaser.Scene {
       interact: Phaser.Input.Keyboard.KeyCodes.E,
       tongue: Phaser.Input.Keyboard.KeyCodes.L,
       sleep: Phaser.Input.Keyboard.KeyCodes.Z,
+      eat: Phaser.Input.Keyboard.KeyCodes.C,
       close: Phaser.Input.Keyboard.KeyCodes.X,
       confirm: Phaser.Input.Keyboard.KeyCodes.ENTER,
       cancel: Phaser.Input.Keyboard.KeyCodes.ESC,
     });
-    ["keydown-X", "keydown-ENTER", "keydown-ESC"].forEach((evento) => {
+    ["keydown-C", "keydown-X", "keydown-ENTER", "keydown-ESC"].forEach((evento) => {
       this.input.keyboard.on(evento, () => {
         if (this.percyPreviewAberto) {
           this.esconderPercyGrande();
@@ -354,6 +355,7 @@ export default class CatScene extends Phaser.Scene {
       const fecharPreview =
         Phaser.Input.Keyboard.JustDown(this.keys.tongue) ||
         Phaser.Input.Keyboard.JustDown(this.keys.sleep) ||
+        Phaser.Input.Keyboard.JustDown(this.keys.eat) ||
         Phaser.Input.Keyboard.JustDown(this.keys.close) ||
         Phaser.Input.Keyboard.JustDown(this.keys.confirm) ||
         Phaser.Input.Keyboard.JustDown(this.keys.cancel);
@@ -386,6 +388,11 @@ export default class CatScene extends Phaser.Scene {
 
     if (Phaser.Input.Keyboard.JustDown(this.keys.sleep)) {
       this.mostrarPercyGrande("sono");
+      return;
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.keys.eat)) {
+      this.mostrarPercyGrande("carne");
       return;
     }
 
@@ -1035,7 +1042,7 @@ export default class CatScene extends Phaser.Scene {
       .text(
         24,
         this.altura - 24,
-        "L linguinha   Z soneca   X/Esc/Enter fecha   Espaco pula   E interage",
+        "L linguinha   Z soneca   C carninha   X/Esc/Enter fecha   Espaco pula   E interage",
         {
           fontSize: "13px",
           color: "#fff3c4",
@@ -1172,6 +1179,12 @@ export default class CatScene extends Phaser.Scene {
         titulo: "Soneca do Percy",
         texto: "Ele dorme como quem sabe que esta seguro e muito amado.",
       },
+      carne: {
+        texture: PERCY_EAT_KEYS[0],
+        animacao: "percy-eat",
+        titulo: "Hora da carninha",
+        texto: "Percy saboreia cada pedacinho do carinho que ganhou.",
+      },
       normal: {
         texture: PERCY_TEXTURE_IDLE,
         titulo: "Percy",
@@ -1182,6 +1195,9 @@ export default class CatScene extends Phaser.Scene {
 
     this.percyPreviewSprite.anims.stop();
     this.percyPreviewSprite.setTexture(estado.texture);
+    if (estado.animacao) {
+      this.percyPreviewSprite.anims.play(estado.animacao, true);
+    }
     this.percyPreviewSprite.setFlipX(false);
     const previewProporcao =
       this.percyPreviewSprite.frame.realWidth /
