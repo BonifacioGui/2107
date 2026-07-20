@@ -4,8 +4,7 @@ export default function StartScreen({ onStart }) {
       <h1>2107</h1>
 
       <p>
-        Uma aventura feita de coragem, carinho e pequenos detalhes que lembram
-        tudo que eu admiro em voce.
+        Uma brincadeira que fiz para te homenagear de alguma forma. Peguei coisas que você gosta e que são importantes para você e tentei transformar em uma aventura. Espero que você goste.
       </p>
 
       <button onClick={onStart} className="primary-button">

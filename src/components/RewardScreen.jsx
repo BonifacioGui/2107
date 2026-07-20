@@ -6,32 +6,32 @@ const rewardMoments = [
   {
     title: "Serotonina no topo",
     image: "/assets/rewards/photos/congresso-criminal.jpg",
-    caption: "Ela estudando o que ama, ocupando espaco e virando coragem em caminho.",
+    caption: "Eu sei o quanto você gosta desse tema e o quanto isso foi importante pra você!",
   },
   {
     title: "TCC",
     image: "/assets/rewards/photos/tcc-2.jpg",
-    caption: "Mesmo com frio na barriga, ela senta, respira e entrega.",
+    caption: "Você foi lá para coroar toda a sua dedicação e esforço durante esses 5 anos de graduação. Você foi incrível, como eu tinha certeza que seria. Eu te amo.",
   },
   {
     title: "Foco de guerreira",
     image: "/assets/rewards/photos/tcc-1.jpg",
-    caption: "Aquela concentracao silenciosa de quem esta construindo futuro.",
+    caption: "HUMILHANDO TURO E TOROS!",
   },
   {
     title: "Na faculdade",
     image: "/assets/rewards/photos/nafaculdade.jpg",
-    caption: "O olhar atento de quem segue aprendendo mesmo nos dias dificeis.",
+    caption: "A milior do mundo estudando!",
   },
   {
     title: "Lindona",
     image: "/assets/rewards/photos/livialinda.jpg",
-    caption: "Ela bonita desse jeito que parece facil, mas e so ela sendo ela.",
+    caption: "LINDA PERFEITA GOSTOSA ABSURDA",
   },
   {
     title: "Brilho",
     image: "/assets/rewards/photos/lindona.jpg",
-    caption: "Uma lembranca simples, direta e inevitavel: ela e luz.",
+    caption: "LINDA COMO SEMPRE! .",
   },
 ];
 
@@ -101,7 +101,7 @@ export default function RewardScreen({ onNext }) {
         {!collected && (
           <p>
             Depois de enfrentar o medo, vem a parte boa: abrir lembrancas que
-            mostram por que ela nunca desiste, mesmo quando a fase fica dificil.
+            mostram por que você nunca desiste, mesmo quando a fase fica dificil.
           </p>
         )}
 

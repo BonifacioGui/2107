@@ -11,9 +11,8 @@ export const tributes = {
   final: {
     title: "Feliz aniversario, meu amor",
     paragraphs: [
-      "Essa pequena aventura e uma forma simples de colocar na tela um pouco do que eu sinto por voce.",
-      "Eu admiro sua coragem, sua sensibilidade, seu jeito de continuar mesmo quando algo assusta e a forma como voce transforma pequenos momentos em memoria.",
-      "Voce me ensina sobre amor, cuidado e sobre ser forte sem deixar de ser doce.",
+      "Eu te amo infinitamente. Quero viver a minha vida ao seu lado, dividí-la com você, aprender com você, rir com você, chorar com você, crescer com você e envelhecer com você.",
+      "Eu admiro sua coragem, sua sensibilidade, seu humor, sua paciência, sua inteligência, sua beleza, sua força, sua determinação, sua dedicação, seu talento, sua criatividade, sua bunda, seu amor e tudo que você é.",
       "Feliz aniversario. Eu amo voce.",
     ],
   },

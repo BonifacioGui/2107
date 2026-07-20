@@ -23,7 +23,7 @@ const RECOMPENSAS_BATMAN = [
     image: "/assets/rewards/real/tcc-2.jpg",
     titulo: "TCC",
     legenda:
-      "Mesmo quando o frio na barriga chega, ela senta, respira e entrega.",
+      "Nesse dia você inventou a psicologia 2. BRABÍSSIMA!",
   },
   {
     id: "faculdade",
@@ -39,7 +39,7 @@ const RECOMPENSAS_BATMAN = [
     image: "/assets/rewards/real/livialinda.jpg",
     titulo: "Brilho",
     legenda:
-      "Ela ilumina o caminho sem precisar diminuir a propria luz.",
+      "MEU DEUS DO CÉU!! E É A MULHER MAIS LINDA DO MUNDO É???!!!",
   },
   {
     id: "percy",
@@ -47,7 +47,7 @@ const RECOMPENSAS_BATMAN = [
     image: "/assets/rewards/real/percy-real.jpg",
     titulo: "Percy",
     legenda:
-      "O velho que devia ser o alfa da casa, mas é tratado como um nenê. Incrivelmente ele parece com vc: come que só, dorme que só e não gosta de confusão kkkk",
+      "O velho que devia ser o alfa da casa, mas é tratado como um nenê. Incrivelmente ele parece com vc: come que só, dorme que só e não gosta de confusão kkkk além da bunda gorda",
   },
 ];
 
@@ -56,7 +56,7 @@ const RECOMPENSA_BOSS = {
   image: "/assets/rewards/real/lindona.jpg",
   titulo: "A luz depois da escuridao",
   legenda:
-    "No fim da fase, a recompensa e ver a coragem e a luz que sempre estiveram nela.",
+    "PERFEITA! MEU POU!",
 };
 
 const FOTOS_EXTRAS_BATMAN = [
@@ -203,7 +203,7 @@ export default class BatmanScene extends Phaser.Scene {
       {
         x: 980,
         visto: false,
-        texto: "O medo aparece. Ele assusta, mas nao decide por ela.",
+        texto: "O medo aparece. Ele assusta, mas nao decide por você.",
       },
       {
         x: 1550,
@@ -1015,7 +1015,7 @@ export default class BatmanScene extends Phaser.Scene {
       checkpoint.base?.setFillStyle(0xf5c542, 0.24);
       checkpoint.luz?.setFillStyle(0xf5c542, 0.16);
       this.mostrarFeedback(
-        "Ponto de retorno aceso. Se os coracoes acabarem, ela volta daqui.",
+        "Ponto de retorno aceso. Se os coracoes acabarem, você volta daqui.",
         "#bff5e8"
       );
     }
@@ -1455,7 +1455,7 @@ export default class BatmanScene extends Phaser.Scene {
       this.mostrarCardItem({
         titulo: "O medo nao decidiu por ela",
         descricao:
-          "A agulha pode até te assustar, mas vocêe enfrenta e vence o medo. Nada te para!.",
+          "A agulha pode até te assustar, mas vocêe enfrenta e vence o medo. Nada te para!",
       });
       this.mostrarTextoFlutuante(sombra.x, sombra.y - 64, "CORAGEM", "#ffd166");
     } 
@@ -1669,7 +1669,7 @@ export default class BatmanScene extends Phaser.Scene {
         mensagem: "Forca encontrada: uma memoria acendeu em Gotham.",
         titulo: "Forca para seguir",
         descricao:
-          "Ela aprende, aparece, participa, constrói trajetoria. A cidade fica menor que a vontade dela.",
+          "Você sempre tem força para enfrentar o que vier. E eu serei o seu apoio sempre!",
         recompensa: RECOMPENSAS_BATMAN[0],
       },
       {
@@ -1678,7 +1678,7 @@ export default class BatmanScene extends Phaser.Scene {
         mensagem: "Calma recuperada: uma memoria acendeu em Gotham.",
         titulo: "Calma na hora dificil",
         descricao:
-          "No TCC, no frio na barriga, no olhar concentrado: ela respira e continua.",
+          "Você demonstra é muito calma e muito estóica. E isso é uma força que inspira todos ao redor.",
         recompensa: RECOMPENSAS_BATMAN[1],
       },
       {
@@ -1687,7 +1687,7 @@ export default class BatmanScene extends Phaser.Scene {
         mensagem: "Confianca ativada: uma memoria acendeu em Gotham.",
         titulo: "Confianca no caminho",
         descricao:
-          "A faculdade tambem tem seus chefes. Ela enfrenta todos com esse olhar de quem esta construindo futuro.",
+          "Você sempre teve muita confiança em si mesma. Continue assim sempre, porque tudo que você quiser fazer, você faz. E vc confia em mim mais do que eu jamais confiei. Obrigado!",
         recompensa: RECOMPENSAS_BATMAN[2],
       },
       {
@@ -2695,7 +2695,7 @@ export default class BatmanScene extends Phaser.Scene {
   recomecarComResiliencia() {
     this.limparAtaquesCoringa();
     this.mostrarFeedback(
-      "Coracoes restaurados. A coragem dela sempre encontra um jeito de continuar.",
+      "Coracoes restaurados. A sua coragem sempre encontra um jeito de continuar.",
       "#ffd166"
     );
 
