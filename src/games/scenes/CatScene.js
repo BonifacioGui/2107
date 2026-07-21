@@ -111,6 +111,8 @@ const MOMENTOS_PERCY = [
     x: 3820,
     y: 528,
     estado: "familia",
+    requerInteracao: true,
+    prompt: "E  INTERAGIR COM A FAMILIA",
     titulo: "A familia do quintal",
     texto:
       "Do outro lado da casa, Percy reencontra sua turma. As lendas estão sempre juntas.",
@@ -408,7 +410,7 @@ export default class CatScene extends Phaser.Scene {
               this.player.y,
               zona.x,
               zona.y
-            ) < 132
+            ) < (zona.momento?.id === "familia" ? 420 : 132)
         )
         .sort((zonaA, zonaB) =>
           Phaser.Math.Distance.Between(this.player.x, this.player.y, zonaA.x, zonaA.y) -
@@ -1017,6 +1019,28 @@ export default class CatScene extends Phaser.Scene {
         .setAlpha(0)
         .setDepth(30);
 
+      if (momento.requerInteracao) {
+        zona.label
+          .setBackgroundColor("#171020")
+          .setPadding(14, 8)
+          .setInteractive({ useHandCursor: true })
+          .on("pointerover", () => zona.label.setColor("#ffd166"))
+          .on("pointerout", () => zona.label.setColor("#fff3c4"))
+          .on("pointerdown", () => {
+            const alcance = familia ? 420 : 132;
+            const distancia = Phaser.Math.Distance.Between(
+              this.player.x,
+              this.player.y,
+              zona.x,
+              zona.y
+            );
+
+            if (distancia < alcance) {
+              this.entrarNoMomento(this.player, zona, true);
+            }
+          });
+      }
+
       this.tweens.add({
         targets: [zona.glow],
         scaleX: 1.08,
@@ -1436,7 +1460,11 @@ export default class CatScene extends Phaser.Scene {
         zona.y
       );
       const alcance = zona.momento?.id === "familia" ? 420 : 145;
-      const alvo = distancia < alcance ? 0.46 : 0;
+      const alvo = distancia < alcance
+        ? zona.momento?.requerInteracao
+          ? 0.96
+          : 0.46
+        : 0;
 
       zona.label.setAlpha(Phaser.Math.Linear(zona.label.alpha, alvo, 0.12));
     });
@@ -1736,6 +1764,7 @@ export default class CatScene extends Phaser.Scene {
 
     zona.visitado = true;
     zona.glow.setVisible(false);
+    zona.label.disableInteractive();
     zona.label.setText("");
     zona.label.setColor("#bff5e8");
 
