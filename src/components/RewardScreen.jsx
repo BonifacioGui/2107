@@ -34,44 +34,44 @@ const rewardMoments = [
     caption: "LINDA COMO SEMPRE! .",
   },
   {
-    title: "Nosso estilo",
+    title: "Rock, terror e Palmeiras",
     image: "/assets/rewards/photos/livia-pink-floyd.jpg",
-    caption: "Rock, personalidade e esse jeito que sempre foi só seu.",
+    caption: "Tu é rockeira em pernambuco po kkkkk",
   },
   {
     title: "Entre flores",
     image: "/assets/rewards/photos/livia-flores.jpg",
-    caption: "Bonita do seu jeito, transformando qualquer cenário só por estar nele.",
+    caption: "Uma modelo!",
   },
   {
-    title: "A mãe dela",
+    title: "Sua mamãe",
     image: "/assets/rewards/photos/mae-livia.png",
-    caption: "De onde também vêm o cuidado, a força e tanto amor que fazem parte de você.",
+    caption: "De onde também vêm o cuidado, a força e tanto amor que fazem parte de você. Uma das responsáveis por você ser quem é e por te mimar.",
   },
   {
-    title: "Chapéu rosa, atitude gigante",
+    title: "Q isso po",
     image: "/assets/rewards/photos/livia-chapeu-rosa.png",
-    caption: "Você sempre encontrou um jeito só seu de transformar qualquer passeio em lembrança.",
+    caption: "Bora ver, Ana Castelo",
   },
   {
-    title: "Estilo em tamanho família",
+    title: "Zé bonitinha",
     image: "/assets/rewards/photos/livia-oculos-azuis.png",
-    caption: "Esse seu jeito divertido consegue deixar até os momentos mais simples inesquecíveis.",
+    caption: "Miopia da bolinha kkkkkk",
   },
   {
-    title: "O pai dela",
+    title: "Seu papai",
     image: "/assets/rewards/photos/pai-livia.png",
-    caption: "Presença, proteção e carinho também ajudam a contar a história de quem você é.",
+    caption: "Presença, proteção e carinho também ajudam a contar a história de quem você é. Sempre cuidando de você do jeito dele. Sempre te mimando... Só mais 72h e o BYD vem",
   },
 ];
 
 const percyMoments = [
-  { title: "Linguinha para fora", image: "/assets/rewards/percy/percy-linguinha.jpg", caption: "A pose mais Percy possível: confortável, feliz e com a linguinha escapando." },
-  { title: "Colinho da Livinha", image: "/assets/rewards/percy/percy-e-livia.jpg", caption: "Um abraço apertado e a certeza de que ele sempre encontrou casa em você." },
-  { title: "Percy em casa", image: "/assets/rewards/percy/percy-sentado.jpg", caption: "O dono da casa, sentado e observando tudo do jeito dele." },
-  { title: "Percyzinho", image: "/assets/rewards/percy/percy-bebe-1.jpg", caption: "Antes de tantas aventuras, já existia esse olhar curioso." },
-  { title: "Pequeno aventureiro", image: "/assets/rewards/percy/percy-bebe-2.jpg", caption: "Tão pequeno e já pronto para conquistar todos os cantinhos." },
-  { title: "Assistindo juntinhos", image: "/assets/rewards/percy/percy-assistindo.jpg", caption: "Quando a melhor companhia também presta muita atenção na televisão." },
+  { title: "Linguinha para fora", image: "/assets/rewards/percy/percy-linguinha.jpg", caption: "É o nosso autista preferido, não tem jeito kkkkkk" },
+  { title: "Colinho da Livinha", image: "/assets/rewards/percy/percy-e-livia.jpg", caption: "A lenda já não tava tankando a rua kkkkkk." },
+  { title: "Percy em casa", image: "/assets/rewards/percy/percy-sentado.jpg", caption: "O velho depois de derrotar o seu maior inimigo kkkk." },
+  { title: "Percyzinho", image: "/assets/rewards/percy/percy-bebe-1.jpg", caption: "A lenda chegando" },
+  { title: "Pequeno aventureiro", image: "/assets/rewards/percy/percy-bebe-2.jpg", caption: "Um pingo" },
+  { title: "Assistindo juntinhos", image: "/assets/rewards/percy/percy-assistindo.jpg", caption: "A lenda tava precisando de um biscoito vum kkkk." },
 ];
 
 export default function RewardScreen({ onNext }) {

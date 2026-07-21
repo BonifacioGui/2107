@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from "react";
 
 const moments = [
   { image: "/assets/rewards/couple/maos.jpg", title: "Sempre de mãos dadas", caption: "Mesmo quando o medo aperta, a gente encontra coragem um no outro." },
-  { image: "/assets/rewards/couple/nosso-comeco.jpg", title: "Nosso começo", caption: "A história começou leve, meio tímida e já cheia de carinho." },
+  { image: "/assets/rewards/couple/nosso-comeco.jpg", title: "Nosso começo", caption: "Prestigiando sua mamãe" },
   { image: "/assets/rewards/couple/lado-a-lado.jpg", title: "Lado a lado", caption: "Até nos dias escuros, você sempre foi luz." },
-  { image: "/assets/rewards/couple/beijo-1.jpg", title: "Carinho que ficou", caption: "Entre sustos e risadas, o amor sempre encontrou a gente." },
-  { image: "/assets/rewards/couple/beijo-2.jpg", title: "Nós dois", caption: "Eu escolheria viver cada fase ao seu lado outra vez." },
-  { image: "/assets/rewards/couple/nosso-comeco-2.png", title: "Desde o começo", caption: "A gente já estava aprendendo que cada fase ficava melhor quando era vivida junto." },
+  { image: "/assets/rewards/couple/beijo-1.jpg", title: "Carinho que ficou", caption: "Época boa kkk" },
+  { image: "/assets/rewards/couple/beijo-2.jpg", title: "Nós dois", caption: "Eu escolheria viver cada fase ao seu lado outra vez. Sempre!" },
+  { image: "/assets/rewards/couple/nosso-comeco-2.png", title: "Desde o começo", caption: "Nas antiga na casa de vó" },
   { image: "/assets/rewards/couple/beijo-3.png", title: "Nosso carinho", caption: "Em cada beijo ficou guardado um pedaço da história que continuamos escolhendo viver." },
 ];
 
