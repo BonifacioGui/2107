@@ -1803,7 +1803,7 @@ export default class ChuckyScene extends Phaser.Scene {
       .text(
         this.largura / 2,
         this.altura / 2 + 102,
-        "Chucky e Ghostface chegaram ate voce primeiro. Mas ainda existe continue: ela respira, volta para a luz e tenta de novo.",
+        "Chucky e Ghostface chegaram ate voce primeiro. Mas ainda existe continue: você respira, volta para a luz e tenta de novo.",
         {
           fontSize: "22px",
           color: "#fff8e7",

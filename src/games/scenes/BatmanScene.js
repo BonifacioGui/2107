@@ -317,6 +317,26 @@ export default class BatmanScene extends Phaser.Scene {
       .setDepth(100)
       .setScrollFactor(0);
 
+    this.attackHintBox = this.add
+      .rectangle(34, this.altura - 28, 218, 50, 0x050713, 0.86)
+      .setOrigin(0, 1)
+      .setStrokeStyle(1, 0xf5c542, 0.45)
+      .setDepth(99)
+      .setScrollFactor(0);
+
+    this.attackHintText = this.add
+      .text(50, this.altura - 53, "X  arremessar", {
+        fontSize: "20px",
+        color: "#fff3c4",
+        fontFamily: "Trebuchet MS",
+        fontStyle: "bold",
+        stroke: "#050713",
+        strokeThickness: 3,
+      })
+      .setOrigin(0, 0.5)
+      .setDepth(100)
+      .setScrollFactor(0);
+
     this.bossVidaText = this.add
       .text(this.largura - 34, 34, "Coringa: 5/5", {
         fontSize: "22px",
@@ -2579,15 +2599,19 @@ export default class BatmanScene extends Phaser.Scene {
         : item.descricao || item.mensagem
     );
 
-    const topo = this.altura / 2 - 142;
-    this.itemCardKicker.setY(topo);
-    this.itemCardTitle.setY(topo + 30);
+    const alturaCard = Phaser.Math.Clamp(
+      174 + this.itemCardTitle.height + this.itemCardText.height,
+      226,
+      360
+    );
+    const topo = this.altura / 2 - alturaCard / 2;
+
+    this.itemCardBox.setDisplaySize(900, alturaCard);
+    this.itemCardKicker.setY(topo + 26);
+    this.itemCardTitle.setY(topo + 48);
     this.itemCardText.setY(this.itemCardTitle.y + this.itemCardTitle.height + 14);
 
-    const botaoY = Math.min(
-      this.altura / 2 + 138,
-      this.itemCardText.y + this.itemCardText.height + 32
-    );
+    const botaoY = topo + alturaCard - 38;
     this.itemCardOkBox.setY(botaoY);
     this.itemCardOkText.setY(botaoY);
 
