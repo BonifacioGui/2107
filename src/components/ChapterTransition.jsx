@@ -15,14 +15,16 @@ export default function ChapterTransition({ eyebrow, title, text, onNext }) {
 
   return (
     <section className="chapter-transition">
-      <div className="chapter-transition__line" aria-hidden="true" />
-      <p className="chapter-transition__eyebrow">{eyebrow}</p>
-      <h1>{title}</h1>
-      <p className="chapter-transition__text">{text}</p>
-      <button type="button" onClick={onNext} autoFocus>
-        Continuar
-      </button>
-      <small>Pressione Enter</small>
+      <div className="chapter-transition__frame">
+        <div className="chapter-transition__line" aria-hidden="true" />
+        <p className="chapter-transition__eyebrow">{eyebrow}</p>
+        <h1>{title}</h1>
+        <p className="chapter-transition__text">{text}</p>
+        <button type="button" onClick={onNext} autoFocus>
+          Continuar
+        </button>
+        <small>Pressione Enter</small>
+      </div>
     </section>
   );
 }

@@ -9,6 +9,11 @@ export default function TributeScreen({
       <div className="tribute-glow"></div>
 
       <div className="tribute-card">
+        <div className="tribute-card__ornament" aria-hidden="true">
+          <span />
+          <strong>&hearts;</strong>
+          <span />
+        </div>
         <span className="tribute-label">2107</span>
 
         <h1>{title}</h1>

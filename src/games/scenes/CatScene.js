@@ -978,7 +978,13 @@ export default class CatScene extends Phaser.Scene {
     this.momentos = this.physics.add.group();
 
     MOMENTOS_PERCY.forEach((momento) => {
-      const zona = this.add.zone(momento.x, momento.y, 126, 96);
+      const familia = momento.id === "familia";
+      const zona = this.add.zone(
+        momento.x,
+        momento.y,
+        familia ? 720 : 126,
+        familia ? 220 : 96
+      );
       this.physics.add.existing(zona);
       zona.body.setAllowGravity(false);
       zona.body.setImmovable(true);
@@ -1429,7 +1435,8 @@ export default class CatScene extends Phaser.Scene {
         zona.x,
         zona.y
       );
-      const alvo = distancia < 145 ? 0.46 : 0;
+      const alcance = zona.momento?.id === "familia" ? 420 : 145;
+      const alvo = distancia < alcance ? 0.46 : 0;
 
       zona.label.setAlpha(Phaser.Math.Linear(zona.label.alpha, alvo, 0.12));
     });

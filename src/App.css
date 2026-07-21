@@ -366,8 +366,8 @@ body {
 .tribute-screen {
   position: relative;
   width: 100%;
-  max-width: 820px;
-  min-height: 520px;
+  max-width: 940px;
+  min-height: min(620px, calc(100vh - 48px));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -375,43 +375,60 @@ body {
 
 .tribute-glow {
   position: absolute;
-  width: 360px;
-  height: 360px;
+  width: min(72vw, 640px);
+  height: min(72vw, 640px);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(245, 197, 66, 0.28), transparent 70%);
-  filter: blur(8px);
+  background: radial-gradient(circle, rgba(245, 197, 66, 0.2), transparent 68%);
+  filter: blur(14px);
   animation: pulseGlow 3s ease-in-out infinite;
 }
 
 .tribute-card {
   position: relative;
   width: 100%;
-  max-width: 720px;
-  padding: 42px;
+  max-width: 800px;
+  padding: 34px 58px 38px;
   border-radius: 8px;
   background: linear-gradient(
     145deg,
-    rgba(255, 255, 255, 0.14),
-    rgba(255, 255, 255, 0.05)
+    rgba(39, 35, 57, 0.98),
+    rgba(18, 18, 34, 0.98)
   );
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(245, 197, 66, 0.34);
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.54),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   text-align: center;
   overflow: hidden;
 }
 
-.tribute-card::before {
-  content: "\2764";
-  position: absolute;
-  top: 20px;
-  right: 28px;
-  font-size: 48px;
-  color: rgba(255, 255, 255, 0.1);
+.tribute-card__ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  color: var(--gold);
+}
+
+.tribute-card__ornament span {
+  width: 72px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(245, 197, 66, 0.72));
+}
+
+.tribute-card__ornament span:last-child {
+  transform: scaleX(-1);
+}
+
+.tribute-card__ornament strong {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .tribute-label {
   display: inline-block;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   padding: 7px 16px;
   border-radius: 999px;
   background: rgba(245, 197, 66, 0.16);
@@ -423,10 +440,12 @@ body {
 
 .tribute-card h1 {
   margin: 0 0 24px;
+  color: #fff7dd;
   font-family: var(--font-display);
-  font-size: clamp(32px, 4vw, 44px);
+  font-size: clamp(34px, 4vw, 48px);
   line-height: 1.08;
   letter-spacing: 0;
+  text-shadow: 0 8px 28px rgba(0, 0, 0, 0.38);
 }
 
 .tribute-text {
@@ -435,24 +454,56 @@ body {
 
 .tribute-text p {
   margin: 0 auto 18px;
-  max-width: 620px;
+  max-width: 660px;
   color: #edf0ff;
   font-size: 18px;
-  line-height: 1.75;
+  line-height: 1.65;
 }
 
 /* TRANSICAO ENTRE CAPITULOS */
 
 .chapter-transition {
-  width: min(760px, 100%);
-  min-height: 500px;
+  width: min(900px, 100%);
+  min-height: min(600px, calc(100vh - 48px));
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 56px 34px;
   text-align: center;
   animation: chapterReveal 0.65s ease both;
+}
+
+.chapter-transition__frame {
+  position: relative;
+  width: 100%;
+  padding: 64px 48px 54px;
+  border: 1px solid rgba(245, 197, 66, 0.32);
+  border-radius: 8px;
+  background:
+    linear-gradient(145deg, rgba(31, 35, 56, 0.97), rgba(20, 17, 33, 0.98));
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.chapter-transition__frame::before,
+.chapter-transition__frame::after {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border: 1px solid rgba(245, 197, 66, 0.14);
+  transform: rotate(45deg);
+}
+
+.chapter-transition__frame::before {
+  top: -120px;
+  left: -90px;
+}
+
+.chapter-transition__frame::after {
+  right: -90px;
+  bottom: -120px;
 }
 
 .chapter-transition__line {
@@ -496,6 +547,12 @@ body {
   color: #090b18;
   font: 700 17px var(--font-ui);
   cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.chapter-transition button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(245, 197, 66, 0.24);
 }
 
 .chapter-transition small {
@@ -540,6 +597,10 @@ body {
 
   .tribute-card {
     padding: 30px 22px;
+  }
+
+  .chapter-transition__frame {
+    padding: 44px 22px 38px;
   }
 
   .info-card,
