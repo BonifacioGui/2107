@@ -662,6 +662,17 @@ export default class ChuckyScene extends Phaser.Scene {
         .image(zone.x, zone.y, zone.texture)
         .setDisplaySize(zone.width, zone.height)
         .setDepth(11);
+      const checkpointLabel = this.add
+        .text(zone.x, FLOOR_Y - 188, "PONTO DE RETORNO", {
+          fontSize: "15px",
+          color: "#fff2b8",
+          fontFamily: "Trebuchet MS",
+          fontStyle: "bold",
+          stroke: "#160d21",
+          strokeThickness: 4,
+        })
+        .setOrigin(0.5)
+        .setDepth(20);
 
       this.tweens.add({
         targets: glow,
@@ -673,7 +684,7 @@ export default class ChuckyScene extends Phaser.Scene {
         repeat: -1,
       });
 
-      return { ...zone, glow, asset, activated: false };
+      return { ...zone, glow, asset, checkpointLabel, activated: false };
     });
   }
 
@@ -1371,7 +1382,8 @@ export default class ChuckyScene extends Phaser.Scene {
     if (!activeZone.activated) {
       activeZone.activated = true;
       activeZone.glow.setAlpha(0.82);
-      this.mostrarFeedback(`${activeZone.name}. Aqui o medo fica menor.`, "#ffe8a3");
+      activeZone.checkpointLabel.setText("RETORNO SALVO").setColor("#9fffd2");
+      this.mostrarFeedback(`Ponto de retorno salvo. ${activeZone.name}. Aqui o medo fica menor.`, "#ffe8a3");
     }
   }
 
@@ -2023,7 +2035,9 @@ export default class ChuckyScene extends Phaser.Scene {
     }
 
     this.finalAcknowledged = true;
-    this.game.events.emit("chucky-complete");
+    this.game.events.emit("chucky-complete", {
+      rescueSongSeek: this.musicaResgate?.seek || 0,
+    });
   }
 
   jogadoraEmZonaSegura() {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-const requestedSongPath = "/assets/audio/batman-theme-8bit.mp3";
+const requestedSongPath = "/assets/audio/ela-une-todas-as-coisas.mp3";
 
 const rewardMoments = [
   {
@@ -33,16 +33,55 @@ const rewardMoments = [
     image: "/assets/rewards/photos/lindona.jpg",
     caption: "LINDA COMO SEMPRE! .",
   },
+  {
+    title: "Nosso estilo",
+    image: "/assets/rewards/photos/livia-pink-floyd.jpg",
+    caption: "Rock, personalidade e esse jeito que sempre foi só seu.",
+  },
+  {
+    title: "Entre flores",
+    image: "/assets/rewards/photos/livia-flores.jpg",
+    caption: "Bonita do seu jeito, transformando qualquer cenário só por estar nele.",
+  },
+  {
+    title: "A mãe dela",
+    image: "/assets/rewards/photos/mae-livia.png",
+    caption: "De onde também vêm o cuidado, a força e tanto amor que fazem parte de você.",
+  },
+  {
+    title: "Chapéu rosa, atitude gigante",
+    image: "/assets/rewards/photos/livia-chapeu-rosa.png",
+    caption: "Você sempre encontrou um jeito só seu de transformar qualquer passeio em lembrança.",
+  },
+  {
+    title: "Estilo em tamanho família",
+    image: "/assets/rewards/photos/livia-oculos-azuis.png",
+    caption: "Esse seu jeito divertido consegue deixar até os momentos mais simples inesquecíveis.",
+  },
+  {
+    title: "O pai dela",
+    image: "/assets/rewards/photos/pai-livia.png",
+    caption: "Presença, proteção e carinho também ajudam a contar a história de quem você é.",
+  },
+];
+
+const percyMoments = [
+  { title: "Linguinha para fora", image: "/assets/rewards/percy/percy-linguinha.jpg", caption: "A pose mais Percy possível: confortável, feliz e com a linguinha escapando." },
+  { title: "Colinho da Livinha", image: "/assets/rewards/percy/percy-e-livia.jpg", caption: "Um abraço apertado e a certeza de que ele sempre encontrou casa em você." },
+  { title: "Percy em casa", image: "/assets/rewards/percy/percy-sentado.jpg", caption: "O dono da casa, sentado e observando tudo do jeito dele." },
+  { title: "Percyzinho", image: "/assets/rewards/percy/percy-bebe-1.jpg", caption: "Antes de tantas aventuras, já existia esse olhar curioso." },
+  { title: "Pequeno aventureiro", image: "/assets/rewards/percy/percy-bebe-2.jpg", caption: "Tão pequeno e já pronto para conquistar todos os cantinhos." },
+  { title: "Assistindo juntinhos", image: "/assets/rewards/percy/percy-assistindo.jpg", caption: "Quando a melhor companhia também presta muita atenção na televisão." },
 ];
 
 export default function RewardScreen({ onNext }) {
   const [collected, setCollected] = useState(false);
   const [selectedMoment, setSelectedMoment] = useState(null);
-  const [musicPlaying, setMusicPlaying] = useState(false);
-  const [musicLabel, setMusicLabel] = useState("Tocar tema 8-bit");
+  const [musicBlocked, setMusicBlocked] = useState(false);
   const audioRef = useRef(null);
 
   useEffect(() => {
+    const audio = audioRef.current;
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
         setSelectedMoment(null);
@@ -53,28 +92,14 @@ export default function RewardScreen({ onNext }) {
 
     return () => {
       window.removeEventListener("keydown", onKeyDown);
-      stopMusic();
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
     };
   }, []);
 
-  function stopMusic() {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-
-    setMusicPlaying(false);
-    setMusicLabel("Tocar tema 8-bit");
-  }
-
-  async function toggleMusic() {
-    if (musicPlaying) {
-      stopMusic();
-      return;
-    }
-
-    setMusicPlaying(true);
-
+  async function startMusic() {
     try {
       const audio = audioRef.current;
 
@@ -83,11 +108,15 @@ export default function RewardScreen({ onNext }) {
       }
 
       await audio.play();
-      setMusicLabel("Tema 8-bit tocando");
+      setMusicBlocked(false);
     } catch {
-      setMusicPlaying(false);
-      setMusicLabel("Tentar tocar novamente");
+      setMusicBlocked(true);
     }
+  }
+
+  function collectReward() {
+    setCollected(true);
+    startMusic();
   }
 
   return (
@@ -100,20 +129,25 @@ export default function RewardScreen({ onNext }) {
 
         {!collected && (
           <p>
-            Depois de enfrentar o medo, vem a parte boa: abrir lembrancas que
+            Depois de enfrentar o medo, vem a parte boa: abrir lembranças que
             mostram por que você nunca desiste, mesmo quando a fase fica dificil.
           </p>
         )}
 
         {collected && (
           <>
-            <div className="reward-actions">
-              <button className="secondary-button" type="button" onClick={toggleMusic}>
-                {musicPlaying ? "Pausar trilha" : musicLabel}
-              </button>
+            <div className="reward-now-playing">
+              <span>Agora tocando</span>
+              <strong>Ela Une Todas as Coisas</strong>
+              {musicBlocked && (
+                <button className="secondary-button" type="button" onClick={startMusic}>
+                  Tocar música
+                </button>
+              )}
             </div>
 
-            <div className="photo-wall" aria-label="Mural de fotos e lembrancas">
+            <h2 className="reward-section-title">As muitas formas de ser Lívia</h2>
+            <div className="photo-wall" aria-label="Mural de fotos e lembranças">
               {rewardMoments.map((moment) => (
                 <article className="photo-card" key={moment.title}>
                   <button
@@ -131,6 +165,19 @@ export default function RewardScreen({ onNext }) {
                 </article>
               ))}
             </div>
+
+            <h2 className="reward-section-title">As muitas formas de ser Percy</h2>
+            <div className="photo-wall" aria-label="Mural de fotos do Percy">
+              {percyMoments.map((moment) => (
+                <article className="photo-card" key={moment.title}>
+                  <button className="photo-open-button" type="button" onClick={() => setSelectedMoment(moment)} aria-label={`Expandir foto: ${moment.title}`}>
+                    <div className="photo-placeholder"><img src={moment.image} alt={moment.title} /></div>
+                  </button>
+                  <h2>{moment.title}</h2>
+                  <p>{moment.caption}</p>
+                </article>
+              ))}
+            </div>
           </>
         )}
 
@@ -141,7 +188,7 @@ export default function RewardScreen({ onNext }) {
               return;
             }
 
-            setCollected(true);
+            collectReward();
           }}
           className="primary-button"
         >

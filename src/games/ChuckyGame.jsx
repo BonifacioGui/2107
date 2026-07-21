@@ -51,8 +51,8 @@ export default function ChuckyGame({ onComplete }) {
 
     phaserGameRef.current = new Phaser.Game(config);
 
-    const finalizarFase = () => {
-      onCompleteRef.current();
+    const finalizarFase = (payload) => {
+      onCompleteRef.current(payload);
     };
 
     phaserGameRef.current.events.on("chucky-complete", finalizarFase);

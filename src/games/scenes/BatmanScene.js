@@ -31,7 +31,7 @@ const RECOMPENSAS_BATMAN = [
     image: "/assets/rewards/real/nafaculdade.jpg",
     titulo: "Na faculdade",
     legenda:
-      "Um menina estudiosa, linda e dedicada. Tudo que você quiser fazer, você consegue!",
+      "Uma menina estudiosa, linda e dedicada. Tudo o que você quiser fazer, você consegue!",
   },
   {
     id: "brilho",
@@ -47,7 +47,7 @@ const RECOMPENSAS_BATMAN = [
     image: "/assets/rewards/real/percy-real.jpg",
     titulo: "Percy",
     legenda:
-      "O velho que devia ser o alfa da casa, mas é tratado como um nenê. Incrivelmente ele parece com vc: come que só, dorme que só e não gosta de confusão kkkk além da bunda gorda",
+      "O velho que devia ser o alfa da casa, mas é tratado como um nenê. Incrivelmente, ele parece com você: come que só, dorme que só e não gosta de confusão kkkk, além da bunda gorda.",
   },
 ];
 
@@ -193,32 +193,32 @@ export default class BatmanScene extends Phaser.Scene {
     this.medosDerrotados = 0;
     this.danosRecebidos = 0;
     this.tempoInicio = this.time.now;
-    this.checkpoint = { x: 90, y: this.chaoY - 70, nome: "Inicio" };
+    this.checkpoint = { x: 90, y: this.chaoY - 70, nome: "Início" };
     this.trechosNarrativos = [
       {
         x: 260,
         visto: false,
-        texto: "Gotham esta escura. Mas algumas luzes ainda guiam o caminho.",
+        texto: "Gotham está escura, mas algumas luzes ainda guiam o caminho.",
       },
       {
         x: 980,
         visto: false,
-        texto: "O medo aparece. Ele assusta, mas nao decide por você.",
+        texto: "O medo aparece. Ele assusta, mas não decide por você.",
       },
       {
         x: 1550,
         visto: false,
-        texto: "Algumas barreiras so abrem quando voce aperta X na hora certa.",
+        texto: "Algumas barreiras só se abrem quando você enfrenta o que está no caminho.",
       },
       {
         x: 2500,
         visto: false,
-        texto: "Agora os telhados sobem. Um passo de cada vez tambem e vitoria.",
+        texto: "Agora os telhados sobem. Um passo de cada vez também é vitória.",
       },
       {
         x: 3450,
         visto: false,
-        texto: "Voce reuniu tudo que precisava. O portal so espera o ultimo medo cair.",
+        texto: "Você reuniu tudo de que precisava. O portal só espera o último medo cair.",
       },
     ];
     Phaser.Math.RND.sow([`${Date.now()}-${Math.random()}`]);
@@ -246,7 +246,7 @@ export default class BatmanScene extends Phaser.Scene {
       .text(
         this.largura / 2,
         84,
-        "Colete os simbolos de coragem. Aperte X para lancar o simbolo do Batman.",
+        "Colete os símbolos de coragem e atravesse os telhados.",
         {
           fontSize: "21px",
           color: "#e6ecff",
@@ -296,7 +296,7 @@ export default class BatmanScene extends Phaser.Scene {
     this.simbolosColetados = [];
 
     this.coragemText = this.add
-      .text(34, 34, "Simbolos: 0/5", {
+      .text(34, 34, "Símbolos: 0/5", {
         fontSize: "22px",
         color: "#ffffff",
         fontFamily: "Trebuchet MS",
@@ -314,26 +314,6 @@ export default class BatmanScene extends Phaser.Scene {
         stroke: "#050713",
         strokeThickness: 4,
       })
-      .setDepth(100)
-      .setScrollFactor(0);
-
-    this.attackHintBox = this.add
-      .rectangle(34, this.altura - 28, 218, 50, 0x050713, 0.86)
-      .setOrigin(0, 1)
-      .setStrokeStyle(1, 0xf5c542, 0.45)
-      .setDepth(99)
-      .setScrollFactor(0);
-
-    this.attackHintText = this.add
-      .text(50, this.altura - 53, "X  arremessar", {
-        fontSize: "20px",
-        color: "#fff3c4",
-        fontFamily: "Trebuchet MS",
-        fontStyle: "bold",
-        stroke: "#050713",
-        strokeThickness: 3,
-      })
-      .setOrigin(0, 0.5)
       .setDepth(100)
       .setScrollFactor(0);
 
@@ -899,7 +879,7 @@ export default class BatmanScene extends Phaser.Scene {
         .setDepth(20)
         .setBlendMode(Phaser.BlendModes.ADD);
       const legenda = this.add
-        .text(barreira.x, barreira.y - 66, "Barreira: use X", {
+        .text(barreira.x, barreira.y - 66, "Barreira selada", {
           fontFamily: '"Trebuchet MS", sans-serif',
           fontSize: "14px",
           color: "#ffe5a6",
@@ -1036,7 +1016,7 @@ export default class BatmanScene extends Phaser.Scene {
       checkpoint.base?.setFillStyle(0xf5c542, 0.24);
       checkpoint.luz?.setFillStyle(0xf5c542, 0.16);
       this.mostrarFeedback(
-        "Ponto de retorno aceso. Se os coracoes acabarem, você volta daqui.",
+        "Ponto de retorno aceso. Se os corações acabarem, você volta daqui.",
         "#bff5e8"
       );
     }
@@ -1474,9 +1454,9 @@ export default class BatmanScene extends Phaser.Scene {
 
     if (sombra.tipo === "agulha") {
       this.mostrarCardItem({
-        titulo: "O medo nao decidiu por ela",
+        titulo: "O medo não decidiu por você",
         descricao:
-          "A agulha pode até te assustar, mas vocêe enfrenta e vence o medo. Nada te para!",
+          "A agulha pode até assustar você, mas você enfrenta e vence o medo. Nada para você!",
       });
       this.mostrarTextoFlutuante(sombra.x, sombra.y - 64, "CORAGEM", "#ffd166");
     } 
@@ -1484,7 +1464,7 @@ export default class BatmanScene extends Phaser.Scene {
       this.mostrarCardItem({
         titulo: "Será que devo enfrentar?",
         descricao:
-          "Mesmo com dúvida, vc enfrenta. Esse parece ser o seu inimigo mais fraco!",
+          "Mesmo com dúvida, você enfrenta. Esse parece ser o seu inimigo mais fraco!",
       });
       this.mostrarTextoFlutuante(sombra.x, sombra.y - 64, "CORAGEM", "#ffd166");
     }
@@ -1492,7 +1472,7 @@ export default class BatmanScene extends Phaser.Scene {
       this.mostrarCardItem({
         titulo: "Mais um medo atravessado",
         descricao:
-          "Esse aí foi genérico kkkkkk podia ser um poste? barca viking?",
+          "Esse aí foi genérico kkkkkk. Podia ser um poste? Uma barca viking?",
       });
     }
   }
@@ -1604,7 +1584,7 @@ export default class BatmanScene extends Phaser.Scene {
     }
 
     if (this.coringaLabel) {
-      this.coringaLabel.setText("Boss vencido");
+      this.coringaLabel.setText("Coringa vencido");
     }
 
     this.tweens.add({
@@ -1615,14 +1595,14 @@ export default class BatmanScene extends Phaser.Scene {
       onComplete: () => this.chefeCoringa?.destroy(),
     });
 
-    this.mostrarFeedback("Coringa derrotado. A saida abriu!", "#ffd166");
+    this.mostrarFeedback("Coringa derrotado. A saída se abriu!", "#ffd166");
     this.abrirPortalFinal();
     this.tocarAcordeRecompensa();
     this.time.delayedCall(360, () => {
       this.mostrarCardItem({
-        titulo: "Ultimo medo vencido",
+        titulo: "Último medo vencido",
         descricao:
-          "A recompensa ficou guardada. Aperte Enter ou OK e atravesse a saida para abrir o mural.",
+          "A recompensa ficou guardada. Aperte Enter ou OK e atravesse a saída para abrir o mural.",
       });
     });
   }
@@ -1658,7 +1638,7 @@ export default class BatmanScene extends Phaser.Scene {
       });
     }
 
-    this.mostrarFeedback("Os simbolos responderam. A saida se abriu.", "#ffe08a");
+    this.mostrarFeedback("Os símbolos responderam. A saída se abriu.", "#ffe08a");
   }
 
   criarHeroi() {
@@ -1685,10 +1665,10 @@ export default class BatmanScene extends Phaser.Scene {
 
     const simbolos = [
       {
-        nome: "Forca",
+        nome: "Força",
         chave: "itemForca",
-        mensagem: "Forca encontrada: uma memoria acendeu em Gotham.",
-        titulo: "Forca para seguir",
+        mensagem: "Força encontrada: uma memória acendeu em Gotham.",
+        titulo: "Força para seguir",
         descricao:
           "Você sempre tem força para enfrentar o que vier. E eu serei o seu apoio sempre!",
         recompensa: RECOMPENSAS_BATMAN[0],
@@ -1696,37 +1676,37 @@ export default class BatmanScene extends Phaser.Scene {
       {
         nome: "Calma",
         chave: "itemCalma",
-        mensagem: "Calma recuperada: uma memoria acendeu em Gotham.",
-        titulo: "Calma na hora dificil",
+        mensagem: "Calma recuperada: uma memória acendeu em Gotham.",
+        titulo: "Calma na hora difícil",
         descricao:
-          "Você demonstra é muito calma e muito estóica. E isso é uma força que inspira todos ao redor.",
+          "Você demonstra muita calma e é muito estoica. Isso é uma força que inspira todos ao redor.",
         recompensa: RECOMPENSAS_BATMAN[1],
       },
       {
-        nome: "Confianca",
+        nome: "Confiança",
         chave: "itemConfianca",
-        mensagem: "Confianca ativada: uma memoria acendeu em Gotham.",
-        titulo: "Confianca no caminho",
+        mensagem: "Confiança ativada: uma memória acendeu em Gotham.",
+        titulo: "Confiança no caminho",
         descricao:
-          "Você sempre teve muita confiança em si mesma. Continue assim sempre, porque tudo que você quiser fazer, você faz. E vc confia em mim mais do que eu jamais confiei. Obrigado!",
+          "Você sempre teve muita confiança em si mesma. Continue assim, porque tudo o que você quiser fazer, você faz. E você confia em mim mais do que eu jamais confiei. Obrigado!",
         recompensa: RECOMPENSAS_BATMAN[2],
       },
       {
         nome: "Amor",
         chave: "itemAmor",
-        mensagem: "Amor coletado: uma memoria acendeu em Gotham.",
-        titulo: "Nosso comeco",
+        mensagem: "Amor coletado: uma memória acendeu em Gotham.",
+        titulo: "Nosso começo",
         descricao:
-          "O amor nao apaga o medo, mas lembra que existe um lugar para voltar.",
+          "O amor não apaga o medo, mas lembra que existe um lugar para voltar.",
         recompensa: RECOMPENSAS_BATMAN[3],
       },
       {
         nome: "Coragem",
         chave: "itemCoragem",
-        mensagem: "Coragem reunida: uma memoria acendeu em Gotham.",
+        mensagem: "Coragem reunida: uma memória acendeu em Gotham.",
         titulo: "O carinho que protege",
         descricao:
-          "Percy entra como lembrete secreto: ate herois precisam de cuidado.",
+          "Percy entra como lembrete secreto: até heróis precisam de cuidado.",
         recompensa: RECOMPENSAS_BATMAN[4],
       },
     ];
@@ -1979,9 +1959,9 @@ export default class BatmanScene extends Phaser.Scene {
     this.player.setVisible(true);
     this.tocarAnimacao("batman-idle");
 
-    this.tituloFaseText.setText("Fase 1.2: O Boss da Coragem");
+    this.tituloFaseText.setText("Fase 1.2: O Confronto da Coragem");
     this.objetivoFaseText.setText(
-      "Desvie das cartas, interrompa a investida e use X para acertar o Coringa."
+      "Desvie das cartas, interrompa a investida e acerte o Coringa."
     );
 
     this.bossVidaText.setVisible(true);
@@ -1990,7 +1970,7 @@ export default class BatmanScene extends Phaser.Scene {
 
     this.criarCoringa();
     this.mostrarFeedback(
-      "Os simbolos abriram a arena. Agora o Coringa vai atras de voce!",
+      "Os símbolos abriram a arena. Agora o Coringa vai atrás de você!",
       "#ffd166"
     );
   }
@@ -2416,7 +2396,7 @@ export default class BatmanScene extends Phaser.Scene {
     }
 
     if (this.portalLabel) {
-      this.portalLabel.setText(aberto ? "portal aberto" : `${this.coragem}/${this.totalCoragem} simbolos`);
+      this.portalLabel.setText(aberto ? "portal aberto" : `${this.coragem}/${this.totalCoragem} símbolos`);
       this.portalLabel.setColor(aberto ? "#ffe08a" : "#c7d2ff");
     }
   }
@@ -2557,10 +2537,10 @@ export default class BatmanScene extends Phaser.Scene {
     this.simbolosColetados.push(nomeSimbolo);
 
     this.coragem += 1;
-    this.coragemText.setText(`Simbolos: ${this.coragem}/${this.totalCoragem}`);
+    this.coragemText.setText(`Símbolos: ${this.coragem}/${this.totalCoragem}`);
 
     this.mostrarFeedback(
-      `${nomeSimbolo} guardada: um pedaco da surpresa ficou no cofre.`,
+      `Memória guardada: ${nomeSimbolo} ficou no cofre.`,
       "#f5c542"
     );
     if (item.recompensa) {
@@ -2708,13 +2688,13 @@ export default class BatmanScene extends Phaser.Scene {
     const mensagensDano =
       perigo?.tipo === "agulha"
         ? [
-            "A agulha assusta, mas ela continua. Respira, Livia. Voce sempre atravessa.",
-            "Esse medo nao manda nela. Ela sente, encara e segue.",
+            "A agulha assusta, mas você continua. Respire, Lívia. Você sempre atravessa.",
+            "Esse medo não manda em você. Você sente, encara e segue.",
           ]
         : [
-            "Continua. Ela ja passou por dias dificeis e seguiu mesmo assim.",
-            "Respira e levanta. A coragem dela aparece justamente agora.",
-            "Ela nao precisa estar sem medo para continuar. Ela continua com medo mesmo.",
+            "Continue. Você já passou por dias difíceis e seguiu mesmo assim.",
+            "Respire e levante. A sua coragem aparece justamente agora.",
+            "Você não precisa estar sem medo para continuar. Você continua mesmo com medo.",
           ];
 
     this.mostrarFeedback(Phaser.Utils.Array.GetRandom(mensagensDano), "#c7d2ff");
@@ -2732,7 +2712,7 @@ export default class BatmanScene extends Phaser.Scene {
   recomecarComResiliencia() {
     this.limparAtaquesCoringa();
     this.mostrarFeedback(
-      "Coracoes restaurados. A sua coragem sempre encontra um jeito de continuar.",
+      "Corações restaurados. A sua coragem sempre encontra um jeito de continuar.",
       "#ffd166"
     );
 
@@ -2769,13 +2749,13 @@ export default class BatmanScene extends Phaser.Scene {
     }
 
     if (this.coragem < this.totalCoragem) {
-      this.mostrarFeedback("Reuna todos os simbolos antes de sair.", "#f5c542");
+      this.mostrarFeedback("Reúna todos os símbolos antes de sair.", "#f5c542");
       return;
     }
 
     if (!this.bossDerrotado) {
       this.mostrarFeedback(
-        "Use X para derrotar o Coringa antes de sair.",
+        "Derrote o Coringa antes de sair.",
         "#ffd166"
       );
       return;
@@ -2793,7 +2773,7 @@ export default class BatmanScene extends Phaser.Scene {
     const segundos = String(tempoSegundos % 60).padStart(2, "0");
 
     this.mensagem.setText(
-      `Resultado: voce continuou.\n\nSimbolos coletados: ${this.coragem}/${this.totalCoragem}\nMedos enfrentados: ${this.medosDerrotados}\nCoragem mantida: ${this.vidas}/${this.maxVidas}\nTempo: ${minutos}:${segundos}\n\nMesmo quando sente medo, voce segue. E isso me ensina muito.`
+      `Resultado: você continuou.\n\nSímbolos coletados: ${this.coragem}/${this.totalCoragem}\nMedos enfrentados: ${this.medosDerrotados}\nCoragem mantida: ${this.vidas}/${this.maxVidas}\nTempo: ${minutos}:${segundos}\n\nMesmo quando sente medo, você segue. E isso me ensina muito.`
     );
 
     this.time.delayedCall(3800, () => {

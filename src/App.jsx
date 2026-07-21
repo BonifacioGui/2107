@@ -7,6 +7,7 @@ import GameLayout from "./components/GameLayout";
 import RewardScreen from "./components/RewardScreen";
 import TributeScreen from "./components/TributeScreen";
 import ChapterTransition from "./components/ChapterTransition";
+import CoupleCarousel from "./components/CoupleCarousel";
 
 import BatmanGame from "./games/BatmanGame";
 import CatGame from "./games/CatGame";
@@ -22,6 +23,7 @@ const screens = new Set([
   "batmanTribute",
   "transitionTwo",
   "chucky",
+  "coupleReward",
   "transitionThree",
   "cat",
   "finalTribute",
@@ -35,6 +37,7 @@ function getInitialScreen() {
 
 function App() {
   const [screen, setScreen] = useState(getInitialScreen);
+  const [rescueSongStart, setRescueSongStart] = useState(0);
 
   return (
     <main className="page">
@@ -48,7 +51,7 @@ function App() {
 
       {screen === "batman" && (
         <GameLayout
-          title="A Coragem que Eu Vejo em Voce"
+          title="A Coragem que Eu Vejo em Você"
           description="Explore os telhados, encontre coragem e siga em frente."
         >
           <BatmanGame onComplete={() => setScreen("reward")} />
@@ -70,9 +73,9 @@ function App() {
 
       {screen === "transitionTwo" && (
         <ChapterTransition
-          eyebrow="Capitulo concluido"
+          eyebrow="Capítulo concluído"
           title="Uma nova porta se abriu"
-          text="A coragem muda de forma, mas continua caminhando ao lado dela."
+          text="A coragem muda de forma, mas continua caminhando ao seu lado."
           onNext={() => setScreen("chucky")}
         />
       )}
@@ -80,17 +83,24 @@ function App() {
       {screen === "chucky" && (
         <GameLayout
           title="O Susto que Vira Risada"
-          description="Atravesse o escuro, encontre lembrancas e volte para a luz."
+          description="Atravesse o escuro, encontre lembranças e volte para a luz."
         >
-          <ChuckyGame onComplete={() => setScreen("transitionThree")} />
+          <ChuckyGame onComplete={(payload) => {
+            setRescueSongStart(payload?.rescueSongSeek || 0);
+            setScreen("coupleReward");
+          }} />
         </GameLayout>
+      )}
+
+      {screen === "coupleReward" && (
+        <CoupleCarousel startAt={rescueSongStart} onNext={() => setScreen("transitionThree")} />
       )}
 
       {screen === "transitionThree" && (
         <ChapterTransition
-          eyebrow="Capitulo concluido"
+          eyebrow="Capítulo concluído"
           title="Depois da tempestade"
-          text="Agora, o caminho pede menos pressa e mais atencao aos pequenos afetos."
+          text="Agora, o caminho pede menos pressa e mais atenção aos pequenos afetos."
           onNext={() => setScreen("cat")}
         />
       )}
@@ -98,7 +108,7 @@ function App() {
       {screen === "cat" && (
         <GameLayout
           title="Percy e os Cantinhos da Casa"
-          description="Passeie sem pressa e guarde as pequenas memorias da casa."
+          description="Passeie sem pressa e guarde as pequenas memórias da casa."
         >
           <CatGame onComplete={() => setScreen("finalTribute")} />
         </GameLayout>
